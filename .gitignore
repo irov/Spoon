@@ -11,4 +11,4 @@ xcuserdata/
 .swiftpm/
 Artifacts/
 tmp/
-
+*.profraw
