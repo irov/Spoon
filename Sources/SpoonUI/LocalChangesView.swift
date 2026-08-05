@@ -8,6 +8,8 @@ struct LocalChangesView: View {
     @State private var propertyTarget: StatusItem?
     @State private var lockTarget: StatusItem?
     @State private var changelistTarget: StatusItem?
+    @State private var deleteTarget: StatusItem?
+    @State private var moveTarget: StatusItem?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,6 +23,15 @@ struct LocalChangesView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(10)
+
+            if let info = model.workingCopyInfo {
+                HStack(spacing: 12) {
+                    Text(info.url.absoluteString).lineLimit(1).truncationMode(.middle)
+                    Spacer()
+                    Text("r\(info.revision)").monospacedDigit()
+                }
+                .font(.caption).foregroundStyle(.secondary).padding(.horizontal, 10).padding(.bottom, 8)
+            }
 
             Divider()
 
@@ -60,6 +71,19 @@ struct LocalChangesView: View {
         .sheet(item: $propertyTarget) { PropertiesSheet(model: model, item: $0) }
         .sheet(item: $lockTarget) { LockSheet(model: model, item: $0) }
         .sheet(item: $changelistTarget) { ChangelistSheet(model: model, item: $0) }
+        .sheet(item: $moveTarget) { MoveWorkingCopyItemSheet(model: model, item: $0) }
+        .confirmationDialog(
+            "Schedule path for deletion?",
+            isPresented: Binding(get: { deleteTarget != nil }, set: { if !$0 { deleteTarget = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                guard let item = deleteTarget else { return }
+                deleteTarget = nil
+                Task { await model.delete(paths: [item.relativePath]) }
+            }
+            Button("Cancel", role: .cancel) { deleteTarget = nil }
+        } message: { Text(deleteTarget?.absolutePath.path ?? "") }
     }
 
     private func changeRow(_ item: StatusItem) -> some View {
@@ -106,6 +130,9 @@ struct LocalChangesView: View {
             Button("Properties…") { propertyTarget = item }
             if item.workingCopyStatus == .unversioned {
                 Button("Add") { Task { await model.add(paths: [item.relativePath]) } }
+            } else {
+                Button("Move or Rename…") { moveTarget = item }
+                Button("Delete…", role: .destructive) { deleteTarget = item }
             }
             if item.workingCopyStatus == .conflicted || item.treeConflicted || item.propertyStatus == .conflicted {
                 Menu("Resolve") {
@@ -154,6 +181,30 @@ struct LocalChangesView: View {
             }
         }
         .padding(12)
+    }
+}
+
+private struct MoveWorkingCopyItemSheet: View {
+    @Bindable var model: AppModel
+    let item: StatusItem
+    @Environment(\.dismiss) private var dismiss
+    @State private var destination = ""
+
+    var body: some View {
+        Form {
+            LabeledContent("Source", value: item.absolutePath.path)
+            TextField("Destination path", text: $destination)
+            HStack {
+                Spacer()
+                Button("Cancel") { dismiss() }
+                Button("Move") {
+                    Task { await model.move(path: item.relativePath, to: URL(fileURLWithPath: destination)); dismiss() }
+                }
+                .buttonStyle(.borderedProminent).disabled(destination.isEmpty || destination == item.absolutePath.path)
+            }
+        }
+        .padding(20).frame(width: 650)
+        .onAppear { destination = item.absolutePath.path }
     }
 }
 
