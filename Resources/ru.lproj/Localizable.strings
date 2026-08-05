@@ -153,3 +153,7 @@
 "Unlock" = "Разблокировать";
 "Version 1.0.0 (1)" = "Версия 1.0.0 (1)";
 "Working Copy" = "Рабочая копия";
+"Before" = "До";
+"No Image" = "Нет изображения";
+"Destination path" = "Путь назначения";
+"Schedule path for deletion?" = "Запланировать удаление пути?";

@@ -21,6 +21,10 @@ public final class AppModel {
     public var showIgnored = false
     public var isBusy = false
     public var diffText = ""
+    public var diffBeforeImageData: Data?
+    public var diffAfterImageData: Data?
+    public var diffBinaryDescription: String?
+    public var workingCopyInfo: WorkingCopyInfo?
     public var revisions: [RevisionRecord] = []
     public var selectedRevision: Int?
     public var historySearch = ""
@@ -121,6 +125,9 @@ public final class AppModel {
         revisions = []
         repositoryEntries = []
         diffText = ""
+        diffBeforeImageData = nil
+        diffAfterImageData = nil
+        diffBinaryDescription = nil
         selectedPaths = []
         repositoryURL = project.repositoryRootURL
         workingCopyWatcher?.watch(project.workingCopyRoot)
@@ -206,7 +213,27 @@ public final class AppModel {
     public func loadDiff(path: String) async {
         guard let project = selectedProject else { return }
         do {
-            diffText = try await svn.diff(project: project, paths: [project.workingCopyRoot.appendingPathComponent(path).path])
+            let file = project.workingCopyRoot.appendingPathComponent(path)
+            let item = statusItems.first(where: { $0.relativePath == path })
+            diffBeforeImageData = nil
+            diffAfterImageData = nil
+            diffBinaryDescription = nil
+            let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "webp", "tif", "tiff", "heic"]
+            if imageExtensions.contains(file.pathExtension.lowercased()), item?.nodeKind != .directory {
+                if item?.workingCopyStatus != .added {
+                    diffBeforeImageData = try? await svn.contents(project: project, target: file.path, revision: "BASE")
+                }
+                if item?.workingCopyStatus != .deleted && item?.workingCopyStatus != .missing {
+                    diffAfterImageData = try? Data(contentsOf: file)
+                }
+                diffText = ""
+                return
+            }
+            diffText = try await svn.diff(project: project, paths: [file.path])
+            if diffText.isEmpty, item?.nodeKind != .directory {
+                let size = (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init)
+                diffBinaryDescription = size.map { "Binary file · \(ByteCountFormatter.string(fromByteCount: $0, countStyle: .file))" } ?? "Binary file"
+            }
         } catch {
             diffText = ""
             present(error)
@@ -277,6 +304,23 @@ public final class AppModel {
         guard let project = selectedProject else { return }
         await withActivity("Reverting paths…") {
             activityMessage = try await svn.revert(project: project, targets: absolute(paths, project: project), depth: recursive ? "infinity" : "empty")
+            try await reloadStatus(project: project)
+        }
+    }
+
+    public func delete(paths: [String], keepLocal: Bool = false) async {
+        guard let project = selectedProject else { return }
+        await withActivity("Scheduling deletion…") {
+            activityMessage = try await svn.delete(project: project, targets: absolute(paths, project: project), keepLocal: keepLocal)
+            try await reloadStatus(project: project)
+        }
+    }
+
+    public func move(path: String, to destination: URL) async {
+        guard let project = selectedProject else { return }
+        await withActivity("Moving path…") {
+            let source = project.workingCopyRoot.appendingPathComponent(path).path
+            activityMessage = try await svn.move(project: project, source: source, destination: destination.path)
             try await reloadStatus(project: project)
         }
     }
@@ -530,10 +574,16 @@ public final class AppModel {
         projectScopes[project.id] = try bookmark.resolve()
         repositoryURL = project.repositoryRootURL
         try await storage?.saveProject(project)
+        workingCopyInfo = info
         workingCopyWatcher?.watch(root)
     }
 
     private func reloadStatus(project: ProjectRecord, remote: Bool = false) async throws {
+        workingCopyInfo = try? await svn.info(
+            path: project.workingCopyRoot,
+            projectID: project.id,
+            securityScopedBookmark: project.workingCopyBookmark
+        )
         statusItems = try await svn.status(project: project, remote: remote, showIgnored: showIgnored)
         selectedPaths.formIntersection(Set(statusItems.map(\.relativePath)))
         if let first = selectedPaths.first {

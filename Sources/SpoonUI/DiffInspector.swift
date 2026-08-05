@@ -4,6 +4,9 @@ import SwiftUI
 
 struct DiffInspector: View {
     let text: String
+    let beforeImageData: Data?
+    let afterImageData: Data?
+    let binaryDescription: String?
     @State private var layout: DiffLayoutChoice = .unified
 
     var body: some View {
@@ -20,7 +23,11 @@ struct DiffInspector: View {
             }
             .padding(10)
             Divider()
-            if text.isEmpty {
+            if beforeImageData != nil || afterImageData != nil {
+                imageComparison
+            } else if let binaryDescription {
+                ContentUnavailableView("Binary File", systemImage: "doc.fill", description: Text(binaryDescription))
+            } else if text.isEmpty {
                 ContentUnavailableView("No Diff Selected", systemImage: "doc.text.magnifyingglass", description: Text("Select a changed path or revision."))
             } else if layout == .unified {
                 ScrollView([.horizontal, .vertical]) {
@@ -32,6 +39,28 @@ struct DiffInspector: View {
                 }
             } else {
                 SideBySideDiffView(diff: UnifiedDiffParser.parse(text))
+            }
+        }
+    }
+
+    private var imageComparison: some View {
+        HStack(spacing: 0) {
+            imagePane(title: "Before", data: beforeImageData)
+            Divider()
+            imagePane(title: "Working Copy", data: afterImageData)
+        }
+    }
+
+    private func imagePane(title: LocalizedStringKey, data: Data?) -> some View {
+        VStack(spacing: 0) {
+            Text(title).font(.caption.bold()).foregroundStyle(.secondary).padding(8)
+            Divider()
+            if let data, let image = NSImage(data: data) {
+                ScrollView([.horizontal, .vertical]) {
+                    Image(nsImage: image).resizable().scaledToFit().padding(16)
+                }
+            } else {
+                ContentUnavailableView("No Image", systemImage: "photo.badge.exclamationmark")
             }
         }
     }

@@ -19,7 +19,12 @@ public struct RootView: View {
             content
                 .navigationSplitViewColumnWidth(min: 420, ideal: 640)
         } detail: {
-            DiffInspector(text: model.diffText)
+            DiffInspector(
+                text: model.diffText,
+                beforeImageData: model.diffBeforeImageData,
+                afterImageData: model.diffAfterImageData,
+                binaryDescription: model.diffBinaryDescription
+            )
                 .navigationSplitViewColumnWidth(min: 380, ideal: 620)
         }
         .frame(minWidth: 1_080, minHeight: 680)
