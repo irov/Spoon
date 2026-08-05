@@ -1,0 +1,1881 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0788E4F38D74F36B96896A15 /* LocalChangesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67D41A32A54E5A393BD77B80 /* LocalChangesView.swift */; };
+		08EB59292772E34D8584C05E /* SpoonDiff.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */; };
+		124D266A3653F1CACD3F3AD3 /* SpoonStorage.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D5EDE80259042813CDA41140 /* SpoonStorage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		15CD9209997D13AF9F7F3360 /* SpoonError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7130ECA0296FA7E892433FB /* SpoonError.swift */; };
+		16F913FAD2B0007CB8E8F012 /* SpoonStorage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EDE80259042813CDA41140 /* SpoonStorage.framework */; };
+		1AF3A1715812D0A354FF0BB3 /* ExternalToolLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D4ADB3F1FB3B05AE08F318 /* ExternalToolLauncher.swift */; };
+		20ADE4500590633505644D7D /* SpoonSecurity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; };
+		21C3C85DE008D1C231BBBBAE /* SpoonDomain.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		26DA42CCD8633C25A698DDDE /* SpoonApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD6071AEDD88C9355DD6323 /* SpoonApp.swift */; };
+		274FDEB0EEF8452485C7DA5C /* SecurityScopedBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489C200FAC11DC3725E4B50B /* SecurityScopedBookmark.swift */; };
+		2D05C6E364AB9932009F9368 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E61E7ADF04C4EDF2432CDCB8 /* KeychainStore.swift */; };
+		2DA426E90102DB48AAE4B78D /* SecurityAndStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1572943B8175F9EC744E5748 /* SecurityAndStorageTests.swift */; };
+		2FE0EBC455B03215D39E830C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63304568328CCD5DBB649D54 /* SettingsView.swift */; };
+		36AFF66FE818ADDD69593EE7 /* XMLParsers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12563A658EC32CA215AEDC3 /* XMLParsers.swift */; };
+		43BC0706EDF594529E4230F2 /* SpoonSecurity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; };
+		4843DC78901BABF787BD0CDA /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		485255AE2A25C6FA062C6304 /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		4C711C5201E7F21D281365A8 /* SVNIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C52C09A72B21850703508 /* SVNIntegrationTests.swift */; };
+		4D2321644081B80353EA8757 /* WorkflowViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7D0CFA1B765FADEFB830C0 /* WorkflowViews.swift */; };
+		4F86408E62D7D911F86FC02F /* SQLiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81806D0602531C8B6CFD6D4 /* SQLiteStore.swift */; };
+		4F90A297F6521FE4423805BB /* DiffInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3A96BE4010DB78CD3EBE30 /* DiffInspector.swift */; };
+		55A4F5A129A9F55AF47FEDC7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D9CA170CFC222590E1BE75C /* RootView.swift */; };
+		55C581FE0BF05CF9854F32B8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 228FDDE5D3A33229FFF5AF72 /* PrivacyInfo.xcprivacy */; };
+		56F57F0438E4D30D981A73D9 /* SpoonDiagnostics.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5B0C9C6A76E2D976D3CC7BF2 /* SpoonSVN.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		5BC2B6A0AD79AC3EDBC7653B /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		62F1E41F7A5D508B575D12E6 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8529E6611CB8D5A56D56B9DC /* main.swift */; };
+		69498611AD9721798869ACEB /* WorkingCopyWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67AE2D7556075CBF0CD7DB9D /* WorkingCopyWatcher.swift */; };
+		71EB96E22B2A271B830709D8 /* SpoonStorage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EDE80259042813CDA41140 /* SpoonStorage.framework */; };
+		72D4574A6F500807C95D8FEB /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FD3C7E776D0604843F50C349 /* Localizable.strings */; };
+		76DAE8293138BAC159C53179 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F0A0CD42E59C3E42442221A4 /* Assets.xcassets */; };
+		7A03236540DD09F0B09D52AF /* SpoonSecurity.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8943510551B0F18F923C56CA /* SpoonSVN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; };
+		89D3BD2EC923D29C4CD76820 /* SpoonDiff.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */; };
+		8B143F5AABC8B3023437A68C /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		8B81E920A839E5390D17285D /* SpoonSecurity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; };
+		8B9E942B775D12AFDB19073A /* SpoonDomain.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8BCB5B83C9245EAFA8E9EC86 /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		8D0B1DBA4586CDE89E0259E7 /* SpoonSecurity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; };
+		95BC3DD4E7AD66FB64467276 /* DiagnosticExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E43C57BE4CC5D59642B0D5 /* DiagnosticExporter.swift */; };
+		9BAC2C497E61A8941D9E2971 /* HistoryAndRepositoryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10CD85897DF657F0D737A86B /* HistoryAndRepositoryViews.swift */; };
+		9C142C1C5BCEA52B163DEEF2 /* SpoonSecurity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; };
+		9F323EB31205F61ECD55D930 /* SpoonDiagnostics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */; };
+		A627A504F1FC43B02580CB2A /* TaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EF9AE2C2D5734356303FC00 /* TaskCoordinator.swift */; };
+		A867146F8E9E3BDF67084953 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC6AAF66959FB62F85CF670 /* AppModel.swift */; };
+		A97ED9106ABBCB0D98000ACB /* SpoonStorage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EDE80259042813CDA41140 /* SpoonStorage.framework */; };
+		AC615A2B6A09F16D6E55EF95 /* SVNCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D269ACA7FDBCACCDC89555D /* SVNCommand.swift */; };
+		AC75F2E1FB5F0B245CF4B5A9 /* Operations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A98907E55ADF470E414CED /* Operations.swift */; };
+		AE16BDD805A6F99BFF05FD35 /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		B00A6976624D586092820C07 /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		B100A96B384DA7D55B851470 /* SVNCommandFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0BAA35078A16DCEFD16DFF6 /* SVNCommandFactory.swift */; };
+		B2AD897184722148EA033144 /* UnifiedDiff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CFD73C8F1859C9994AF688 /* UnifiedDiff.swift */; };
+		B8E935B674284096E5444BC4 /* SpoonDiff.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */; };
+		BC161F80F1C4A1782190C2D1 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C38B5F1FEA118E87A5A5AF8 /* Models.swift */; };
+		C482CB5AD1115BF13B4B6B14 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F84869F38069A1EE4CCD74B /* libsqlite3.tbd */; };
+		C8B0AA3731C7781C9BAB2E07 /* SpoonDiff.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		CB334E7C9A24D76A415476CE /* SpoonUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6AE7209D10B45D9EC282D156 /* SpoonUI.framework */; };
+		D16206EC7F95FBED5DA9526B /* SpoonSVN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; };
+		D413825682A5033CACE19AB2 /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DA410251B71522AA55ABB4 /* ParserTests.swift */; };
+		DB8FA98168227EB1317A43ED /* Redactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA75F1393F00D1149F20F6D8 /* Redactor.swift */; };
+		DE473332B95581D78345F972 /* SpoonDiagnostics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */; };
+		DF239EB0E2E81503EEE1BDC4 /* SpoonStorage.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D5EDE80259042813CDA41140 /* SpoonStorage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		DF9E69D32E48C04D7686CE08 /* SVNService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA4614D33EFB6CE3EA153E5 /* SVNService.swift */; };
+		E641D3C991A32A19650E8A2A /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		E9B0615C94498B7A18C20B7B /* SpoonSVN.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		ECF8FDF74FBF79DDFD5BCDBA /* CommandBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB673597694D849BC490C5FA /* CommandBuilderTests.swift */; };
+		ED578BD84D78E6DEF9793284 /* SVNExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E940A2A64DE5388FFBE59F78 /* SVNExecutor.swift */; };
+		F05F8965BAE910F03D068240 /* SpoonSVN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; };
+		F4C4267669A3C8817895DE90 /* SecureTemporaryFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D533D3743A7B26E2D58977 /* SecureTemporaryFile.swift */; };
+		F566B3071A32F73196C02C77 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A713A17D727151D3F9F9751 /* Security.framework */; };
+		F5D5F2C188F037FEEBEE7F19 /* SpoonDiff.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F99B58BB0A8EAA06423CBF4A /* SpoonUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6AE7209D10B45D9EC282D156 /* SpoonUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		FA41D97F891E1561C92C11AC /* SpoonSecurity.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		0B3EB4084DC292C26F606507 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D48F688BCF8BC186EFC1ECC;
+			remoteInfo = SpoonDiff;
+		};
+		1B6631284B4651E2A21D22D8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		3B45871446395191D67E9A88 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		4E0171E9ACD631EB6268DCEB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6EA6FA2FB4499C232B4ECC84;
+			remoteInfo = SpoonStorage;
+		};
+		4E052FF3C89A4D9A9EEAE6EC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FD33768C9850DA6B5E951941;
+			remoteInfo = SpoonSVN;
+		};
+		51F1519B1C9E4201D40DA22F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D48F688BCF8BC186EFC1ECC;
+			remoteInfo = SpoonDiff;
+		};
+		56081BDA12E8E683C81F6F70 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6EA6FA2FB4499C232B4ECC84;
+			remoteInfo = SpoonStorage;
+		};
+		5809793DFDE5F352172DFBCF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C73B615BB7DCCFD549976BA4;
+			remoteInfo = SpoonUI;
+		};
+		71F5CCBC98826851C418937C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FD33768C9850DA6B5E951941;
+			remoteInfo = SpoonSVN;
+		};
+		843025F4EB3DF502F3C4B6FF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3667FBE3980B23FCAF624C14;
+			remoteInfo = SpoonDiagnostics;
+		};
+		8CC1E51E67C77DD590365D4E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B81AE830BE2BD795E3F001B;
+			remoteInfo = SpoonSVNRunner;
+		};
+		8CD367AF0F39FA343824C1C5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6EA6FA2FB4499C232B4ECC84;
+			remoteInfo = SpoonStorage;
+		};
+		8E2FD7F4EDD7A735EB06EF5C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		9EB1BBBBE8463AA0026A1F71 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 688B1964B6EAF206C763A2F2;
+			remoteInfo = SpoonSecurity;
+		};
+		B5C5D305285BFF2502C1588B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		B6D9B2A30A06EA3C98283CFF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 688B1964B6EAF206C763A2F2;
+			remoteInfo = SpoonSecurity;
+		};
+		C001E9D6EC96CFF4F2AB4EAC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		C4BECF479D326DAEF057A3F5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		C61E2112C92194BCA5E102F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3667FBE3980B23FCAF624C14;
+			remoteInfo = SpoonDiagnostics;
+		};
+		D6B686CFBC0809605277FD44 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 688B1964B6EAF206C763A2F2;
+			remoteInfo = SpoonSecurity;
+		};
+		E35FAB58AA1672B50FB9FF90 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D48F688BCF8BC186EFC1ECC;
+			remoteInfo = SpoonDiff;
+		};
+		E7330F5B5BD731B512B8EF4E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		E9A163A8C8F841CA7596B5A8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 688B1964B6EAF206C763A2F2;
+			remoteInfo = SpoonSecurity;
+		};
+		EA155E6445B16C2278375D7E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 615D8FC421900E1476E6C915;
+			remoteInfo = SpoonDomain;
+		};
+		F2FDF40B0B178D88B0267969 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 688B1964B6EAF206C763A2F2;
+			remoteInfo = SpoonSecurity;
+		};
+		F933EF93C6F70AD0FE3A31B5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4131C0C359B456EC223CDF33 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FD33768C9850DA6B5E951941;
+			remoteInfo = SpoonSVN;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		26FFC623670AB2309C2CC640 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F99B58BB0A8EAA06423CBF4A /* SpoonUI.framework in Embed Frameworks */,
+				8B9E942B775D12AFDB19073A /* SpoonDomain.framework in Embed Frameworks */,
+				7A03236540DD09F0B09D52AF /* SpoonSecurity.framework in Embed Frameworks */,
+				124D266A3653F1CACD3F3AD3 /* SpoonStorage.framework in Embed Frameworks */,
+				E9B0615C94498B7A18C20B7B /* SpoonSVN.framework in Embed Frameworks */,
+				F5D5F2C188F037FEEBEE7F19 /* SpoonDiff.framework in Embed Frameworks */,
+				56F57F0438E4D30D981A73D9 /* SpoonDiagnostics.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A01B90C969A930CC1AA68E6F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				21C3C85DE008D1C231BBBBAE /* SpoonDomain.framework in Embed Frameworks */,
+				FA41D97F891E1561C92C11AC /* SpoonSecurity.framework in Embed Frameworks */,
+				DF239EB0E2E81503EEE1BDC4 /* SpoonStorage.framework in Embed Frameworks */,
+				5B0C9C6A76E2D976D3CC7BF2 /* SpoonSVN.framework in Embed Frameworks */,
+				C8B0AA3731C7781C9BAB2E07 /* SpoonDiff.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		00A6A427B9D8E0BA5BF61478 /* SpoonSVNRunner */ = {isa = PBXFileReference; includeInIndex = 0; path = SpoonSVNRunner; sourceTree = BUILT_PRODUCTS_DIR; };
+		10CD85897DF657F0D737A86B /* HistoryAndRepositoryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryAndRepositoryViews.swift; sourceTree = "<group>"; };
+		12493EB9D620C29E1692A924 /* SpoonDomain.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonDomain.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		1572943B8175F9EC744E5748 /* SecurityAndStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityAndStorageTests.swift; sourceTree = "<group>"; };
+		1B49B103202A8BE30C94EED3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		1D9CA170CFC222590E1BE75C /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		20CFD73C8F1859C9994AF688 /* UnifiedDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedDiff.swift; sourceTree = "<group>"; };
+		228FDDE5D3A33229FFF5AF72 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonSecurity.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		27E31CA0A349D1AA3846BF62 /* SpoonTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpoonTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B3A96BE4010DB78CD3EBE30 /* DiffInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffInspector.swift; sourceTree = "<group>"; };
+		3DD6071AEDD88C9355DD6323 /* SpoonApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoonApp.swift; sourceTree = "<group>"; };
+		3EC6AAF66959FB62F85CF670 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		41E43C57BE4CC5D59642B0D5 /* DiagnosticExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticExporter.swift; sourceTree = "<group>"; };
+		466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonSVN.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		489C200FAC11DC3725E4B50B /* SecurityScopedBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScopedBookmark.swift; sourceTree = "<group>"; };
+		4BA4614D33EFB6CE3EA153E5 /* SVNService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNService.swift; sourceTree = "<group>"; };
+		4C38B5F1FEA118E87A5A5AF8 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		5D269ACA7FDBCACCDC89555D /* SVNCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNCommand.swift; sourceTree = "<group>"; };
+		63304568328CCD5DBB649D54 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		67AE2D7556075CBF0CD7DB9D /* WorkingCopyWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkingCopyWatcher.swift; sourceTree = "<group>"; };
+		67D41A32A54E5A393BD77B80 /* LocalChangesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalChangesView.swift; sourceTree = "<group>"; };
+		6AE7209D10B45D9EC282D156 /* SpoonUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		6EF9AE2C2D5734356303FC00 /* TaskCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCoordinator.swift; sourceTree = "<group>"; };
+		7F84869F38069A1EE4CCD74B /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		8529E6611CB8D5A56D56B9DC /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonDiagnostics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A713A17D727151D3F9F9751 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		A5A98907E55ADF470E414CED /* Operations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Operations.swift; sourceTree = "<group>"; };
+		A7130ECA0296FA7E892433FB /* SpoonError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoonError.swift; sourceTree = "<group>"; };
+		A81806D0602531C8B6CFD6D4 /* SQLiteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLiteStore.swift; sourceTree = "<group>"; };
+		B0BAA35078A16DCEFD16DFF6 /* SVNCommandFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNCommandFactory.swift; sourceTree = "<group>"; };
+		B12563A658EC32CA215AEDC3 /* XMLParsers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLParsers.swift; sourceTree = "<group>"; };
+		B7DB400D005E7325D03769AD /* Spoon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spoon.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2D533D3743A7B26E2D58977 /* SecureTemporaryFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureTemporaryFile.swift; sourceTree = "<group>"; };
+		CA75F1393F00D1149F20F6D8 /* Redactor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Redactor.swift; sourceTree = "<group>"; };
+		CB673597694D849BC490C5FA /* CommandBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandBuilderTests.swift; sourceTree = "<group>"; };
+		D5EDE80259042813CDA41140 /* SpoonStorage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonStorage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E17B65A2FDE29858F383D51A /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E61E7ADF04C4EDF2432CDCB8 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		E940A2A64DE5388FFBE59F78 /* SVNExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNExecutor.swift; sourceTree = "<group>"; };
+		E9D4ADB3F1FB3B05AE08F318 /* ExternalToolLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalToolLauncher.swift; sourceTree = "<group>"; };
+		E9DA410251B71522AA55ABB4 /* ParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParserTests.swift; sourceTree = "<group>"; };
+		EF7D0CFA1B765FADEFB830C0 /* WorkflowViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowViews.swift; sourceTree = "<group>"; };
+		F0A0CD42E59C3E42442221A4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonDiff.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE8C52C09A72B21850703508 /* SVNIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNIntegrationTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0ED1CDB9FFD86F4C37941568 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B00A6976624D586092820C07 /* SpoonDomain.framework in Frameworks */,
+				8B81E920A839E5390D17285D /* SpoonSecurity.framework in Frameworks */,
+				A97ED9106ABBCB0D98000ACB /* SpoonStorage.framework in Frameworks */,
+				F05F8965BAE910F03D068240 /* SpoonSVN.framework in Frameworks */,
+				B8E935B674284096E5444BC4 /* SpoonDiff.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		338F662433B1AD9E0C0B5E0B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB334E7C9A24D76A415476CE /* SpoonUI.framework in Frameworks */,
+				E641D3C991A32A19650E8A2A /* SpoonDomain.framework in Frameworks */,
+				43BC0706EDF594529E4230F2 /* SpoonSecurity.framework in Frameworks */,
+				16F913FAD2B0007CB8E8F012 /* SpoonStorage.framework in Frameworks */,
+				8943510551B0F18F923C56CA /* SpoonSVN.framework in Frameworks */,
+				08EB59292772E34D8584C05E /* SpoonDiff.framework in Frameworks */,
+				9F323EB31205F61ECD55D930 /* SpoonDiagnostics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E2B84F03EFA9E4B80756C0C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5BC2B6A0AD79AC3EDBC7653B /* SpoonDomain.framework in Frameworks */,
+				C482CB5AD1115BF13B4B6B14 /* libsqlite3.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		67DF838981A2C6154443B49B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				485255AE2A25C6FA062C6304 /* SpoonDomain.framework in Frameworks */,
+				F566B3071A32F73196C02C77 /* Security.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8235540C1324986EE362E812 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8BCB5B83C9245EAFA8E9EC86 /* SpoonDomain.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8851611CE52263E49A10FCEB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B143F5AABC8B3023437A68C /* SpoonDomain.framework in Frameworks */,
+				8D0B1DBA4586CDE89E0259E7 /* SpoonSecurity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B3D073EA1628BA8CC3E02F15 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4843DC78901BABF787BD0CDA /* SpoonDomain.framework in Frameworks */,
+				9C142C1C5BCEA52B163DEEF2 /* SpoonSecurity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EA4542ADB2BC017B5753C2C1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE16BDD805A6F99BFF05FD35 /* SpoonDomain.framework in Frameworks */,
+				20ADE4500590633505644D7D /* SpoonSecurity.framework in Frameworks */,
+				71EB96E22B2A271B830709D8 /* SpoonStorage.framework in Frameworks */,
+				D16206EC7F95FBED5DA9526B /* SpoonSVN.framework in Frameworks */,
+				89D3BD2EC923D29C4CD76820 /* SpoonDiff.framework in Frameworks */,
+				DE473332B95581D78345F972 /* SpoonDiagnostics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		02E1D40B0E2C442C415F5692 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F84869F38069A1EE4CCD74B /* libsqlite3.tbd */,
+				8A713A17D727151D3F9F9751 /* Security.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		1AE9F19C065CC78B83BF4926 /* SpoonSVN */ = {
+			isa = PBXGroup;
+			children = (
+				5D269ACA7FDBCACCDC89555D /* SVNCommand.swift */,
+				B0BAA35078A16DCEFD16DFF6 /* SVNCommandFactory.swift */,
+				E940A2A64DE5388FFBE59F78 /* SVNExecutor.swift */,
+				4BA4614D33EFB6CE3EA153E5 /* SVNService.swift */,
+				6EF9AE2C2D5734356303FC00 /* TaskCoordinator.swift */,
+				B12563A658EC32CA215AEDC3 /* XMLParsers.swift */,
+			);
+			path = SpoonSVN;
+			sourceTree = "<group>";
+		};
+		2BFC77002B8186F08FD109AD /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				228FDDE5D3A33229FFF5AF72 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		3FCFCACFD2532EED82429653 /* SpoonTests */ = {
+			isa = PBXGroup;
+			children = (
+				CB673597694D849BC490C5FA /* CommandBuilderTests.swift */,
+				E9DA410251B71522AA55ABB4 /* ParserTests.swift */,
+				1572943B8175F9EC744E5748 /* SecurityAndStorageTests.swift */,
+				FE8C52C09A72B21850703508 /* SVNIntegrationTests.swift */,
+			);
+			path = SpoonTests;
+			sourceTree = "<group>";
+		};
+		42A78F59D4F794FF719413E6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B7DB400D005E7325D03769AD /* Spoon.app */,
+				859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */,
+				F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */,
+				12493EB9D620C29E1692A924 /* SpoonDomain.framework */,
+				2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */,
+				D5EDE80259042813CDA41140 /* SpoonStorage.framework */,
+				466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */,
+				00A6A427B9D8E0BA5BF61478 /* SpoonSVNRunner */,
+				27E31CA0A349D1AA3846BF62 /* SpoonTests.xctest */,
+				6AE7209D10B45D9EC282D156 /* SpoonUI.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		58DBC2B2980487ADC141839E /* SpoonSVNRunner */ = {
+			isa = PBXGroup;
+			children = (
+				8529E6611CB8D5A56D56B9DC /* main.swift */,
+			);
+			path = SpoonSVNRunner;
+			sourceTree = "<group>";
+		};
+		5A7003124EB41698D22040FF /* SpoonSecurity */ = {
+			isa = PBXGroup;
+			children = (
+				E61E7ADF04C4EDF2432CDCB8 /* KeychainStore.swift */,
+				CA75F1393F00D1149F20F6D8 /* Redactor.swift */,
+				C2D533D3743A7B26E2D58977 /* SecureTemporaryFile.swift */,
+				489C200FAC11DC3725E4B50B /* SecurityScopedBookmark.swift */,
+			);
+			path = SpoonSecurity;
+			sourceTree = "<group>";
+		};
+		696830331E6EDC0BAE8A2EEA /* SpoonUI */ = {
+			isa = PBXGroup;
+			children = (
+				3EC6AAF66959FB62F85CF670 /* AppModel.swift */,
+				2B3A96BE4010DB78CD3EBE30 /* DiffInspector.swift */,
+				E9D4ADB3F1FB3B05AE08F318 /* ExternalToolLauncher.swift */,
+				10CD85897DF657F0D737A86B /* HistoryAndRepositoryViews.swift */,
+				67D41A32A54E5A393BD77B80 /* LocalChangesView.swift */,
+				1D9CA170CFC222590E1BE75C /* RootView.swift */,
+				63304568328CCD5DBB649D54 /* SettingsView.swift */,
+				EF7D0CFA1B765FADEFB830C0 /* WorkflowViews.swift */,
+				67AE2D7556075CBF0CD7DB9D /* WorkingCopyWatcher.swift */,
+			);
+			path = SpoonUI;
+			sourceTree = "<group>";
+		};
+		77D97AE075AA5EDBDC7F5830 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F0A0CD42E59C3E42442221A4 /* Assets.xcassets */,
+				FD3C7E776D0604843F50C349 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		8CE3A3F228005A91CE561C23 /* SpoonStorage */ = {
+			isa = PBXGroup;
+			children = (
+				A81806D0602531C8B6CFD6D4 /* SQLiteStore.swift */,
+			);
+			path = SpoonStorage;
+			sourceTree = "<group>";
+		};
+		90318363AD5743705D4558EE /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				3FCFCACFD2532EED82429653 /* SpoonTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		9DEB393E4B49A34A100BAF8B /* SpoonDiagnostics */ = {
+			isa = PBXGroup;
+			children = (
+				41E43C57BE4CC5D59642B0D5 /* DiagnosticExporter.swift */,
+			);
+			path = SpoonDiagnostics;
+			sourceTree = "<group>";
+		};
+		ADF35BA98965DB45B7179E9F /* SpoonDiff */ = {
+			isa = PBXGroup;
+			children = (
+				20CFD73C8F1859C9994AF688 /* UnifiedDiff.swift */,
+			);
+			path = SpoonDiff;
+			sourceTree = "<group>";
+		};
+		B01CFA2AB3017CD3AF0CAAB1 /* SpoonApp */ = {
+			isa = PBXGroup;
+			children = (
+				3DD6071AEDD88C9355DD6323 /* SpoonApp.swift */,
+			);
+			path = SpoonApp;
+			sourceTree = "<group>";
+		};
+		CD64123B76C2E7250C54BD12 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				B01CFA2AB3017CD3AF0CAAB1 /* SpoonApp */,
+				9DEB393E4B49A34A100BAF8B /* SpoonDiagnostics */,
+				ADF35BA98965DB45B7179E9F /* SpoonDiff */,
+				F3649457CB3F6605D5F01759 /* SpoonDomain */,
+				5A7003124EB41698D22040FF /* SpoonSecurity */,
+				8CE3A3F228005A91CE561C23 /* SpoonStorage */,
+				1AE9F19C065CC78B83BF4926 /* SpoonSVN */,
+				58DBC2B2980487ADC141839E /* SpoonSVNRunner */,
+				696830331E6EDC0BAE8A2EEA /* SpoonUI */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		DFFE904582EE79D6CE55651D = {
+			isa = PBXGroup;
+			children = (
+				2BFC77002B8186F08FD109AD /* Config */,
+				77D97AE075AA5EDBDC7F5830 /* Resources */,
+				CD64123B76C2E7250C54BD12 /* Sources */,
+				90318363AD5743705D4558EE /* Tests */,
+				02E1D40B0E2C442C415F5692 /* Frameworks */,
+				42A78F59D4F794FF719413E6 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F3649457CB3F6605D5F01759 /* SpoonDomain */ = {
+			isa = PBXGroup;
+			children = (
+				4C38B5F1FEA118E87A5A5AF8 /* Models.swift */,
+				A5A98907E55ADF470E414CED /* Operations.swift */,
+				A7130ECA0296FA7E892433FB /* SpoonError.swift */,
+			);
+			path = SpoonDomain;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0B81AE830BE2BD795E3F001B /* SpoonSVNRunner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EF6120700B09A4DBE6184DD1 /* Build configuration list for PBXNativeTarget "SpoonSVNRunner" */;
+			buildPhases = (
+				57F3799DB54396E6B3295329 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpoonSVNRunner;
+			packageProductDependencies = (
+			);
+			productName = SpoonSVNRunner;
+			productReference = 00A6A427B9D8E0BA5BF61478 /* SpoonSVNRunner */;
+			productType = "com.apple.product-type.tool";
+		};
+		3667FBE3980B23FCAF624C14 /* SpoonDiagnostics */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8227E5A816D6C049352DC288 /* Build configuration list for PBXNativeTarget "SpoonDiagnostics" */;
+			buildPhases = (
+				F76E321E5DE11A51341B999F /* Sources */,
+				B3D073EA1628BA8CC3E02F15 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D5B224A7F2B427799740E84D /* PBXTargetDependency */,
+				1BB14CFC9120EAB6A6B774CA /* PBXTargetDependency */,
+			);
+			name = SpoonDiagnostics;
+			packageProductDependencies = (
+			);
+			productName = SpoonDiagnostics;
+			productReference = 859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		4D48F688BCF8BC186EFC1ECC /* SpoonDiff */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5F49A3D8D3CBE3A1ABD0A2AC /* Build configuration list for PBXNativeTarget "SpoonDiff" */;
+			buildPhases = (
+				707A539A9C1704D4AC72ADE0 /* Sources */,
+				8235540C1324986EE362E812 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AF44F27745CF53CEADD08E9B /* PBXTargetDependency */,
+			);
+			name = SpoonDiff;
+			packageProductDependencies = (
+			);
+			productName = SpoonDiff;
+			productReference = F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		615D8FC421900E1476E6C915 /* SpoonDomain */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9DCADA3816DDBE42BE7C5BB8 /* Build configuration list for PBXNativeTarget "SpoonDomain" */;
+			buildPhases = (
+				CA4427B93E8C2F04FC5F9515 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpoonDomain;
+			packageProductDependencies = (
+			);
+			productName = SpoonDomain;
+			productReference = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		688B1964B6EAF206C763A2F2 /* SpoonSecurity */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 24E5B4ACC12EAD661348D9C1 /* Build configuration list for PBXNativeTarget "SpoonSecurity" */;
+			buildPhases = (
+				6203123D35C6945F89F8C429 /* Sources */,
+				67DF838981A2C6154443B49B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B17D335B06303BFCA05D1484 /* PBXTargetDependency */,
+			);
+			name = SpoonSecurity;
+			packageProductDependencies = (
+			);
+			productName = SpoonSecurity;
+			productReference = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		6EA6FA2FB4499C232B4ECC84 /* SpoonStorage */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 81981C584CA737A134FC6A26 /* Build configuration list for PBXNativeTarget "SpoonStorage" */;
+			buildPhases = (
+				512B058AAFC0B0F95BB47F2E /* Sources */,
+				5E2B84F03EFA9E4B80756C0C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				29267F57E23C811318E6AC83 /* PBXTargetDependency */,
+			);
+			name = SpoonStorage;
+			packageProductDependencies = (
+			);
+			productName = SpoonStorage;
+			productReference = D5EDE80259042813CDA41140 /* SpoonStorage.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		C43006804AA56F3A9CF17740 /* Spoon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EDCC45956F6D08F7682CE8D8 /* Build configuration list for PBXNativeTarget "Spoon" */;
+			buildPhases = (
+				7E2295963C24A46A0B1C7F14 /* Sources */,
+				3D93CA7291766965B9809780 /* Resources */,
+				338F662433B1AD9E0C0B5E0B /* Frameworks */,
+				26FFC623670AB2309C2CC640 /* Embed Frameworks */,
+				BC9F352B5E8653D539DF4CBE /* Embed Bundled SVN Toolchain */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				578B232F89D0812AE303FEDF /* PBXTargetDependency */,
+				06D74A02D11210A012456567 /* PBXTargetDependency */,
+				7E61C1384234A5758FB11F0F /* PBXTargetDependency */,
+				2A89EC8F3D98D721D0AE619E /* PBXTargetDependency */,
+				94A62C2692015F354BA2E020 /* PBXTargetDependency */,
+				B164A93ED3656AF7CE61AF23 /* PBXTargetDependency */,
+				A36DFC9E2C9C5A6166203E7D /* PBXTargetDependency */,
+				C5D3F31E11DD49A3F72055FD /* PBXTargetDependency */,
+			);
+			name = Spoon;
+			packageProductDependencies = (
+			);
+			productName = Spoon;
+			productReference = B7DB400D005E7325D03769AD /* Spoon.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C73B615BB7DCCFD549976BA4 /* SpoonUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C6DA638FE8229269F3CEFF36 /* Build configuration list for PBXNativeTarget "SpoonUI" */;
+			buildPhases = (
+				94B32D93E8A295D3CE680038 /* Sources */,
+				EA4542ADB2BC017B5753C2C1 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4B4EB8436368595F45962BD6 /* PBXTargetDependency */,
+				E3927D8AD265B86A0DA040A2 /* PBXTargetDependency */,
+				CE32E12769C35D9FB1463B34 /* PBXTargetDependency */,
+				491190C51AD0EF08C10A864D /* PBXTargetDependency */,
+				EE8A275CF0E80A6CE4CE1539 /* PBXTargetDependency */,
+				3D0764B0E07F03DAF6DD0677 /* PBXTargetDependency */,
+			);
+			name = SpoonUI;
+			packageProductDependencies = (
+			);
+			productName = SpoonUI;
+			productReference = 6AE7209D10B45D9EC282D156 /* SpoonUI.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		D8EC34416ACED4A92FD7CE71 /* SpoonTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2824062B725E707639F9E2D9 /* Build configuration list for PBXNativeTarget "SpoonTests" */;
+			buildPhases = (
+				81BB63638A85AB21547B1CA7 /* Sources */,
+				0ED1CDB9FFD86F4C37941568 /* Frameworks */,
+				A01B90C969A930CC1AA68E6F /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				39AE23466370263F05AB1958 /* PBXTargetDependency */,
+				4CE0407BCE69EC4AD8ED1311 /* PBXTargetDependency */,
+				364B2430B93B46975C69BFCD /* PBXTargetDependency */,
+				6DECF94743C4BC80481F8637 /* PBXTargetDependency */,
+				4275DBF1568F4898A1E85494 /* PBXTargetDependency */,
+			);
+			name = SpoonTests;
+			packageProductDependencies = (
+			);
+			productName = SpoonTests;
+			productReference = 27E31CA0A349D1AA3846BF62 /* SpoonTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		FD33768C9850DA6B5E951941 /* SpoonSVN */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A67096174FEB3E0ED3E83698 /* Build configuration list for PBXNativeTarget "SpoonSVN" */;
+			buildPhases = (
+				5633C3547E0AC6773B9E2BA1 /* Sources */,
+				8851611CE52263E49A10FCEB /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FEB5DCB1ED1746A8FBC12A26 /* PBXTargetDependency */,
+				F6D035563C202411A271509C /* PBXTargetDependency */,
+			);
+			name = SpoonSVN;
+			packageProductDependencies = (
+			);
+			productName = SpoonSVN;
+			productReference = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4131C0C359B456EC223CDF33 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					0B81AE830BE2BD795E3F001B = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					3667FBE3980B23FCAF624C14 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					4D48F688BCF8BC186EFC1ECC = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					615D8FC421900E1476E6C915 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					688B1964B6EAF206C763A2F2 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					6EA6FA2FB4499C232B4ECC84 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					C43006804AA56F3A9CF17740 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					C73B615BB7DCCFD549976BA4 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					D8EC34416ACED4A92FD7CE71 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+					FD33768C9850DA6B5E951941 = {
+						DevelopmentTeam = Q42GQCZ4HA;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 106BA631167E70753F7FAD7B /* Build configuration list for PBXProject "Spoon" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				ru,
+			);
+			mainGroup = DFFE904582EE79D6CE55651D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 42A78F59D4F794FF719413E6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0B81AE830BE2BD795E3F001B /* SpoonSVNRunner */,
+				615D8FC421900E1476E6C915 /* SpoonDomain */,
+				688B1964B6EAF206C763A2F2 /* SpoonSecurity */,
+				6EA6FA2FB4499C232B4ECC84 /* SpoonStorage */,
+				FD33768C9850DA6B5E951941 /* SpoonSVN */,
+				4D48F688BCF8BC186EFC1ECC /* SpoonDiff */,
+				3667FBE3980B23FCAF624C14 /* SpoonDiagnostics */,
+				C73B615BB7DCCFD549976BA4 /* SpoonUI */,
+				C43006804AA56F3A9CF17740 /* Spoon */,
+				D8EC34416ACED4A92FD7CE71 /* SpoonTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3D93CA7291766965B9809780 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				76DAE8293138BAC159C53179 /* Assets.xcassets in Resources */,
+				72D4574A6F500807C95D8FEB /* Localizable.strings in Resources */,
+				55C581FE0BF05CF9854F32B8 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BC9F352B5E8653D539DF4CBE /* Embed Bundled SVN Toolchain */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Embed Bundled SVN Toolchain";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/Tools/embed-toolchain.sh\"";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		512B058AAFC0B0F95BB47F2E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F86408E62D7D911F86FC02F /* SQLiteStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5633C3547E0AC6773B9E2BA1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC615A2B6A09F16D6E55EF95 /* SVNCommand.swift in Sources */,
+				B100A96B384DA7D55B851470 /* SVNCommandFactory.swift in Sources */,
+				ED578BD84D78E6DEF9793284 /* SVNExecutor.swift in Sources */,
+				DF9E69D32E48C04D7686CE08 /* SVNService.swift in Sources */,
+				A627A504F1FC43B02580CB2A /* TaskCoordinator.swift in Sources */,
+				36AFF66FE818ADDD69593EE7 /* XMLParsers.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		57F3799DB54396E6B3295329 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62F1E41F7A5D508B575D12E6 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6203123D35C6945F89F8C429 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D05C6E364AB9932009F9368 /* KeychainStore.swift in Sources */,
+				DB8FA98168227EB1317A43ED /* Redactor.swift in Sources */,
+				F4C4267669A3C8817895DE90 /* SecureTemporaryFile.swift in Sources */,
+				274FDEB0EEF8452485C7DA5C /* SecurityScopedBookmark.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		707A539A9C1704D4AC72ADE0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2AD897184722148EA033144 /* UnifiedDiff.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7E2295963C24A46A0B1C7F14 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26DA42CCD8633C25A698DDDE /* SpoonApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81BB63638A85AB21547B1CA7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECF8FDF74FBF79DDFD5BCDBA /* CommandBuilderTests.swift in Sources */,
+				D413825682A5033CACE19AB2 /* ParserTests.swift in Sources */,
+				4C711C5201E7F21D281365A8 /* SVNIntegrationTests.swift in Sources */,
+				2DA426E90102DB48AAE4B78D /* SecurityAndStorageTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		94B32D93E8A295D3CE680038 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A867146F8E9E3BDF67084953 /* AppModel.swift in Sources */,
+				4F90A297F6521FE4423805BB /* DiffInspector.swift in Sources */,
+				1AF3A1715812D0A354FF0BB3 /* ExternalToolLauncher.swift in Sources */,
+				9BAC2C497E61A8941D9E2971 /* HistoryAndRepositoryViews.swift in Sources */,
+				0788E4F38D74F36B96896A15 /* LocalChangesView.swift in Sources */,
+				55A4F5A129A9F55AF47FEDC7 /* RootView.swift in Sources */,
+				2FE0EBC455B03215D39E830C /* SettingsView.swift in Sources */,
+				4D2321644081B80353EA8757 /* WorkflowViews.swift in Sources */,
+				69498611AD9721798869ACEB /* WorkingCopyWatcher.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CA4427B93E8C2F04FC5F9515 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC161F80F1C4A1782190C2D1 /* Models.swift in Sources */,
+				AC75F2E1FB5F0B245CF4B5A9 /* Operations.swift in Sources */,
+				15CD9209997D13AF9F7F3360 /* SpoonError.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F76E321E5DE11A51341B999F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				95BC3DD4E7AD66FB64467276 /* DiagnosticExporter.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		06D74A02D11210A012456567 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C73B615BB7DCCFD549976BA4 /* SpoonUI */;
+			targetProxy = 5809793DFDE5F352172DFBCF /* PBXContainerItemProxy */;
+		};
+		1BB14CFC9120EAB6A6B774CA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 688B1964B6EAF206C763A2F2 /* SpoonSecurity */;
+			targetProxy = E9A163A8C8F841CA7596B5A8 /* PBXContainerItemProxy */;
+		};
+		29267F57E23C811318E6AC83 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = 8E2FD7F4EDD7A735EB06EF5C /* PBXContainerItemProxy */;
+		};
+		2A89EC8F3D98D721D0AE619E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 688B1964B6EAF206C763A2F2 /* SpoonSecurity */;
+			targetProxy = B6D9B2A30A06EA3C98283CFF /* PBXContainerItemProxy */;
+		};
+		364B2430B93B46975C69BFCD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6EA6FA2FB4499C232B4ECC84 /* SpoonStorage */;
+			targetProxy = 56081BDA12E8E683C81F6F70 /* PBXContainerItemProxy */;
+		};
+		39AE23466370263F05AB1958 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = E7330F5B5BD731B512B8EF4E /* PBXContainerItemProxy */;
+		};
+		3D0764B0E07F03DAF6DD0677 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3667FBE3980B23FCAF624C14 /* SpoonDiagnostics */;
+			targetProxy = C61E2112C92194BCA5E102F2 /* PBXContainerItemProxy */;
+		};
+		4275DBF1568F4898A1E85494 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D48F688BCF8BC186EFC1ECC /* SpoonDiff */;
+			targetProxy = 0B3EB4084DC292C26F606507 /* PBXContainerItemProxy */;
+		};
+		491190C51AD0EF08C10A864D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FD33768C9850DA6B5E951941 /* SpoonSVN */;
+			targetProxy = 4E052FF3C89A4D9A9EEAE6EC /* PBXContainerItemProxy */;
+		};
+		4B4EB8436368595F45962BD6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = C4BECF479D326DAEF057A3F5 /* PBXContainerItemProxy */;
+		};
+		4CE0407BCE69EC4AD8ED1311 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 688B1964B6EAF206C763A2F2 /* SpoonSecurity */;
+			targetProxy = F2FDF40B0B178D88B0267969 /* PBXContainerItemProxy */;
+		};
+		578B232F89D0812AE303FEDF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0B81AE830BE2BD795E3F001B /* SpoonSVNRunner */;
+			targetProxy = 8CC1E51E67C77DD590365D4E /* PBXContainerItemProxy */;
+		};
+		6DECF94743C4BC80481F8637 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FD33768C9850DA6B5E951941 /* SpoonSVN */;
+			targetProxy = F933EF93C6F70AD0FE3A31B5 /* PBXContainerItemProxy */;
+		};
+		7E61C1384234A5758FB11F0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = 3B45871446395191D67E9A88 /* PBXContainerItemProxy */;
+		};
+		94A62C2692015F354BA2E020 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6EA6FA2FB4499C232B4ECC84 /* SpoonStorage */;
+			targetProxy = 4E0171E9ACD631EB6268DCEB /* PBXContainerItemProxy */;
+		};
+		A36DFC9E2C9C5A6166203E7D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D48F688BCF8BC186EFC1ECC /* SpoonDiff */;
+			targetProxy = E35FAB58AA1672B50FB9FF90 /* PBXContainerItemProxy */;
+		};
+		AF44F27745CF53CEADD08E9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = EA155E6445B16C2278375D7E /* PBXContainerItemProxy */;
+		};
+		B164A93ED3656AF7CE61AF23 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FD33768C9850DA6B5E951941 /* SpoonSVN */;
+			targetProxy = 71F5CCBC98826851C418937C /* PBXContainerItemProxy */;
+		};
+		B17D335B06303BFCA05D1484 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = B5C5D305285BFF2502C1588B /* PBXContainerItemProxy */;
+		};
+		C5D3F31E11DD49A3F72055FD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3667FBE3980B23FCAF624C14 /* SpoonDiagnostics */;
+			targetProxy = 843025F4EB3DF502F3C4B6FF /* PBXContainerItemProxy */;
+		};
+		CE32E12769C35D9FB1463B34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6EA6FA2FB4499C232B4ECC84 /* SpoonStorage */;
+			targetProxy = 8CD367AF0F39FA343824C1C5 /* PBXContainerItemProxy */;
+		};
+		D5B224A7F2B427799740E84D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = 1B6631284B4651E2A21D22D8 /* PBXContainerItemProxy */;
+		};
+		E3927D8AD265B86A0DA040A2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 688B1964B6EAF206C763A2F2 /* SpoonSecurity */;
+			targetProxy = 9EB1BBBBE8463AA0026A1F71 /* PBXContainerItemProxy */;
+		};
+		EE8A275CF0E80A6CE4CE1539 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D48F688BCF8BC186EFC1ECC /* SpoonDiff */;
+			targetProxy = 51F1519B1C9E4201D40DA22F /* PBXContainerItemProxy */;
+		};
+		F6D035563C202411A271509C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 688B1964B6EAF206C763A2F2 /* SpoonSecurity */;
+			targetProxy = D6B686CFBC0809605277FD44 /* PBXContainerItemProxy */;
+		};
+		FEB5DCB1ED1746A8FBC12A26 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 615D8FC421900E1476E6C915 /* SpoonDomain */;
+			targetProxy = C001E9D6EC96CFF4F2AB4EAC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		FD3C7E776D0604843F50C349 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1B49B103202A8BE30C94EED3 /* en */,
+				E17B65A2FDE29858F383D51A /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		05E5A0BAF30FDCE811DFD16F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Spoon.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Spoon;
+				INFOPLIST_KEY_CFBundleName = Spoon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Yurii Levchenko";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon;
+				PRODUCT_MODULE_NAME = SpoonApp;
+				PRODUCT_NAME = Spoon;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		087C2C190F04168AF0DAB774 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/Helper.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.wonderland.spoon.svn-runner";
+				PRODUCT_NAME = SpoonSVNRunner;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		0B58E0E5B746A1F464202162 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.diagnostics;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		166577EFCADD61A2D8549B1E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.diff;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		3D6B5F0FFC1CFA99B49BA1B4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = Q42GQCZ4HA;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		3E36A928F0BE8AA960F04DFD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.storage;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		3E7956C8BC8C829C40108A7C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.domain;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		498259A4993426C39237A1D9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/Helper.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.wonderland.spoon.svn-runner";
+				PRODUCT_NAME = SpoonSVNRunner;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		58ED58EC4E4771CCC254A44B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.svn;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		5A120F75C5CAC6594A135192 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.domain;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		6B91DBEAA82B264256E20A3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		6C56C0ED20D465FC8005D716 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		746E6FA37D485BF77B49BF61 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.ui;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		A46DE7E7CCE3FF7CBECC3E33 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.ui;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		A708C68466E8BD0090E0F1C9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.security;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		AC9034C6F384E84C53FA391B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.storage;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		B5E47364AC576F89B0898F8F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.diff;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		BF0B3AF94B88C556D1F1DE24 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.security;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		C719AD5DBE2E36ACCD2C7C53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/Spoon.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Spoon;
+				INFOPLIST_KEY_CFBundleName = Spoon;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Yurii Levchenko";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon;
+				PRODUCT_MODULE_NAME = SpoonApp;
+				PRODUCT_NAME = Spoon;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F0C7AF61FB28A314DE00985A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.diagnostics;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		F8E248FD977E005844DF9662 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = Q42GQCZ4HA;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		FC531655C874E75DB1BD1750 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon.svn;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		106BA631167E70753F7FAD7B /* Build configuration list for PBXProject "Spoon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3D6B5F0FFC1CFA99B49BA1B4 /* Debug */,
+				F8E248FD977E005844DF9662 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		24E5B4ACC12EAD661348D9C1 /* Build configuration list for PBXNativeTarget "SpoonSecurity" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A708C68466E8BD0090E0F1C9 /* Debug */,
+				BF0B3AF94B88C556D1F1DE24 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2824062B725E707639F9E2D9 /* Build configuration list for PBXNativeTarget "SpoonTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6C56C0ED20D465FC8005D716 /* Debug */,
+				6B91DBEAA82B264256E20A3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5F49A3D8D3CBE3A1ABD0A2AC /* Build configuration list for PBXNativeTarget "SpoonDiff" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5E47364AC576F89B0898F8F /* Debug */,
+				166577EFCADD61A2D8549B1E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		81981C584CA737A134FC6A26 /* Build configuration list for PBXNativeTarget "SpoonStorage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC9034C6F384E84C53FA391B /* Debug */,
+				3E36A928F0BE8AA960F04DFD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8227E5A816D6C049352DC288 /* Build configuration list for PBXNativeTarget "SpoonDiagnostics" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B58E0E5B746A1F464202162 /* Debug */,
+				F0C7AF61FB28A314DE00985A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9DCADA3816DDBE42BE7C5BB8 /* Build configuration list for PBXNativeTarget "SpoonDomain" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3E7956C8BC8C829C40108A7C /* Debug */,
+				5A120F75C5CAC6594A135192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A67096174FEB3E0ED3E83698 /* Build configuration list for PBXNativeTarget "SpoonSVN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				58ED58EC4E4771CCC254A44B /* Debug */,
+				FC531655C874E75DB1BD1750 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C6DA638FE8229269F3CEFF36 /* Build configuration list for PBXNativeTarget "SpoonUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A46DE7E7CCE3FF7CBECC3E33 /* Debug */,
+				746E6FA37D485BF77B49BF61 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EDCC45956F6D08F7682CE8D8 /* Build configuration list for PBXNativeTarget "Spoon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C719AD5DBE2E36ACCD2C7C53 /* Debug */,
+				05E5A0BAF30FDCE811DFD16F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EF6120700B09A4DBE6184DD1 /* Build configuration list for PBXNativeTarget "SpoonSVNRunner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				498259A4993426C39237A1D9 /* Debug */,
+				087C2C190F04168AF0DAB774 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 4131C0C359B456EC223CDF33 /* Project object */;
+}
