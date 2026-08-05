@@ -1,0 +1,14 @@
+.DS_Store
+.build/
+DerivedData/
+build/
+*.xcarchive
+*.ipa
+*.pkg
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+.swiftpm/
+Artifacts/
+tmp/
+
