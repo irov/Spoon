@@ -74,7 +74,7 @@ public actor SQLiteStore {
     }
 
     public func loadGroups() throws -> [ProjectGroup] {
-        try queryRecords(sql: "SELECT record FROM project_groups ORDER BY sort_index, name;", decode: ProjectGroup.self)
+        try queryRecords(sql: "SELECT record FROM project_groups ORDER BY sort_index, id;", decode: ProjectGroup.self)
     }
 
     public func saveGroup(_ group: ProjectGroup) throws {
