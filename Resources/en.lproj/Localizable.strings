@@ -157,3 +157,17 @@
 "No Image" = "No Image";
 "Destination path" = "Destination path";
 "Schedule path for deletion?" = "Schedule path for deletion?";
+"All Commits" = "All Commits";
+"Filter" = "Filter";
+"Date" = "Date";
+"Revision Detail" = "Revision Detail";
+"Changes" = "Changes";
+"File Tree" = "File Tree";
+"Revision Diff" = "Revision Diff";
+"No Revision Selected" = "No Revision Selected";
+"Select a revision to inspect its changed paths and diff." = "Select a revision to inspect its changed paths and diff.";
+"Changed Paths" = "Changed Paths";
+"No Changed Paths" = "No Changed Paths";
+"Action" = "Action";
+"Path" = "Path";
+"Copy From" = "Copy From";

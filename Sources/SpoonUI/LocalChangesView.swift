@@ -12,44 +12,55 @@ struct LocalChangesView: View {
     @State private var moveTarget: StatusItem?
 
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                TextField("Filter paths", text: $model.filterText)
-                    .textFieldStyle(.roundedBorder)
-                    .accessibilityIdentifier("changes-filter")
-                Toggle("Ignored", isOn: $model.showIgnored)
-                    .toggleStyle(.checkbox)
-                Text("\(model.filteredStatusItems.count) changes")
-                    .foregroundStyle(.secondary)
-            }
-            .padding(10)
-
-            if let info = model.workingCopyInfo {
-                HStack(spacing: 12) {
-                    Text(info.url.absoluteString).lineLimit(1).truncationMode(.middle)
-                    Spacer()
-                    Text("r\(info.revision)").monospacedDigit()
+        HSplitView {
+            VStack(spacing: 0) {
+                HStack {
+                    TextField("Filter paths", text: $model.filterText)
+                        .textFieldStyle(.roundedBorder)
+                        .accessibilityIdentifier("changes-filter")
+                    Toggle("Ignored", isOn: $model.showIgnored)
+                        .toggleStyle(.checkbox)
+                    Text("\(model.filteredStatusItems.count) changes")
+                        .foregroundStyle(.secondary)
                 }
-                .font(.caption).foregroundStyle(.secondary).padding(.horizontal, 10).padding(.bottom, 8)
-            }
+                .padding(10)
 
-            Divider()
-
-            if model.filteredStatusItems.isEmpty {
-                ContentUnavailableView(
-                    "Working Copy Clean",
-                    systemImage: "checkmark.circle",
-                    description: Text("No local changes match the current filter.")
-                )
-            } else {
-                List(model.filteredStatusItems) { item in
-                    changeRow(item)
+                if let info = model.workingCopyInfo {
+                    HStack(spacing: 12) {
+                        Text(info.url.absoluteString).lineLimit(1).truncationMode(.middle)
+                        Spacer()
+                        Text("r\(info.revision)").monospacedDigit()
+                    }
+                    .font(.caption).foregroundStyle(.secondary).padding(.horizontal, 10).padding(.bottom, 8)
                 }
-                .listStyle(.inset)
-            }
 
-            Divider()
-            commitComposer
+                Divider()
+
+                if model.filteredStatusItems.isEmpty {
+                    ContentUnavailableView(
+                        "Working Copy Clean",
+                        systemImage: "checkmark.circle",
+                        description: Text("No local changes match the current filter.")
+                    )
+                } else {
+                    List(model.filteredStatusItems) { item in
+                        changeRow(item)
+                    }
+                    .listStyle(.inset)
+                }
+
+                Divider()
+                commitComposer
+            }
+            .frame(minWidth: 390, idealWidth: 500)
+
+            DiffInspector(
+                text: model.diffText,
+                beforeImageData: model.diffBeforeImageData,
+                afterImageData: model.diffAfterImageData,
+                binaryDescription: model.diffBinaryDescription
+            )
+            .frame(minWidth: 460, idealWidth: 760)
         }
         .navigationTitle(model.selectedProject?.displayName ?? "Local Changes")
         .confirmationDialog(

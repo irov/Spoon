@@ -13,21 +13,19 @@ public struct RootView: View {
 
     public var body: some View {
         NavigationSplitView {
-            SidebarView(model: model)
-                .navigationSplitViewColumnWidth(min: 210, ideal: 240, max: 340)
-        } content: {
-            content
-                .navigationSplitViewColumnWidth(min: 420, ideal: 640)
+            SidebarView(model: model, openWorkingCopy: openWorkingCopy)
+                .navigationSplitViewColumnWidth(min: 220, ideal: 270, max: 340)
         } detail: {
-            DiffInspector(
-                text: model.diffText,
-                beforeImageData: model.diffBeforeImageData,
-                afterImageData: model.diffAfterImageData,
-                binaryDescription: model.diffBinaryDescription
-            )
-                .navigationSplitViewColumnWidth(min: 380, ideal: 620)
+            VStack(spacing: 0) {
+                if model.selectedProject != nil {
+                    ProjectTabStrip(model: model, openWorkingCopy: openWorkingCopy)
+                    Divider()
+                }
+                content
+            }
         }
-        .frame(minWidth: 1_080, minHeight: 680)
+        .navigationSplitViewStyle(.balanced)
+        .frame(minWidth: 1_180, minHeight: 720)
         .toolbar { toolbar }
         .alert(item: $model.error) { error in
             Alert(
@@ -83,7 +81,7 @@ public struct RootView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
-            Button(action: openWorkingCopy) { Label("Open Working Copy", systemImage: "plus") }
+            Button(action: openWorkingCopy) { Label("Open", systemImage: "plus") }
                 .help("Open Working Copy")
             Button { showCheckout = true } label: { Label("Checkout", systemImage: "square.and.arrow.down") }
                 .help("Checkout")
@@ -98,11 +96,29 @@ public struct RootView: View {
             Button { Task { await model.updateWorkingCopy() } } label: { Label("Update", systemImage: "arrow.down.circle") }
                 .keyboardShortcut("u", modifiers: .command)
                 .disabled(model.selectedProject == nil || model.isBusy)
+            Button {
+                model.selectedSection = .tasks
+            } label: {
+                Label("Tasks", systemImage: "list.bullet.rectangle.portrait")
+            }
+            .disabled(model.selectedProject == nil)
+        }
+        ToolbarItem(placement: .principal) {
+            if let project = model.selectedProject {
+                VStack(spacing: 1) {
+                    Text(project.displayName).font(.headline)
+                    Text(model.workingCopyInfo.map { "r\($0.revision)" } ?? "SVN")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
         ToolbarItem(placement: .primaryAction) {
-            Button { Task { await model.commitSelected() } } label: { Label("Commit", systemImage: "arrow.up.circle.fill") }
-                .keyboardShortcut("k", modifiers: .command)
-                .disabled(model.selectedPaths.isEmpty || model.isBusy)
+            Button { Task { await model.commitSelected() } } label: {
+                Label("Commit", systemImage: "arrow.up.circle.fill")
+            }
+            .keyboardShortcut("k", modifiers: .command)
+            .disabled(model.selectedPaths.isEmpty || model.isBusy)
         }
         ToolbarItem(placement: .status) {
             if model.isBusy { ProgressView().controlSize(.small).help(model.activityMessage) }
@@ -124,52 +140,46 @@ public struct RootView: View {
 
 private struct SidebarView: View {
     @Bindable var model: AppModel
+    let openWorkingCopy: () -> Void
     @State private var showNewGroup = false
     @State private var newGroupName = ""
 
     var body: some View {
-        List(selection: Binding(
-            get: { model.selectedProjectID.map { SidebarSelection.project($0) } },
-            set: { selection in
-                if case .project(let id) = selection,
-                   let project = model.projects.first(where: { $0.id == id }) { model.selectProject(project) }
-            }
-        )) {
-            if model.projects.contains(where: \.isFavorite) {
-                Section("Favorites") {
-                    ForEach(model.projects.filter(\.isFavorite)) { project in projectRow(project) }
-                }
-            }
-            ForEach(model.groups) { group in
-                Section(group.name) {
-                    ForEach(model.projects.filter { $0.groupID == group.id }) { project in projectRow(project) }
-                }
-            }
-            Section("Projects") {
-                ForEach(model.projects.filter { $0.groupID == nil && !$0.isFavorite }) { project in
-                    projectRow(project)
-                }
-            }
+        VStack(spacing: 0) {
+            projectHeader
+            Divider()
+            List {
+                if model.selectedProject != nil {
+                    Section {
+                        sectionRow(.localChanges, title: "Local Changes", count: model.statusItems.count)
+                        sectionRow(.history, title: "All Commits")
+                    }
 
-            if model.selectedProject != nil {
-                Section("Workspace") {
-                    ForEach(ProjectSection.allCases) { section in
-                        Button {
-                            model.selectedSection = section
-                            if section == .history { Task { await model.loadHistory() } }
-                            if section == .repository { Task { await model.loadRepository() } }
-                        } label: {
-                            Label(section.title, systemImage: section.symbol)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
+                    Section {
+                        HStack(spacing: 6) {
+                            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                            TextField("Filter", text: $model.filterText)
+                                .textFieldStyle(.plain)
                         }
-                        .buttonStyle(.plain)
-                        .listRowBackground(model.selectedSection == section ? Color.accentColor.opacity(0.18) : Color.clear)
+                    }
+
+                    Section("Working Copy") {
+                        sectionRow(.repository, title: "Repository Browser")
+                        sectionRow(.branchesAndTags, title: "Branches and Tags")
+                        sectionRow(.changelists, title: "Changelists")
+                        sectionRow(.conflicts, title: "Conflicts", count: model.conflicts.count)
+                        sectionRow(.tasks, title: "Tasks", count: model.tasks.filter { $0.state == .running }.count)
+                    }
+                }
+
+                Section("Projects") {
+                    ForEach(model.projects) { project in
+                        projectRow(project)
                     }
                 }
             }
+            .listStyle(.sidebar)
         }
-        .listStyle(.sidebar)
         .navigationTitle("Spoon")
         .toolbar {
             Button { showNewGroup = true } label: { Label("New Group", systemImage: "folder.badge.plus") }
@@ -177,51 +187,162 @@ private struct SidebarView: View {
         .alert("New Project Group", isPresented: $showNewGroup) {
             TextField("Group name", text: $newGroupName)
             Button("Cancel", role: .cancel) { newGroupName = "" }
-            Button("Create") { let name = newGroupName; newGroupName = ""; Task { await model.createGroup(named: name) } }
+            Button("Create") {
+                let name = newGroupName
+                newGroupName = ""
+                Task { await model.createGroup(named: name) }
+            }
         }
+    }
+
+    @ViewBuilder
+    private var projectHeader: some View {
+        if let project = model.selectedProject {
+            Menu {
+                ForEach(model.projects) { candidate in
+                    Button {
+                        model.selectProject(candidate)
+                    } label: {
+                        if candidate.id == project.id {
+                            Label(candidate.displayName, systemImage: "checkmark")
+                        } else {
+                            Text(candidate.displayName)
+                        }
+                    }
+                }
+                Divider()
+                Button("Open Working Copy…", action: openWorkingCopy)
+            } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "externaldrive.connected.to.line.below")
+                        .font(.title3)
+                        .foregroundStyle(.tint)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(project.displayName).font(.headline).lineLimit(1)
+                        Text(project.relativeURL ?? project.workingCopyRoot.path)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    Spacer(minLength: 4)
+                    Image(systemName: "chevron.down").font(.caption).foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+            }
+            .menuStyle(.borderlessButton)
+            .padding(12)
+        } else {
+            Button(action: openWorkingCopy) {
+                Label("Open Working Copy…", systemImage: "plus.circle")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .padding(12)
+        }
+    }
+
+    private func sectionRow(_ section: ProjectSection, title: LocalizedStringKey, count: Int? = nil) -> some View {
+        Button {
+            model.selectedSection = section
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: section.symbol).frame(width: 17)
+                Text(title)
+                Spacer()
+                if let count, count > 0 {
+                    Text(count, format: .number)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .listRowBackground(model.selectedSection == section ? Color.accentColor.opacity(0.2) : Color.clear)
     }
 
     private func projectRow(_ project: ProjectRecord) -> some View {
-        Label {
-            HStack {
-                Text(project.displayName)
+        Button {
+            model.selectProject(project)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: project.id == model.selectedProjectID ? "externaldrive.fill" : "externaldrive")
+                    .foregroundStyle(project.id == model.selectedProjectID ? Color.accentColor : Color.secondary)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(project.displayName).lineLimit(1)
+                    if let group = model.groups.first(where: { $0.id == project.groupID }) {
+                        Text(group.name).font(.caption2).foregroundStyle(.secondary)
+                    }
+                }
                 Spacer()
                 if project.isFavorite { Image(systemName: "star.fill").foregroundStyle(.yellow) }
             }
-        } icon: {
-            Image(systemName: "externaldrive.connected.to.line.below")
+            .contentShape(Rectangle())
         }
-        .tag(SidebarSelection.project(project.id))
+        .buttonStyle(.plain)
         .contextMenu {
-            Button(project.isFavorite ? "Remove from Favorites" : "Add to Favorites") { Task { await model.toggleFavorite(project) } }
+            Button(project.isFavorite ? "Remove from Favorites" : "Add to Favorites") {
+                Task { await model.toggleFavorite(project) }
+            }
             Menu("Move to Group") {
                 Button("No Group") { Task { await model.assign(project, to: nil) } }
-                ForEach(model.groups) { group in Button(group.name) { Task { await model.assign(project, to: group) } } }
+                ForEach(model.groups) { group in
+                    Button(group.name) { Task { await model.assign(project, to: group) } }
+                }
             }
             Button("Reveal in Finder") { NSWorkspace.shared.activateFileViewerSelecting([project.workingCopyRoot]) }
             Divider()
-            Button("Remove Project", role: .destructive) { Task { await model.removeSelectedProject() } }
+            Button("Remove Project", role: .destructive) {
+                if model.selectedProjectID != project.id { model.selectProject(project) }
+                Task { await model.removeSelectedProject() }
+            }
         }
     }
 }
 
-private enum SidebarSelection: Hashable {
-    case project(UUID)
+private struct ProjectTabStrip: View {
+    @Bindable var model: AppModel
+    let openWorkingCopy: () -> Void
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 0) {
+                ForEach(model.projects) { project in
+                    Button {
+                        model.selectProject(project)
+                    } label: {
+                        HStack(spacing: 7) {
+                            Image(systemName: "externaldrive")
+                                .font(.caption)
+                            Text(project.displayName).lineLimit(1)
+                            if project.isFavorite {
+                                Image(systemName: "star.fill").font(.caption2).foregroundStyle(.yellow)
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .frame(height: 34)
+                        .background(project.id == model.selectedProjectID ? Color.primary.opacity(0.10) : Color.clear)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    Divider().frame(height: 22)
+                }
+                Button(action: openWorkingCopy) {
+                    Image(systemName: "plus")
+                        .frame(width: 34, height: 34)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .scrollIndicators(.hidden)
+        .background(.bar)
+    }
 }
 
 private extension ProjectSection {
-    var title: LocalizedStringKey {
-        switch self {
-        case .localChanges: "Local Changes"
-        case .history: "History"
-        case .repository: "Repository Browser"
-        case .branchesAndTags: "Branches and Tags"
-        case .changelists: "Changelists"
-        case .conflicts: "Conflicts"
-        case .tasks: "Tasks"
-        }
-    }
-
     var symbol: String {
         switch self {
         case .localChanges: "doc.badge.ellipsis"
