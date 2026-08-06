@@ -41,11 +41,13 @@ final class WorkingCopyWatcher {
             guard let info else { return }
             let watcher = Unmanaged<WorkingCopyWatcher>.fromOpaque(info).takeUnretainedValue()
             let paths = unsafeBitCast(pathsPointer, to: NSArray.self) as? [String] ?? []
-            let containsWorkingFileChange = paths.prefix(count).contains { path in
-                !path.contains("/.svn/") && !path.hasSuffix("/.svn")
+            Task { @MainActor in
+                let containsWorkingFileChange = paths.prefix(count).contains { path in
+                    !path.contains("/.svn/") && !path.hasSuffix("/.svn")
+                }
+                guard containsWorkingFileChange else { return }
+                watcher.scheduleDebouncedChange()
             }
-            guard containsWorkingFileChange else { return }
-            Task { @MainActor in watcher.scheduleDebouncedChange() }
         }
         let flags = FSEventStreamCreateFlags(
             kFSEventStreamCreateFlagUseCFTypes |
