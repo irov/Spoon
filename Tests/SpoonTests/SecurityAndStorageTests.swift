@@ -2,6 +2,7 @@ import Foundation
 import SpoonDomain
 import SpoonSecurity
 import SpoonStorage
+import SpoonSVN
 import XCTest
 
 final class SecurityAndStorageTests: XCTestCase {
@@ -25,6 +26,32 @@ final class SecurityAndStorageTests: XCTestCase {
         XCTAssertEqual(permissions.intValue & 0o777, 0o600)
         file.remove()
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.url.path))
+    }
+
+    func testToolchainContentChecksumIgnoresReplacedCodeSignature() throws {
+        func machO(signatureByte: UInt8, signatureSize: UInt32) -> Data {
+            var data = Data(repeating: 0, count: 80)
+            func write(_ value: UInt32, at offset: Int) {
+                var littleEndian = value.littleEndian
+                withUnsafeBytes(of: &littleEndian) { bytes in
+                    data.replaceSubrange(offset..<(offset + 4), with: bytes)
+                }
+            }
+            write(0xfeedfacf, at: 0)
+            write(1, at: 16)
+            write(16, at: 20)
+            write(0x1d, at: 32)
+            write(16, at: 36)
+            write(64, at: 40)
+            write(signatureSize, at: 44)
+            data.replaceSubrange(48..<64, with: Data("stable-payload!!".utf8))
+            data.replaceSubrange(64..<80, with: Data(repeating: signatureByte, count: 16))
+            return data
+        }
+
+        let development = try ToolchainIntegrity.contentSHA256(data: machO(signatureByte: 0x11, signatureSize: 16))
+        let distribution = try ToolchainIntegrity.contentSHA256(data: machO(signatureByte: 0x77, signatureSize: 12))
+        XCTAssertEqual(development, distribution)
     }
 
     func testSQLiteRoundTripAndMigrations() async throws {

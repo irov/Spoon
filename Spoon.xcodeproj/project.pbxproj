@@ -64,6 +64,7 @@
 		C482CB5AD1115BF13B4B6B14 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F84869F38069A1EE4CCD74B /* libsqlite3.tbd */; };
 		C8B0AA3731C7781C9BAB2E07 /* SpoonDiff.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = F41510F9C76E65FDA4573D92 /* SpoonDiff.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		CB334E7C9A24D76A415476CE /* SpoonUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6AE7209D10B45D9EC282D156 /* SpoonUI.framework */; };
+		CF034A716B501DF46034DFEE /* ToolchainIntegrity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0B0574FE310BBF7D179AF9 /* ToolchainIntegrity.swift */; };
 		D16206EC7F95FBED5DA9526B /* SpoonSVN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; };
 		D413825682A5033CACE19AB2 /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DA410251B71522AA55ABB4 /* ParserTests.swift */; };
 		DB8FA98168227EB1317A43ED /* Redactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA75F1393F00D1149F20F6D8 /* Redactor.swift */; };
@@ -331,6 +332,7 @@
 		8529E6611CB8D5A56D56B9DC /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonDiagnostics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A713A17D727151D3F9F9751 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		8E0B0574FE310BBF7D179AF9 /* ToolchainIntegrity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolchainIntegrity.swift; sourceTree = "<group>"; };
 		A5A98907E55ADF470E414CED /* Operations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Operations.swift; sourceTree = "<group>"; };
 		A7130ECA0296FA7E892433FB /* SpoonError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoonError.swift; sourceTree = "<group>"; };
 		A81806D0602531C8B6CFD6D4 /* SQLiteStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLiteStore.swift; sourceTree = "<group>"; };
@@ -456,6 +458,7 @@
 				E940A2A64DE5388FFBE59F78 /* SVNExecutor.swift */,
 				4BA4614D33EFB6CE3EA153E5 /* SVNService.swift */,
 				6EF9AE2C2D5734356303FC00 /* TaskCoordinator.swift */,
+				8E0B0574FE310BBF7D179AF9 /* ToolchainIntegrity.swift */,
 				B12563A658EC32CA215AEDC3 /* XMLParsers.swift */,
 			);
 			path = SpoonSVN;
@@ -840,43 +843,43 @@
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					0B81AE830BE2BD795E3F001B = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					3667FBE3980B23FCAF624C14 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					4D48F688BCF8BC186EFC1ECC = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					615D8FC421900E1476E6C915 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					688B1964B6EAF206C763A2F2 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					6EA6FA2FB4499C232B4ECC84 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					C43006804AA56F3A9CF17740 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					C73B615BB7DCCFD549976BA4 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					D8EC34416ACED4A92FD7CE71 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 					FD33768C9850DA6B5E951941 = {
-						DevelopmentTeam = Q42GQCZ4HA;
+						DevelopmentTeam = NS2YBVJ86W;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -963,6 +966,7 @@
 				ED578BD84D78E6DEF9793284 /* SVNExecutor.swift in Sources */,
 				DF9E69D32E48C04D7686CE08 /* SVNService.swift in Sources */,
 				A627A504F1FC43B02580CB2A /* TaskCoordinator.swift in Sources */,
+				CF034A716B501DF46034DFEE /* ToolchainIntegrity.swift in Sources */,
 				36AFF66FE818ADDD69593EE7 /* XMLParsers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1325,7 +1329,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = Q42GQCZ4HA;
+				DEVELOPMENT_TEAM = NS2YBVJ86W;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -1725,7 +1729,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = Q42GQCZ4HA;
+				DEVELOPMENT_TEAM = NS2YBVJ86W;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
