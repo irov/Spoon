@@ -67,6 +67,28 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(rows.first?.right?.kind, .addition)
     }
 
+    func testUnifiedDiffSeparatesPropertyChangesFromTextHunk() {
+        let text = """
+        Index: hello.txt
+        ===================================================================
+        --- hello.txt\t(revision 1)
+        +++ hello.txt\t(working copy)
+        @@ -1 +1 @@
+        -old
+        +new
+        Property changes on: hello.txt
+        ___________________________________________________________________
+        Modified: svn:keywords
+        """
+        let file = UnifiedDiffParser.parse(text).files.first
+        XCTAssertEqual(file?.hunks.first?.lines.count, 2)
+        XCTAssertEqual(file?.propertyChanges, [
+            "Property changes on: hello.txt",
+            "___________________________________________________________________",
+            "Modified: svn:keywords"
+        ])
+    }
+
     func testPropertyParserPreservesMultilineValue() throws {
         let xml = """
         <?xml version="1.0"?><properties><target path="/tmp/wc/file.txt">

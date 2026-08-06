@@ -89,6 +89,8 @@ public enum UnifiedDiffParser {
                 flushFile()
                 let path = String(line.dropFirst("Index: ".count))
                 currentFile = DiffFile(oldPath: path, newPath: path)
+            } else if !line.isEmpty, line.allSatisfy({ $0 == "=" }) {
+                continue
             } else if line.hasPrefix("--- ") {
                 if currentFile == nil { currentFile = DiffFile(oldPath: "", newPath: "") }
                 currentFile?.oldPath = Self.path(from: line)
@@ -105,6 +107,10 @@ public enum UnifiedDiffParser {
                     newStart: range.newStart,
                     newCount: range.newCount
                 )
+            } else if line.hasPrefix("Property changes on: ") {
+                flushHunk()
+                if currentFile == nil { currentFile = DiffFile(oldPath: "", newPath: "") }
+                currentFile?.propertyChanges.append(line)
             } else if currentHunk != nil {
                 if line.hasPrefix("+") {
                     currentHunk?.lines.append(DiffLine(kind: .addition, oldLineNumber: nil, newLineNumber: newLine, content: String(line.dropFirst())))
@@ -119,9 +125,6 @@ public enum UnifiedDiffParser {
                 } else {
                     currentHunk?.lines.append(DiffLine(kind: .metadata, oldLineNumber: nil, newLineNumber: nil, content: line))
                 }
-            } else if line.hasPrefix("Property changes on: ") {
-                if currentFile == nil { currentFile = DiffFile(oldPath: "", newPath: "") }
-                currentFile?.propertyChanges.append(line)
             } else if currentFile != nil, !line.isEmpty {
                 currentFile?.propertyChanges.append(line)
             }
