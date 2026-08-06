@@ -79,6 +79,16 @@ final class SecurityAndStorageTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
         let store = try SQLiteStore(url: directory.appendingPathComponent("test.sqlite"))
+        let initiallyEmptyGroups = try await store.loadGroups()
+        XCTAssertTrue(initiallyEmptyGroups.isEmpty)
+
+        let laterGroup = ProjectGroup(name: "Later", sortIndex: 1)
+        let firstGroup = ProjectGroup(name: "First", sortIndex: 0)
+        try await store.saveGroup(laterGroup)
+        try await store.saveGroup(firstGroup)
+        let groups = try await store.loadGroups()
+        XCTAssertEqual(groups.map(\.id), [firstGroup.id, laterGroup.id])
+
         let project = ProjectRecord(displayName: "Example", workingCopyRoot: directory.appendingPathComponent("wc"), isFavorite: true)
         try await store.saveProject(project)
         let projects = try await store.loadProjects()
