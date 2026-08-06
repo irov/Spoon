@@ -7,6 +7,7 @@ public actor SVNService {
     private let coordinator: TaskCoordinator
     private var factory: SVNCommandFactory
     private var authenticationProvider: (@Sendable (SVNAuthenticationChallenge) async throws -> SVNAuthenticationResponse)?
+    private var authenticationCache: [String: SVNAuthenticationResponse] = [:]
 
     public init(
         factory: SVNCommandFactory = SVNCommandFactory(),
@@ -192,25 +193,39 @@ public actor SVNService {
         _ descriptor: SVNCommandDescriptor<Output>,
         initialRecord: TaskRecord
     ) async throws -> Output {
-        var applied = SVNAuthenticationResponse()
-        var attempted = descriptor
-        var previousAttemptFailed = false
-        for _ in 0..<3 {
+        var cacheKey = descriptor.targets.lazy.compactMap { URL(string: $0)?.host }.first
+        var applied = cacheKey.flatMap { authenticationCache[$0] } ?? SVNAuthenticationResponse()
+        var attempted = applied.hasAuthentication ? descriptor.applying(authentication: applied) : descriptor
+        var attemptedCredentials = applied.hasCredentials
+        var attemptedServerTrust = applied.hasServerTrust
+        for _ in 0..<5 {
             do {
-                return try await run(attempted, initialRecord: initialRecord)
+                let output = try await run(attempted, initialRecord: initialRecord)
+                if let cacheKey, applied.hasAuthentication {
+                    authenticationCache[cacheKey] = applied
+                }
+                return output
             } catch let error as SpoonError {
-                guard let challenge = authenticationChallenge(
+                guard var challenge = authenticationChallenge(
                     from: error,
                     descriptor: descriptor,
-                    previousAttemptFailed: previousAttemptFailed
+                    previousAttemptFailed: false
                 ), let authenticationProvider else { throw error }
+                cacheKey = challenge.host
+                switch challenge.kind {
+                case .credentials:
+                    challenge.previousAttemptFailed = attemptedCredentials
+                case .serverTrust:
+                    challenge.previousAttemptFailed = attemptedServerTrust
+                }
                 let response = try await authenticationProvider(challenge)
                 if response.username != nil { applied.username = response.username }
                 if response.password != nil { applied.password = response.password }
                 applied.saveInKeychain = response.saveInKeychain
                 applied.acceptedServerFailures.formUnion(response.acceptedServerFailures)
                 attempted = descriptor.applying(authentication: applied)
-                previousAttemptFailed = true
+                attemptedCredentials = applied.hasCredentials
+                attemptedServerTrust = applied.hasServerTrust
             }
         }
         throw SpoonError(title: "Authentication failed", explanation: "The supplied credentials or certificate decision were rejected.", operation: descriptor.operation)
@@ -297,6 +312,20 @@ public actor SVNService {
             await registry.upsert(failed)
             throw error
         }
+    }
+}
+
+private extension SVNAuthenticationResponse {
+    var hasCredentials: Bool {
+        username?.isEmpty == false || password != nil
+    }
+
+    var hasServerTrust: Bool {
+        !acceptedServerFailures.isEmpty
+    }
+
+    var hasAuthentication: Bool {
+        hasCredentials || hasServerTrust
     }
 }
 

@@ -7,13 +7,56 @@ struct HistoryView: View {
     @State private var showBlame = false
     @State private var detailTab: RevisionDetailTab = .commit
     @State private var selectedChangedPath: String?
+    @State private var detailPaneHeight: CGFloat = 360
+    @State private var detailPaneHeightAtDragStart: CGFloat?
 
     var body: some View {
-        VSplitView {
-            historyPane
-                .frame(minHeight: 240, idealHeight: 340)
-            revisionDetail
-                .frame(minHeight: 300, idealHeight: 480)
+        GeometryReader { geometry in
+            let dividerHeight: CGFloat = 10
+            let availableHeight = max(0, geometry.size.height - dividerHeight)
+            let minimumPaneHeight = min(180, availableHeight / 2)
+            let maximumDetailHeight = max(minimumPaneHeight, availableHeight - minimumPaneHeight)
+            let resolvedDetailHeight = min(max(detailPaneHeight, minimumPaneHeight), maximumDetailHeight)
+
+            VStack(spacing: 0) {
+                historyPane
+                    .frame(height: max(minimumPaneHeight, availableHeight - resolvedDetailHeight))
+
+                ZStack {
+                    Rectangle().fill(Color(nsColor: .separatorColor).opacity(0.55))
+                    Capsule()
+                        .fill(.secondary.opacity(0.75))
+                        .frame(width: 36, height: 3)
+                }
+                .frame(height: dividerHeight)
+                .contentShape(Rectangle())
+                .onContinuousHover { phase in
+                    switch phase {
+                    case .active:
+                        NSCursor.resizeUpDown.set()
+                    case .ended:
+                        NSCursor.arrow.set()
+                    }
+                }
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            if detailPaneHeightAtDragStart == nil {
+                                detailPaneHeightAtDragStart = resolvedDetailHeight
+                            }
+                            let start = detailPaneHeightAtDragStart ?? resolvedDetailHeight
+                            detailPaneHeight = min(
+                                max(start - value.translation.height, minimumPaneHeight),
+                                maximumDetailHeight
+                            )
+                        }
+                        .onEnded { _ in detailPaneHeightAtDragStart = nil }
+                )
+                .accessibilityLabel("Resize revision detail")
+
+                revisionDetail
+                    .frame(height: resolvedDetailHeight)
+            }
         }
         .navigationTitle("History")
         .sheet(isPresented: $showBlame) { BlameSheet(model: model) }

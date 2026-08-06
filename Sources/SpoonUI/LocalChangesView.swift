@@ -53,6 +53,7 @@ struct LocalChangesView: View {
                 commitComposer
             }
             .frame(minWidth: 390, idealWidth: 500)
+            .frame(maxHeight: .infinity, alignment: .top)
 
             DiffInspector(
                 text: model.diffText,
@@ -61,7 +62,9 @@ struct LocalChangesView: View {
                 binaryDescription: model.diffBinaryDescription
             )
             .frame(minWidth: 460, idealWidth: 760)
+            .frame(maxHeight: .infinity)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .navigationTitle(model.selectedProject?.displayName ?? "Local Changes")
         .confirmationDialog(
             "Revert selected paths?",

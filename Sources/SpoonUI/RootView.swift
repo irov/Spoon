@@ -22,7 +22,9 @@ public struct RootView: View {
                     Divider()
                 }
                 content
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .navigationSplitViewStyle(.balanced)
         .frame(minWidth: 1_180, minHeight: 720)
@@ -337,6 +339,7 @@ private struct ProjectTabStrip: View {
                 .buttonStyle(.plain)
             }
         }
+        .frame(height: 34)
         .scrollIndicators(.hidden)
         .background(.bar)
     }

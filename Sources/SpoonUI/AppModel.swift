@@ -229,6 +229,57 @@ public final class AppModel {
                 diffText = ""
                 return
             }
+
+            switch item?.workingCopyStatus {
+            case .unversioned, .ignored:
+                guard item?.nodeKind != .directory else {
+                    diffText = "No textual diff is available for an unversioned directory."
+                    return
+                }
+                guard let data = try? Data(contentsOf: file) else {
+                    diffText = "The local file is no longer present. Refresh Local Changes to update its status."
+                    return
+                }
+                guard let contents = String(data: data, encoding: .utf8), !data.contains(0) else {
+                    diffText = ""
+                    diffBinaryDescription = "Unversioned file · \(ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))"
+                    return
+                }
+                diffText = Self.localFileDiff(path: path, contents: contents, added: true)
+                return
+
+            case .missing:
+                guard item?.nodeKind != .directory else {
+                    diffText = "The versioned directory is missing from the working copy."
+                    return
+                }
+                guard let data = try? await svn.contents(project: project, target: file.path, revision: "BASE") else {
+                    diffText = "The versioned file is missing from the working copy. Its BASE contents are unavailable."
+                    return
+                }
+                guard let contents = String(data: data, encoding: .utf8), !data.contains(0) else {
+                    diffText = ""
+                    diffBinaryDescription = "Missing versioned file · \(ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))"
+                    return
+                }
+                diffText = Self.localFileDiff(path: path, contents: contents, added: false)
+                return
+
+            case .external, .incomplete, .obstructed, .unknown:
+                diffText = "A textual diff is not available for the \(item?.workingCopyStatus.rawValue ?? "unknown") working-copy state."
+                return
+
+            default:
+                break
+            }
+
+            if item?.nodeKind != .directory,
+               item?.workingCopyStatus != .deleted,
+               !FileManager.default.fileExists(atPath: file.path) {
+                diffText = "The local file is no longer present. Refresh Local Changes to update its status."
+                return
+            }
+
             diffText = try await svn.diff(project: project, paths: [file.path])
             if diffText.isEmpty, item?.nodeKind != .directory {
                 let size = (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init)
@@ -238,6 +289,27 @@ public final class AppModel {
             diffText = ""
             present(error)
         }
+    }
+
+    private static func localFileDiff(path: String, contents: String, added: Bool) -> String {
+        var lines = contents.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        if contents.hasSuffix("\n"), lines.last?.isEmpty == true { lines.removeLast() }
+        let oldCount = added ? 0 : lines.count
+        let newCount = added ? lines.count : 0
+        let oldStart = added ? 0 : 1
+        let newStart = added ? 1 : 0
+        let oldLabel = added ? "(nonexistent)" : "(BASE)"
+        let newLabel = added ? "(working copy)" : "(nonexistent)"
+        let prefix = added ? "+" : "-"
+        let body = lines.map { prefix + $0 }.joined(separator: "\n")
+        return """
+        Index: \(path)
+        ===================================================================
+        --- \(path)\t\(oldLabel)
+        +++ \(path)\t\(newLabel)
+        @@ -\(oldStart),\(oldCount) +\(newStart),\(newCount) @@
+        \(body)
+        """
     }
 
     public func updateWorkingCopy() async {
@@ -607,7 +679,7 @@ public final class AppModel {
         statusItems = try await svn.status(project: project, remote: remote, showIgnored: showIgnored)
         selectedPaths.formIntersection(Set(statusItems.map(\.relativePath)))
         if let first = selectedPaths.first {
-            diffText = try await svn.diff(project: project, paths: [project.workingCopyRoot.appendingPathComponent(first).path])
+            await loadDiff(path: first)
         }
     }
 
