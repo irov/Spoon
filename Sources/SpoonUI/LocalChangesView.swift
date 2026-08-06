@@ -3,6 +3,7 @@ import SwiftUI
 
 struct LocalChangesView: View {
     @Bindable var model: AppModel
+    @AppStorage("localChangesPresentation") private var presentationRawValue = LocalChangesPresentation.tree.rawValue
     @State private var pendingRevert: [String] = []
     @State private var recursiveRevert = false
     @State private var propertyTarget: StatusItem?
@@ -22,6 +23,19 @@ struct LocalChangesView: View {
                         .toggleStyle(.checkbox)
                     Text("\(model.filteredStatusItems.count) changes")
                         .foregroundStyle(.secondary)
+                    Picker("Presentation", selection: $presentationRawValue) {
+                        Label("Tree", systemImage: "list.bullet.indent")
+                            .labelStyle(.iconOnly)
+                            .tag(LocalChangesPresentation.tree.rawValue)
+                        Label("List", systemImage: "list.bullet")
+                            .labelStyle(.iconOnly)
+                            .tag(LocalChangesPresentation.list.rawValue)
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .controlSize(.small)
+                    .frame(width: 70)
+                    .help(presentation == .tree ? "Tree View" : "List View")
                 }
                 .padding(10)
 
@@ -43,10 +57,7 @@ struct LocalChangesView: View {
                         description: Text("No local changes match the current filter.")
                     )
                 } else {
-                    List(model.filteredStatusItems) { item in
-                        changeRow(item)
-                    }
-                    .listStyle(.inset)
+                    changesList
                 }
 
                 Divider()
@@ -100,8 +111,35 @@ struct LocalChangesView: View {
         } message: { Text(deleteTarget?.absolutePath.path ?? "") }
     }
 
-    private func changeRow(_ item: StatusItem) -> some View {
-        HStack(spacing: 10) {
+    private var presentation: LocalChangesPresentation {
+        LocalChangesPresentation(rawValue: presentationRawValue) ?? .tree
+    }
+
+    @ViewBuilder
+    private var changesList: some View {
+        if presentation == .tree {
+            List {
+                OutlineGroup(ChangeTreeNode.build(from: model.filteredStatusItems), children: \.children) { node in
+                    if let item = node.item {
+                        changeRow(item, title: node.name, showSeparator: false)
+                    } else {
+                        folderRow(node)
+                    }
+                }
+            }
+            .listStyle(.inset)
+            .environment(\.defaultMinListRowHeight, 22)
+        } else {
+            List(model.filteredStatusItems) { item in
+                changeRow(item, title: item.relativePath, showSeparator: true)
+            }
+            .listStyle(.inset)
+            .environment(\.defaultMinListRowHeight, 22)
+        }
+    }
+
+    private func changeRow(_ item: StatusItem, title: String, showSeparator: Bool) -> some View {
+        HStack(spacing: 6) {
             Toggle("", isOn: Binding(
                 get: { model.selectedPaths.contains(item.relativePath) },
                 set: { selected in
@@ -111,26 +149,33 @@ struct LocalChangesView: View {
             ))
             .labelsHidden()
             .toggleStyle(.checkbox)
+            .controlSize(.small)
             .disabled(item.workingCopyStatus == .conflicted || item.treeConflicted)
 
             StatusBadge(status: item.workingCopyStatus)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.relativePath).lineLimit(1).truncationMode(.middle)
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(size: 11, weight: .medium))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                HStack(spacing: 6) {
                     if item.propertyStatus != .none && item.propertyStatus != .normal {
-                        Label("Properties", systemImage: "tag").font(.caption).foregroundStyle(.secondary)
+                        Label("Properties", systemImage: "tag").font(.system(size: 9.5)).foregroundStyle(.secondary)
                     }
-                    if item.switched { Text("Switched").font(.caption).foregroundStyle(.orange) }
-                    if item.copied { Text("Copied").font(.caption).foregroundStyle(.secondary) }
-                    if let changelist = item.changelist { Text(changelist).font(.caption).foregroundStyle(.secondary) }
+                    if item.switched { Text("Switched").font(.system(size: 9.5)).foregroundStyle(.orange) }
+                    if item.copied { Text("Copied").font(.system(size: 9.5)).foregroundStyle(.secondary) }
+                    if let changelist = item.changelist { Text(changelist).font(.system(size: 9.5)).foregroundStyle(.secondary) }
                 }
             }
             Spacer()
-            if item.locked { Image(systemName: "lock.fill").foregroundStyle(.secondary) }
+            if item.locked { Image(systemName: "lock.fill").font(.system(size: 10)).foregroundStyle(.secondary) }
             if item.remoteStatus != .none && item.remoteStatus != .normal {
-                Image(systemName: "arrow.down.circle").foregroundStyle(.blue).help("Remote change")
+                Image(systemName: "arrow.down.circle").font(.system(size: 10)).foregroundStyle(.blue).help("Remote change")
             }
         }
+        .padding(.vertical, 1)
+        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+        .listRowSeparator(showSeparator ? .visible : .hidden)
         .contentShape(Rectangle())
         .onTapGesture { Task { await model.loadDiff(path: item.relativePath) } }
         .contextMenu {
@@ -170,6 +215,47 @@ struct LocalChangesView: View {
                 pendingRevert = [item.relativePath]
             }
         }
+    }
+
+    private func folderRow(_ node: ChangeTreeNode) -> some View {
+        let items = node.selectableItems
+        let selectedCount = items.lazy.filter { model.selectedPaths.contains($0.relativePath) }.count
+        return HStack(spacing: 6) {
+            Button {
+                if selectedCount == items.count {
+                    model.selectedPaths.subtract(items.map(\.relativePath))
+                } else {
+                    model.selectedPaths.formUnion(items.map(\.relativePath))
+                }
+            } label: {
+                Image(systemName: selectionSymbol(selectedCount: selectedCount, totalCount: items.count))
+                    .font(.system(size: 13))
+                    .foregroundStyle(selectedCount == 0 ? Color.secondary : Color.accentColor)
+            }
+            .buttonStyle(.plain)
+            .disabled(items.isEmpty)
+            .accessibilityLabel("Select changes in \(node.name)")
+
+            Image(systemName: "folder.fill")
+                .font(.system(size: 11))
+                .foregroundStyle(.blue)
+            Text(node.name)
+                .font(.system(size: 11, weight: .medium))
+                .lineLimit(1)
+            Spacer()
+            Text(items.count, format: .number)
+                .font(.system(size: 9.5).monospacedDigit())
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.vertical, 1)
+        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+        .listRowSeparator(.hidden)
+    }
+
+    private func selectionSymbol(selectedCount: Int, totalCount: Int) -> String {
+        if selectedCount == 0 { return "square" }
+        if selectedCount == totalCount { return "checkmark.square.fill" }
+        return "minus.square.fill"
     }
 
     private var commitComposer: some View {
@@ -306,9 +392,9 @@ struct StatusBadge: View {
 
     var body: some View {
         Text(label)
-            .font(.caption2.monospaced().bold())
-            .frame(width: 22, height: 22)
-            .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 5))
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .frame(width: 18, height: 18)
+            .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 4))
             .foregroundStyle(color)
             .accessibilityLabel(accessibilityText)
     }
@@ -340,4 +426,66 @@ struct StatusBadge: View {
     }
 
     private var accessibilityText: String { status.rawValue.capitalized }
+}
+
+private enum LocalChangesPresentation: String {
+    case tree
+    case list
+}
+
+private struct ChangeTreeNode: Identifiable {
+    let name: String
+    let relativePath: String
+    let item: StatusItem?
+    let children: [ChangeTreeNode]?
+
+    var id: String { relativePath }
+
+    var selectableItems: [StatusItem] {
+        let own = item.map { Self.selectable($0) ? [$0] : [] } ?? []
+        return own + (children ?? []).flatMap(\.selectableItems)
+    }
+
+    static func build(from items: [StatusItem]) -> [ChangeTreeNode] {
+        build(entries: items.map(TreeEntry.init), depth: 0)
+    }
+
+    private static func build(entries: [TreeEntry], depth: Int) -> [ChangeTreeNode] {
+        let groups = Dictionary(grouping: entries.filter { $0.components.count > depth }) {
+            $0.components[depth]
+        }
+
+        return groups.map { name, entries in
+            let exactItem = entries.first { $0.components.count == depth + 1 }?.item
+            let descendants = entries.filter { $0.components.count > depth + 1 }
+            let children = build(entries: descendants, depth: depth + 1)
+            let relativePath = exactItem?.relativePath
+                ?? entries.first.map { $0.components.prefix(depth + 1).joined(separator: "/") }
+                ?? name
+            return ChangeTreeNode(
+                name: name,
+                relativePath: relativePath,
+                item: exactItem,
+                children: children.isEmpty ? nil : children
+            )
+        }
+        .sorted { lhs, rhs in
+            if (lhs.children != nil) != (rhs.children != nil) { return lhs.children != nil }
+            return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+        }
+    }
+
+    private static func selectable(_ item: StatusItem) -> Bool {
+        item.workingCopyStatus != .conflicted && !item.treeConflicted
+    }
+
+    private struct TreeEntry {
+        let item: StatusItem
+        let components: [String]
+
+        init(_ item: StatusItem) {
+            self.item = item
+            components = item.relativePath.split(separator: "/").map(String.init)
+        }
+    }
 }
