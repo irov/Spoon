@@ -18,6 +18,7 @@ ditto "$SOURCE_DIR/Helpers" "$CONTENTS_DIR/Helpers"
 ditto "$SOURCE_DIR/Libraries" "$CONTENTS_DIR/Libraries"
 ditto "$SOURCE_DIR/Licenses" "$CONTENTS_DIR/Resources/ThirdPartyLicenses"
 cp "$SOURCE_DIR/SHA256SUMS" "$CONTENTS_DIR/Resources/ThirdPartyLicenses/Toolchain-SHA256SUMS.txt"
+cp "$SOURCE_DIR/CONTENT-SHA256SUMS" "$CONTENTS_DIR/Resources/ThirdPartyLicenses/Toolchain-Content-SHA256SUMS.txt"
 cp "$SOURCE_DIR/VERSIONS.txt" "$CONTENTS_DIR/Resources/ThirdPartyLicenses/Toolchain-VERSIONS.txt"
 cp "$BUILT_PRODUCTS_DIR/SpoonSVNRunner" "$CONTENTS_DIR/Helpers/svn"
 chmod 0755 "$CONTENTS_DIR/Helpers/svn"
@@ -31,6 +32,3 @@ if [[ "${CODE_SIGNING_ALLOWED:-NO}" == "YES" && -n "${EXPANDED_CODE_SIGN_IDENTIT
       --options runtime --entitlements "$SRCROOT/Config/Helper.entitlements" "$helper"
   done
 fi
-
-(cd "$CONTENTS_DIR" && find Helpers Libraries -type f -print0 | sort -z | xargs -0 shasum -a 256) \
-  > "$CONTENTS_DIR/Resources/ThirdPartyLicenses/Embedded-Toolchain-SHA256SUMS.txt"

@@ -1,6 +1,5 @@
 import Foundation
 import Darwin
-import CryptoKit
 import Security
 import SpoonDomain
 import SpoonSecurity
@@ -67,27 +66,14 @@ public struct SVNCommandFactory: Sendable {
         let createStatus = SecStaticCodeCreateWithPath(executable as CFURL, [], &code)
         let signatureValid = createStatus == errSecSuccess
             && code.map { SecStaticCodeCheckValidity($0, [], nil) == errSecSuccess } == true
-        let manifest = contents.appendingPathComponent("Resources/ThirdPartyLicenses/Embedded-Toolchain-SHA256SUMS.txt")
-        let checksumsValid = verifyManifest(manifest, relativeTo: contents)
+        let manifest = contents.appendingPathComponent("Resources/ThirdPartyLicenses/Toolchain-Content-SHA256SUMS.txt")
+        let checksumsValid = ToolchainIntegrity.verifyManifest(manifest, relativeTo: contents)
         let versions = contents.appendingPathComponent("Resources/ThirdPartyLicenses/Toolchain-VERSIONS.txt")
         let openSSHVersion = (try? String(contentsOf: versions, encoding: .utf8))?
             .split(separator: "\n")
             .map(String.init)
             .first(where: { $0.contains("OpenSSH_") })
         return (architecture, isBundled, signatureValid, checksumsValid, openSSHVersion)
-    }
-
-    private static func verifyManifest(_ manifest: URL, relativeTo root: URL) -> Bool {
-        guard let text = try? String(contentsOf: manifest, encoding: .utf8), !text.isEmpty else { return false }
-        for line in text.split(separator: "\n") {
-            let fields = line.split(separator: " ", omittingEmptySubsequences: true)
-            guard fields.count == 2 else { return false }
-            let file = root.appendingPathComponent(String(fields[1]))
-            guard let data = try? Data(contentsOf: file) else { return false }
-            let actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-            guard actual == fields[0] else { return false }
-        }
-        return true
     }
 
     public func info(path: URL) -> SVNCommandDescriptor<WorkingCopyInfo> {

@@ -152,6 +152,8 @@ curl --fail --silent --show-error --location \
 } > "$STAGING_DIR/VERSIONS.txt"
 (cd "$STAGING_DIR" && find Helpers Libraries Licenses VERSIONS.txt -type f -print0 | sort -z | xargs -0 shasum -a 256) \
   > "$STAGING_DIR/SHA256SUMS"
+xcrun swift "$ROOT_DIR/Tools/generate-content-checksums.swift" \
+  "$STAGING_DIR" "$STAGING_DIR/CONTENT-SHA256SUMS"
 
 mkdir -p "$(dirname "$OUTPUT_DIR")"
 mv "$STAGING_DIR" "$OUTPUT_DIR"
