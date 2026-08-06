@@ -415,9 +415,29 @@ public final class AppModel {
     public func loadRevisionDiff(_ revision: Int) async {
         guard let project = selectedProject else { return }
         do {
+            diffBeforeImageData = nil
+            diffAfterImageData = nil
+            diffBinaryDescription = nil
             let target = project.repositoryRootURL?.absoluteString ?? project.workingCopyRoot.path
             diffText = try await svn.diff(project: project, paths: [target], change: revision)
         } catch { present(error) }
+    }
+
+    public func loadRevisionPathDiff(_ repositoryPath: String, revision: Int) async {
+        guard let project = selectedProject else { return }
+        do {
+            diffBeforeImageData = nil
+            diffAfterImageData = nil
+            diffBinaryDescription = nil
+            let relativePath = repositoryPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            let target = project.repositoryRootURL?
+                .appendingPathComponent(relativePath)
+                .absoluteString ?? project.workingCopyRoot.appendingPathComponent(relativePath).path
+            diffText = try await svn.diff(project: project, paths: [target], change: revision)
+        } catch {
+            diffText = ""
+            present(error)
+        }
     }
 
     public func loadRepository(url: URL? = nil) async {

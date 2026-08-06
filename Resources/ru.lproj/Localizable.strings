@@ -157,3 +157,17 @@
 "No Image" = "Нет изображения";
 "Destination path" = "Путь назначения";
 "Schedule path for deletion?" = "Запланировать удаление пути?";
+"All Commits" = "Все коммиты";
+"Filter" = "Фильтр";
+"Date" = "Дата";
+"Revision Detail" = "Детали ревизии";
+"Changes" = "Изменения";
+"File Tree" = "Дерево файлов";
+"Revision Diff" = "Diff ревизии";
+"No Revision Selected" = "Ревизия не выбрана";
+"Select a revision to inspect its changed paths and diff." = "Выберите ревизию, чтобы просмотреть изменённые пути и diff.";
+"Changed Paths" = "Изменённые пути";
+"No Changed Paths" = "Нет изменённых путей";
+"Action" = "Действие";
+"Path" = "Путь";
+"Copy From" = "Скопировано из";

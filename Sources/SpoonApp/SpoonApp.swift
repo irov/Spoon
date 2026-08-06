@@ -7,7 +7,7 @@ struct SpoonApp: App {
         WindowGroup("Spoon") {
             SpoonWindow()
         }
-        .defaultSize(width: 1_380, height: 820)
+        .defaultSize(width: 1_500, height: 900)
         .commands { SpoonCommands() }
 
         Settings {
