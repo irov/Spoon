@@ -68,6 +68,14 @@ struct DiffInspector: View {
 
 private enum DiffLayoutChoice { case unified, sideBySide }
 
+private enum DiffMetrics {
+    static let codeFontSize: CGFloat = 11
+    static let metadataFontSize: CGFloat = 10
+    static let lineNumberWidth: CGFloat = 42
+    static let markerWidth: CGFloat = 20
+    static let lineHeight: CGFloat = 18
+}
+
 private struct PlainDiffText: View {
     let text: String
 
@@ -75,7 +83,7 @@ private struct PlainDiffText: View {
         GeometryReader { geometry in
             ScrollView([.horizontal, .vertical]) {
                 Text(verbatim: text)
-                    .font(.system(.callout, design: .monospaced))
+                    .font(.system(size: DiffMetrics.codeFontSize, design: .monospaced))
                     .textSelection(.enabled)
                     .fixedSize(horizontal: true, vertical: true)
                     .frame(
@@ -83,7 +91,7 @@ private struct PlainDiffText: View {
                         minHeight: geometry.size.height,
                         alignment: .topLeading
                     )
-                    .padding(12)
+                    .padding(10)
             }
         }
     }
@@ -110,7 +118,7 @@ private struct UnifiedDiffView: View {
                     }
                 }
                 .frame(
-                    minWidth: max(geometry.size.width, 760),
+                    minWidth: max(geometry.size.width, 720),
                     minHeight: geometry.size.height,
                     alignment: .topLeading
                 )
@@ -127,17 +135,17 @@ private struct DiffFileHeader: View {
             Image(systemName: "doc.text")
                 .foregroundStyle(.secondary)
             Text(file.newPath.isEmpty ? file.oldPath : file.newPath)
-                .font(.system(.caption, design: .monospaced).bold())
+                .font(.system(size: DiffMetrics.metadataFontSize, weight: .semibold, design: .monospaced))
                 .textSelection(.enabled)
             if !file.oldPath.isEmpty, !file.newPath.isEmpty, file.oldPath != file.newPath {
                 Text("← \(file.oldPath)")
-                    .font(.system(.caption2, design: .monospaced))
+                    .font(.system(size: 9.5, design: .monospaced))
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 12)
         }
         .padding(.horizontal, 10)
-        .frame(height: 32)
+        .frame(height: 27)
         .background(Color.primary.opacity(0.075))
         .overlay(alignment: .bottom) { Divider() }
     }
@@ -149,9 +157,9 @@ private struct UnifiedHunkHeader: View {
     var body: some View {
         HStack(spacing: 0) {
             Text(hunk.oldStart, format: .number)
-                .frame(width: 48, alignment: .trailing)
+                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
             Text(hunk.newStart, format: .number)
-                .frame(width: 48, alignment: .trailing)
+                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
             Rectangle()
                 .fill(Color.blue.opacity(0.8))
                 .frame(width: 3)
@@ -159,10 +167,10 @@ private struct UnifiedHunkHeader: View {
                 .padding(.leading, 9)
             Spacer(minLength: 12)
         }
-        .font(.system(.caption, design: .monospaced))
+        .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
         .foregroundStyle(Color.blue)
         .padding(.trailing, 8)
-        .frame(height: 25)
+        .frame(height: 22)
         .background(Color.blue.opacity(0.12))
     }
 }
@@ -179,14 +187,14 @@ private struct UnifiedDiffLineRow: View {
                 .frame(width: 3)
             Text(line.marker)
                 .foregroundStyle(line.accentColor)
-                .frame(width: 24, alignment: .center)
+                .frame(width: DiffMetrics.markerWidth, alignment: .center)
             Text(verbatim: line.content.isEmpty ? " " : line.content)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: true, vertical: false)
             Spacer(minLength: 12)
         }
-        .font(.system(size: 12.5, weight: .regular, design: .monospaced))
-        .frame(minHeight: 21)
+        .font(.system(size: DiffMetrics.codeFontSize, weight: .regular, design: .monospaced))
+        .frame(minHeight: DiffMetrics.lineHeight)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background { Rectangle().fill(line.backgroundColor) }
     }
@@ -194,8 +202,8 @@ private struct UnifiedDiffLineRow: View {
     private func lineNumber(_ number: Int?) -> some View {
         Text(number.map(String.init) ?? "")
             .foregroundStyle(.tertiary)
-            .frame(width: 48, alignment: .trailing)
-            .padding(.trailing, 7)
+            .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
+            .padding(.trailing, 6)
     }
 }
 
@@ -204,15 +212,15 @@ private struct PropertyDiffRow: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            Color.clear.frame(width: 96)
+            Color.clear.frame(width: DiffMetrics.lineNumberWidth * 2)
             Rectangle().fill(Color.orange.opacity(0.8)).frame(width: 3)
-            Image(systemName: "tag").frame(width: 24).foregroundStyle(.orange)
+            Image(systemName: "tag").frame(width: DiffMetrics.markerWidth).foregroundStyle(.orange)
             Text(verbatim: text)
                 .textSelection(.enabled)
             Spacer(minLength: 12)
         }
-        .font(.system(.caption, design: .monospaced))
-        .frame(minHeight: 21)
+        .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
+        .frame(minHeight: DiffMetrics.lineHeight)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background { Rectangle().fill(Color.orange.opacity(0.10)) }
     }
@@ -256,36 +264,36 @@ private struct SideBySideDiffView: View {
     private func sideHunkHeader(_ hunk: DiffHunk, old: Bool, width: CGFloat) -> some View {
         HStack(spacing: 8) {
             Text(old ? hunk.oldStart : hunk.newStart, format: .number)
-                .frame(width: 48, alignment: .trailing)
+                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
             Text(verbatim: hunk.header)
             Spacer(minLength: 8)
         }
-        .font(.system(.caption, design: .monospaced))
+        .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
         .foregroundStyle(Color.blue)
-        .frame(width: width, height: 25)
+        .frame(width: width, height: 22)
         .background(Color.blue.opacity(0.12))
     }
 
     private func diffCell(_ line: DiffLine?, side: DiffSide, width: CGFloat) -> some View {
         HStack(spacing: 0) {
             Text(side.lineNumber(for: line).map(String.init) ?? "")
-                .frame(width: 48, alignment: .trailing)
-                .padding(.trailing, 7)
+                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
+                .padding(.trailing, 6)
                 .foregroundStyle(.tertiary)
             Rectangle()
                 .fill(side.accentColor(for: line))
                 .frame(width: 3)
             Text(side.marker(for: line))
-                .frame(width: 24)
+                .frame(width: DiffMetrics.markerWidth)
                 .foregroundStyle(side.accentColor(for: line))
             Text(verbatim: line?.content.isEmpty == false ? line?.content ?? "" : " ")
                 .textSelection(.enabled)
                 .fixedSize(horizontal: true, vertical: false)
             Spacer(minLength: 8)
         }
-        .font(.system(size: 12.5, weight: .regular, design: .monospaced))
+        .font(.system(size: DiffMetrics.codeFontSize, weight: .regular, design: .monospaced))
         .frame(width: width, alignment: .leading)
-        .frame(minHeight: 21)
+        .frame(minHeight: DiffMetrics.lineHeight)
         .background(side.backgroundColor(for: line))
     }
 }
