@@ -22,22 +22,25 @@ let bookmarkLength = header.withUnsafeBytes { bytes in
 }
 if bookmarkLength > 16 * 1_024 * 1_024 { fail("security-scope bookmark is too large") }
 
+var transferredURL: URL?
 if bookmarkLength > 0 {
     let bookmark = readExactly(Int(bookmarkLength))
     do {
         var stale = false
         let scopedURL = try URL(
             resolvingBookmarkData: bookmark,
-            options: [.withSecurityScope],
+            options: [],
             relativeTo: nil,
             bookmarkDataIsStale: &stale
         )
-        guard !stale else { fail("security-scope bookmark is stale") }
-        guard scopedURL.startAccessingSecurityScopedResource() else { fail("security-scope access was denied") }
-        // Do not stop access: exec replaces this process and preserves the consumed
-        // sandbox extension for svn-core for the lifetime of the command.
+        guard !stale else { fail("transferred bookmark is stale") }
+        // A bookmark created without explicit security scope carries an implicit
+        // sandbox extension when sent to another process. Resolving it starts that
+        // access automatically. Do not stop it: exec preserves the extension for
+        // svn-core for the lifetime of the command.
+        transferredURL = scopedURL
     } catch {
-        fail("unable to resolve security-scope bookmark: \(error.localizedDescription)")
+        fail("unable to resolve transferred bookmark: \(error.localizedDescription)")
     }
 }
 
@@ -49,9 +52,11 @@ var cArguments = arguments.map { strdup($0) }
 cArguments.append(nil)
 defer { for argument in cArguments where argument != nil { free(argument) } }
 
-let status = executable.path.withCString { path in
-    cArguments.withUnsafeMutableBufferPointer { buffer in
-        execv(path, buffer.baseAddress)
+let status = withExtendedLifetime(transferredURL) {
+    executable.path.withCString { path in
+        cArguments.withUnsafeMutableBufferPointer { buffer in
+            execv(path, buffer.baseAddress)
+        }
     }
 }
 fail("unable to exec svn-core (errno \(errno), status \(status))")

@@ -28,6 +28,26 @@ final class SecurityAndStorageTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.url.path))
     }
 
+    func testResolvedScopeCreatesImplicitTransferBookmark() throws {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SpoonBookmark-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let scope = ResolvedSecurityScope(url: directory)
+        let transfer = try scope.makeTransferBookmark()
+        var isStale = false
+        let resolved = try URL(
+            resolvingBookmarkData: transfer,
+            options: [.withoutUI],
+            relativeTo: nil,
+            bookmarkDataIsStale: &isStale
+        )
+
+        XCTAssertFalse(isStale)
+        XCTAssertEqual(resolved.standardizedFileURL, directory.standardizedFileURL)
+    }
+
     func testToolchainContentChecksumIgnoresReplacedCodeSignature() throws {
         func machO(signatureByte: UInt8, signatureSize: UInt32) -> Data {
             var data = Data(repeating: 0, count: 80)

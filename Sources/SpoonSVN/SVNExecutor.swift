@@ -1,4 +1,5 @@
 import Foundation
+import Dispatch
 import SpoonDomain
 import SpoonSecurity
 
@@ -39,6 +40,45 @@ public actor SVNExecutor {
     ) async throws -> SVNCommandResult<Output> {
         let clock = ContinuousClock()
         let startedAt = clock.now
+        let transferredBookmark: Data
+        let retainedScope: ResolvedSecurityScope?
+        if let bookmark = descriptor.securityScopedBookmark {
+            do {
+                let scope = try SecurityScopedBookmark(data: bookmark).resolve()
+                guard !scope.isStale else {
+                    throw SpoonError(
+                        title: "Working-copy access expired",
+                        explanation: "The saved folder permission is stale.",
+                        operation: descriptor.operation,
+                        recoverySuggestion: "Remove the project and select its working-copy root again."
+                    )
+                }
+                guard scope.didStartAccessing else {
+                    throw SpoonError(
+                        title: "Working-copy access denied",
+                        explanation: "Spoon could not activate the saved folder permission.",
+                        operation: descriptor.operation,
+                        recoverySuggestion: "Remove the project and select its working-copy root again."
+                    )
+                }
+                transferredBookmark = try scope.makeTransferBookmark()
+                retainedScope = scope
+            } catch let error as SpoonError {
+                throw error
+            } catch {
+                throw SpoonError(
+                    title: "Working-copy access failed",
+                    explanation: error.localizedDescription,
+                    operation: descriptor.operation,
+                    recoverySuggestion: "Remove the project and select its working-copy root again."
+                )
+            }
+        } else {
+            transferredBookmark = Data()
+            retainedScope = nil
+        }
+        defer { withExtendedLifetime(retainedScope) {} }
+
         let process = Process()
         let stdoutPipe = Pipe()
         let stderrPipe = Pipe()
@@ -73,11 +113,12 @@ public actor SVNExecutor {
         continuation.yield(.started(processIdentifier: process.processIdentifier))
         if let stdinPipe {
             if usesRunner {
-                let bookmark = descriptor.securityScopedBookmark ?? Data()
-                var length = UInt32(bookmark.count).bigEndian
+                var length = UInt32(transferredBookmark.count).bigEndian
                 let header = withUnsafeBytes(of: &length) { Data($0) }
                 try? stdinPipe.fileHandleForWriting.write(contentsOf: header)
-                if !bookmark.isEmpty { try? stdinPipe.fileHandleForWriting.write(contentsOf: bookmark) }
+                if !transferredBookmark.isEmpty {
+                    try? stdinPipe.fileHandleForWriting.write(contentsOf: transferredBookmark)
+                }
             }
             if let input = descriptor.standardInput {
                 try? stdinPipe.fileHandleForWriting.write(contentsOf: input)
@@ -151,14 +192,40 @@ public actor SVNExecutor {
         event: @escaping @Sendable (String) -> SVNCommandEvent,
         continuation: AsyncStream<SVNCommandEvent>.Continuation
     ) async throws -> Data {
-        var data = Data()
-        for try await line in handle.bytes.lines {
-            let sanitized = Redactor.text(line)
-            data.append(contentsOf: line.utf8)
-            data.append(0x0A)
-            continuation.yield(event(sanitized))
+        try await withCheckedThrowingContinuation { checkedContinuation in
+            DispatchQueue.global(qos: .utility).async {
+                do {
+                    var data = Data()
+                    var pending = Data()
+
+                    while let chunk = try handle.read(upToCount: 64 * 1_024), !chunk.isEmpty {
+                        data.append(chunk)
+                        pending.append(chunk)
+
+                        var lineStart = pending.startIndex
+                        while let newline = pending[lineStart...].firstIndex(of: 0x0A) {
+                            var line = pending[lineStart..<newline]
+                            if line.last == 0x0D { line = line.dropLast() }
+                            let text = String(decoding: line, as: UTF8.self)
+                            continuation.yield(event(Redactor.text(text)))
+                            lineStart = pending.index(after: newline)
+                        }
+                        if lineStart != pending.startIndex {
+                            pending.removeSubrange(pending.startIndex..<lineStart)
+                        }
+                    }
+
+                    if !pending.isEmpty {
+                        if pending.last == 0x0D { pending.removeLast() }
+                        let text = String(decoding: pending, as: UTF8.self)
+                        continuation.yield(event(Redactor.text(text)))
+                    }
+                    checkedContinuation.resume(returning: data)
+                } catch {
+                    checkedContinuation.resume(throwing: error)
+                }
+            }
         }
-        return data
     }
 
     private static func recoverySuggestion(for codes: [SVNErrorCode]) -> String? {

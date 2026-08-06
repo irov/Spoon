@@ -30,12 +30,20 @@ public struct SecurityScopedBookmark: Codable, Hashable, Sendable {
 public final class ResolvedSecurityScope: @unchecked Sendable {
     public let url: URL
     public let isStale: Bool
-    private let didStartAccessing: Bool
+    public let didStartAccessing: Bool
 
     public init(url: URL, isStale: Bool = false) {
         self.url = url
         self.isStale = isStale
         didStartAccessing = url.startAccessingSecurityScopedResource()
+    }
+
+    public func makeTransferBookmark() throws -> Data {
+        try url.bookmarkData(
+            options: [],
+            includingResourceValuesForKeys: [.isDirectoryKey, .fileResourceIdentifierKey],
+            relativeTo: nil
+        )
     }
 
     deinit {

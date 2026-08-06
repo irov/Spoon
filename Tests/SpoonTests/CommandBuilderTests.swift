@@ -63,4 +63,18 @@ final class CommandBuilderTests: XCTestCase {
             // Expected.
         }
     }
+
+    func testExecutorDrainsOutputLargerThanPipeCapacity() async throws {
+        let descriptor = SVNCommandDescriptor<Data>(
+            executable: URL(fileURLWithPath: "/usr/bin/jot"),
+            arguments: ["100000", "1"],
+            operation: .status,
+            operationClass: .repositoryRead
+        ) { stdout, _ in stdout }
+
+        let result = try await SVNExecutor().start(descriptor).result.value
+
+        XCTAssertGreaterThan(result.output.count, 256_000)
+        XCTAssertTrue(String(decoding: result.output.suffix(8), as: UTF8.self).contains("100000"))
+    }
 }
