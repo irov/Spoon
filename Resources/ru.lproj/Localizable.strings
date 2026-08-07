@@ -200,3 +200,14 @@
 "Add unversioned paths to SVN, schedule missing paths for deletion, or unstage them before committing." = "Добавьте неотслеживаемые пути в SVN, запланируйте удаление отсутствующих путей или уберите их из подготовленных перед commit.";
 "Select for Commit" = "Выбрать для commit";
 "Add or schedule this path in SVN before committing" = "Сначала добавьте или запланируйте этот путь в SVN";
+"Spoon Help" = "Справка Spoon";
+"Send Feedback…" = "Отправить отзыв…";
+"If you need help or found a problem, contact our support team." = "Если вам нужна помощь или вы нашли проблему, напишите нашей службе поддержки.";
+"Email Spoon Support" = "Написать в поддержку Spoon";
+"Compose Email" = "Написать письмо";
+"Feedback" = "Обратная связь";
+"Your message will be addressed to %@." = "Письмо будет адресовано %@.";
+"Brief description" = "Краткое описание";
+"Details" = "Подробности";
+"Your email (optional)" = "Ваш email (необязательно)";
+"Open in Mail" = "Открыть в Почте";

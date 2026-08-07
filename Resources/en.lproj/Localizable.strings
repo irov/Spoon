@@ -200,3 +200,14 @@
 "Add unversioned paths to SVN, schedule missing paths for deletion, or unstage them before committing." = "Add unversioned paths to SVN, schedule missing paths for deletion, or unstage them before committing.";
 "Select for Commit" = "Select for Commit";
 "Add or schedule this path in SVN before committing" = "Add or schedule this path in SVN before committing";
+"Spoon Help" = "Spoon Help";
+"Send Feedback…" = "Send Feedback…";
+"If you need help or found a problem, contact our support team." = "If you need help or found a problem, contact our support team.";
+"Email Spoon Support" = "Email Spoon Support";
+"Compose Email" = "Compose Email";
+"Feedback" = "Feedback";
+"Your message will be addressed to %@." = "Your message will be addressed to %@.";
+"Brief description" = "Brief description";
+"Details" = "Details";
+"Your email (optional)" = "Your email (optional)";
+"Open in Mail" = "Open in Mail";
