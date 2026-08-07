@@ -42,6 +42,7 @@ struct DiffInspector: View {
                     Text("Unified").tag(DiffLayoutChoice.unified)
                     Text("Side by Side").tag(DiffLayoutChoice.sideBySide)
                 }
+                .labelsHidden()
                 .pickerStyle(.segmented)
                 .controlSize(.small)
                 .frame(width: 180)
