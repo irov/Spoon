@@ -171,3 +171,7 @@
 "Action" = "Action";
 "Path" = "Path";
 "Copy From" = "Copy From";
+"Selected paths cannot be committed" = "Selected paths cannot be committed";
+"Add unversioned paths to SVN, schedule missing paths for deletion, or deselect them before committing." = "Add unversioned paths to SVN, schedule missing paths for deletion, or deselect them before committing.";
+"Select for Commit" = "Select for Commit";
+"Add or schedule this path in SVN before committing" = "Add or schedule this path in SVN before committing";

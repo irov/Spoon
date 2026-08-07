@@ -171,3 +171,7 @@
 "Action" = "Действие";
 "Path" = "Путь";
 "Copy From" = "Скопировано из";
+"Selected paths cannot be committed" = "Выбранные пути нельзя закоммитить";
+"Add unversioned paths to SVN, schedule missing paths for deletion, or deselect them before committing." = "Добавьте неотслеживаемые пути в SVN, запланируйте удаление отсутствующих путей или снимите с них выбор перед commit.";
+"Select for Commit" = "Выбрать для commit";
+"Add or schedule this path in SVN before committing" = "Сначала добавьте или запланируйте этот путь в SVN";

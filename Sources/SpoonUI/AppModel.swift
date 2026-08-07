@@ -364,6 +364,15 @@ public final class AppModel {
             present(SpoonError(title: "Unresolved conflict selected", explanation: "Resolve conflicts before committing."))
             return
         }
+        let ineligibleItems = selectedItems.filter { !$0.isCommitEligible }
+        guard ineligibleItems.isEmpty else {
+            let paths = ineligibleItems.prefix(5).map(\.relativePath).joined(separator: "\n")
+            present(SpoonError(
+                title: String(localized: "Selected paths cannot be committed"),
+                explanation: String(localized: "Add unversioned paths to SVN, schedule missing paths for deletion, or deselect them before committing.") + "\n\n" + paths
+            ))
+            return
+        }
 
         let targets = selectedItems.map(\.absolutePath.path)
         await withActivity("Committing \(targets.count) path(s)…") {
@@ -728,7 +737,7 @@ public final class AppModel {
             securityScopedBookmark: project.workingCopyBookmark
         )
         statusItems = try await svn.status(project: project, remote: remote, showIgnored: showIgnored)
-        selectedPaths.formIntersection(Set(statusItems.map(\.relativePath)))
+        selectedPaths.formIntersection(Set(statusItems.filter(\.isCommitEligible).map(\.relativePath)))
         if let first = selectedPaths.first {
             await loadDiff(path: first)
         }

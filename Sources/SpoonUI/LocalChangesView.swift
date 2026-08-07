@@ -156,7 +156,8 @@ struct LocalChangesView: View {
             .labelsHidden()
             .toggleStyle(.checkbox)
             .controlSize(.small)
-            .disabled(item.workingCopyStatus == .conflicted || item.treeConflicted)
+            .disabled(!item.isCommitEligible)
+            .help(item.isCommitEligible ? "Select for Commit" : "Add or schedule this path in SVN before committing")
 
             StatusBadge(status: item.workingCopyStatus)
             VStack(alignment: .leading, spacing: 1) {
@@ -502,7 +503,7 @@ private struct ChangeTreeNode: Identifiable {
     }
 
     private static func selectable(_ item: StatusItem) -> Bool {
-        item.workingCopyStatus != .conflicted && !item.treeConflicted
+        item.isCommitEligible
     }
 
     private struct TreeEntry {
