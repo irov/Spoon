@@ -184,6 +184,11 @@
 "Unstage Path" = "Убрать путь из подготовленных";
 "Add to SVN and Stage" = "Добавить в SVN и подготовить";
 "Add to Ignore" = "Добавить в игнорируемые";
+"Ignore all files with this extension (%@)" = "Игнорировать все файлы с этим расширением (%@)";
+"This directory and its unversioned contents will be ignored by the directory name." = "Эта директория и всё её неотслеживаемое содержимое будут игнорироваться по имени директории.";
+"Ignore rule" = "Правило игнорирования";
+"Property target" = "Свойство будет изменено для";
+"SVN stores the rule on the parent folder. Patterns match only its direct children." = "SVN хранит правило в родительской папке. Маски применяются только к её непосредственным элементам.";
 "Stage Folder Paths" = "Подготовить пути в папке";
 "Unstage Folder Paths" = "Убрать пути папки из подготовленных";
 "All eligible paths are staged." = "Все доступные пути подготовлены.";

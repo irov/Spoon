@@ -122,6 +122,10 @@ final class CommandBuilderTests: XCTestCase {
         XCTAssertEqual(SVNIgnoreProperty.adding(pattern: "build", to: updated), updated)
         XCTAssertEqual(SVNIgnoreProperty.adding(pattern: "file.txt", to: "*.tmp"), "*.tmp\nfile.txt\n")
         XCTAssertEqual(SVNIgnoreProperty.adding(pattern: "DerivedData", to: "*.xcuserstate\r\n"), "*.xcuserstate\r\nDerivedData\r\n")
+        XCTAssertEqual(SVNIgnoreProperty.extensionPattern(forFileName: "report.log"), "*.log")
+        XCTAssertEqual(SVNIgnoreProperty.extensionPattern(forFileName: "archive.tar.gz"), "*.gz")
+        XCTAssertNil(SVNIgnoreProperty.extensionPattern(forFileName: "Makefile"))
+        XCTAssertNil(SVNIgnoreProperty.extensionPattern(forFileName: ".gitignore"))
     }
 
     private func statusItem(

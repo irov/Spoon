@@ -184,6 +184,11 @@
 "Unstage Path" = "Unstage Path";
 "Add to SVN and Stage" = "Add to SVN and Stage";
 "Add to Ignore" = "Add to Ignore";
+"Ignore all files with this extension (%@)" = "Ignore all files with this extension (%@)";
+"This directory and its unversioned contents will be ignored by the directory name." = "This directory and its unversioned contents will be ignored by the directory name.";
+"Ignore rule" = "Ignore rule";
+"Property target" = "Property target";
+"SVN stores the rule on the parent folder. Patterns match only its direct children." = "SVN stores the rule on the parent folder. Patterns match only its direct children.";
 "Stage Folder Paths" = "Stage Folder Paths";
 "Unstage Folder Paths" = "Unstage Folder Paths";
 "All eligible paths are staged." = "All eligible paths are staged.";
