@@ -247,7 +247,7 @@ struct CommandPaletteView: View {
             (String(localized: "Refresh Local Status"), "arrow.clockwise", { Task { await model.refreshStatus() } }),
             (String(localized: "Check Remote Status"), "network", { Task { await model.refreshStatus(remote: true) } }),
             (String(localized: "Update Working Copy"), "arrow.down.circle", { Task { await model.updateWorkingCopy() } }),
-            (String(localized: "Commit Selected Changes"), "arrow.up.circle", { Task { await model.commitSelected() } }),
+            (String(localized: "Commit Staged Changes"), "arrow.up.circle", { Task { await model.commitSelected() } }),
             (String(localized: "Reveal in Finder"), "folder", { model.revealSelectedProject() })
         ]
     }

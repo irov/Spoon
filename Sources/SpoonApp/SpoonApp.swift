@@ -41,7 +41,7 @@ private struct SpoonCommands: Commands {
             Divider()
             Button("Update Working Copy") { NotificationCenter.default.post(name: .spoonUpdate, object: nil) }
                 .keyboardShortcut("u", modifiers: .command)
-            Button("Commit Selected Changes") { NotificationCenter.default.post(name: .spoonCommit, object: nil) }
+            Button("Commit Staged Changes") { NotificationCenter.default.post(name: .spoonCommit, object: nil) }
                 .keyboardShortcut("k", modifiers: .command)
             Divider()
             Button("Command Palette") { NotificationCenter.default.post(name: .spoonCommandPalette, object: nil) }
