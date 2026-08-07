@@ -276,6 +276,7 @@ struct LocalChangesView: View {
             Button("Properties…") { propertyTarget = item }
             if item.workingCopyStatus == .unversioned {
                 Button("Add") { Task { await model.add(paths: [item.relativePath]) } }
+                Button("Add to Ignore") { Task { await model.addToIgnore(path: item.relativePath) } }
             } else {
                 Button("Move or Rename…") { moveTarget = item }
                 Button("Delete…", role: .destructive) { deleteTarget = item }

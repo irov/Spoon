@@ -396,6 +396,9 @@ public final class AppModel {
         let requestedPaths = Set(paths)
         let requestedItems = statusItems.filter { requestedPaths.contains($0.relativePath) && $0.isStageable }
         guard !requestedItems.isEmpty else { return }
+        let requestedDirectoryPaths = requestedItems
+            .filter { $0.nodeKind == .directory }
+            .map(\.relativePath)
 
         let unversionedPaths = requestedItems
             .filter { $0.workingCopyStatus == .unversioned }
@@ -413,7 +416,11 @@ public final class AppModel {
             )
             try await reloadStatus(project: project)
             let stagedPaths = statusItems
-                .filter { requestedPaths.contains($0.relativePath) && $0.isCommitEligible }
+                .filter { item in
+                    let isRequestedPath = requestedPaths.contains(item.relativePath)
+                        || requestedDirectoryPaths.contains { item.relativePath.hasPrefix($0 + "/") }
+                    return isRequestedPath && item.isCommitEligible
+                }
                 .map(\.relativePath)
             selectedPaths.formUnion(stagedPaths)
             activityMessage = "Staged \(stagedPaths.count) path(s)."
@@ -425,6 +432,49 @@ public final class AppModel {
         await withActivity("Adding paths…") {
             activityMessage = try await svn.add(project: project, targets: absolute(paths, project: project))
             try await reloadStatus(project: project)
+        }
+    }
+
+    public func addToIgnore(path: String) async {
+        guard let project = selectedProject,
+              let requestedItem = statusItems.first(where: { $0.relativePath == path }),
+              requestedItem.workingCopyStatus == .unversioned else { return }
+
+        let anchorPath = statusItems
+            .filter {
+                $0.workingCopyStatus == .unversioned
+                    && (path == $0.relativePath || path.hasPrefix($0.relativePath + "/"))
+            }
+            .min { lhs, rhs in
+                lhs.relativePath.split(separator: "/").count < rhs.relativePath.split(separator: "/").count
+            }?
+            .relativePath ?? path
+
+        let anchorURL = project.workingCopyRoot.appendingPathComponent(anchorPath)
+        let parentURL = anchorURL.deletingLastPathComponent()
+        let pattern = anchorURL.lastPathComponent
+        guard !pattern.isEmpty, !pattern.contains(where: \.isNewline) else {
+            present(SpoonError(title: "Path cannot be ignored", explanation: "SVN ignore patterns cannot contain line breaks."))
+            return
+        }
+
+        await withActivity("Adding path to SVN ignore…") {
+            let properties = try await svn.properties(project: project, target: parentURL.path)
+            let existingValue = properties.first(where: { $0.name == "svn:ignore" })?.value ?? ""
+            let updatedValue = SVNIgnoreProperty.adding(pattern: pattern, to: existingValue)
+            guard updatedValue != existingValue else {
+                activityMessage = "Path is already ignored."
+                return
+            }
+
+            activityMessage = try await svn.setProperty(
+                project: project,
+                name: "svn:ignore",
+                value: Data(updatedValue.utf8),
+                targets: [parentURL.path]
+            )
+            try await reloadStatus(project: project)
+            activityMessage = "Added \(anchorPath) to svn:ignore."
         }
     }
 

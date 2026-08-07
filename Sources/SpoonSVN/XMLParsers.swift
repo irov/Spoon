@@ -188,6 +188,7 @@ private final class StatusParserDelegate: NSObject, XMLParserDelegate {
         let rootPath = root.path.hasSuffix("/") ? root.path : root.path + "/"
         let relative = absolute.path == root.path ? "." : absolute.path.replacingOccurrences(of: rootPath, with: "", options: [.anchored])
         let itemStatus = WorkingCopyStatus(svnValue: wcAttributes["item"] ?? "unknown")
+        let propertyStatus = WorkingCopyStatus(svnValue: wcAttributes["props"] ?? "none")
         let remoteStatus = RemoteStatus(svnValue: remoteAttributes["item"])
         let resourceValues = try? absolute.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
         let nodeKind: NodeKind = if resourceValues?.isSymbolicLink == true {
@@ -203,13 +204,16 @@ private final class StatusParserDelegate: NSObject, XMLParserDelegate {
             comment: lockValues["comment"],
             createdAt: lockValues["created"].flatMap(SVNDateParser.date)
         )
-        guard itemStatus != .normal && itemStatus != .none || remoteStatus != .normal && remoteStatus != .none || lock != nil else { return }
+        guard itemStatus != .normal && itemStatus != .none
+            || propertyStatus != .normal && propertyStatus != .none
+            || remoteStatus != .normal && remoteStatus != .none
+            || lock != nil else { return }
         items.append(StatusItem(
             relativePath: relative,
             absolutePath: absolute,
             nodeKind: nodeKind,
             workingCopyStatus: itemStatus,
-            propertyStatus: WorkingCopyStatus(svnValue: wcAttributes["props"] ?? "none"),
+            propertyStatus: propertyStatus,
             remoteStatus: remoteStatus,
             revision: Int(wcAttributes["revision"] ?? ""),
             copied: Self.bool(wcAttributes["copied"]),
