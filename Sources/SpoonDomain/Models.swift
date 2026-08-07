@@ -158,6 +158,12 @@ public struct SVNPropertyRecord: Codable, Hashable, Identifiable, Sendable {
 }
 
 public enum SVNIgnoreProperty {
+    public static func extensionPattern(forFileName fileName: String) -> String? {
+        let pathExtension = URL(fileURLWithPath: fileName).pathExtension
+        guard !pathExtension.isEmpty else { return nil }
+        return "*.\(pathExtension)"
+    }
+
     public static func adding(pattern: String, to existingValue: String) -> String {
         guard !pattern.isEmpty, !pattern.contains(where: \.isNewline) else { return existingValue }
         let existingPatterns = existingValue

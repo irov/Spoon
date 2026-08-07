@@ -11,6 +11,7 @@ struct LocalChangesView: View {
     @State private var changelistTarget: StatusItem?
     @State private var deleteTarget: StatusItem?
     @State private var moveTarget: StatusItem?
+    @State private var ignoreTarget: SVNIgnoreTarget?
 
     var body: some View {
         HSplitView {
@@ -101,6 +102,7 @@ struct LocalChangesView: View {
         .sheet(item: $lockTarget) { LockSheet(model: model, item: $0) }
         .sheet(item: $changelistTarget) { ChangelistSheet(model: model, item: $0) }
         .sheet(item: $moveTarget) { MoveWorkingCopyItemSheet(model: model, item: $0) }
+        .sheet(item: $ignoreTarget) { IgnoreSheet(model: model, target: $0) }
         .confirmationDialog(
             "Schedule path for deletion?",
             isPresented: Binding(get: { deleteTarget != nil }, set: { if !$0 { deleteTarget = nil } }),
@@ -276,7 +278,7 @@ struct LocalChangesView: View {
             Button("Properties…") { propertyTarget = item }
             if item.workingCopyStatus == .unversioned {
                 Button("Add") { Task { await model.add(paths: [item.relativePath]) } }
-                Button("Add to Ignore") { Task { await model.addToIgnore(path: item.relativePath) } }
+                Button("Add to Ignore") { ignoreTarget = model.ignoreTarget(for: item.relativePath) }
             } else {
                 Button("Move or Rename…") { moveTarget = item }
                 Button("Delete…", role: .destructive) { deleteTarget = item }
@@ -399,6 +401,78 @@ private struct MoveWorkingCopyItemSheet: View {
         }
         .padding(20).frame(width: 650)
         .onAppear { destination = item.absolutePath.path }
+    }
+}
+
+private struct IgnoreSheet: View {
+    @Bindable var model: AppModel
+    let target: SVNIgnoreTarget
+    @Environment(\.dismiss) private var dismiss
+    @State private var ignoreExtension = false
+
+    private var selectedPattern: String {
+        if ignoreExtension, let extensionPattern = target.extensionPattern {
+            return extensionPattern
+        }
+        return target.exactPattern
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Add to Ignore").font(.title3.bold())
+
+            Label(target.anchorPath, systemImage: target.nodeKind == .directory ? "folder.fill" : "doc.fill")
+                .lineLimit(2)
+                .truncationMode(.middle)
+
+            if let extensionPattern = target.extensionPattern {
+                Toggle(
+                    String(format: String(localized: "Ignore all files with this extension (%@)"), extensionPattern),
+                    isOn: $ignoreExtension
+                )
+                .toggleStyle(.checkbox)
+            } else if target.nodeKind == .directory {
+                Text("This directory and its unversioned contents will be ignored by the directory name.")
+                    .foregroundStyle(.secondary)
+            }
+
+            GroupBox {
+                Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 8) {
+                    GridRow {
+                        Text("Ignore rule").foregroundStyle(.secondary)
+                        Text(selectedPattern).font(.body.monospaced()).textSelection(.enabled)
+                    }
+                    GridRow {
+                        Text("Property target").foregroundStyle(.secondary)
+                        Text(target.parentURL.path)
+                            .font(.caption.monospaced())
+                            .lineLimit(2)
+                            .truncationMode(.middle)
+                            .textSelection(.enabled)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Text("SVN stores the rule on the parent folder. Patterns match only its direct children.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack {
+                Spacer()
+                Button("Cancel") { dismiss() }
+                Button("Add to Ignore") {
+                    Task {
+                        await model.addToIgnore(target: target, pattern: selectedPattern)
+                        dismiss()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(model.isBusy)
+            }
+        }
+        .padding(20)
+        .frame(width: 560)
     }
 }
 

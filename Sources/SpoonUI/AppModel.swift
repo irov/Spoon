@@ -7,6 +7,20 @@ import SpoonSecurity
 import SpoonStorage
 import SpoonSVN
 
+struct SVNIgnoreTarget: Identifiable, Sendable {
+    var id: String { anchorPath }
+    let requestedPath: String
+    let anchorPath: String
+    let parentURL: URL
+    let exactPattern: String
+    let nodeKind: NodeKind
+
+    var extensionPattern: String? {
+        guard nodeKind != .directory else { return nil }
+        return SVNIgnoreProperty.extensionPattern(forFileName: exactPattern)
+    }
+}
+
 @MainActor
 @Observable
 public final class AppModel {
@@ -435,26 +449,40 @@ public final class AppModel {
         }
     }
 
-    public func addToIgnore(path: String) async {
+    func ignoreTarget(for path: String) -> SVNIgnoreTarget? {
+        guard statusItems.contains(where: {
+            $0.relativePath == path && $0.workingCopyStatus == .unversioned
+        }) else { return nil }
+
+        let unversionedAncestors = statusItems.filter {
+            $0.workingCopyStatus == .unversioned
+                && (path == $0.relativePath || path.hasPrefix($0.relativePath + "/"))
+        }
+        guard let anchorItem = unversionedAncestors.min(by: { lhs, rhs in
+            lhs.relativePath.split(separator: "/").count < rhs.relativePath.split(separator: "/").count
+        }) else { return nil }
+
+        let anchorURL = anchorItem.absolutePath
+        return SVNIgnoreTarget(
+            requestedPath: path,
+            anchorPath: anchorItem.relativePath,
+            parentURL: anchorURL.deletingLastPathComponent(),
+            exactPattern: anchorURL.lastPathComponent,
+            nodeKind: anchorItem.nodeKind
+        )
+    }
+
+    func addToIgnore(target: SVNIgnoreTarget, pattern: String) async {
         guard let project = selectedProject,
-              let requestedItem = statusItems.first(where: { $0.relativePath == path }),
-              requestedItem.workingCopyStatus == .unversioned else { return }
+              let currentTarget = ignoreTarget(for: target.requestedPath),
+              currentTarget.anchorPath == target.anchorPath else { return }
 
-        let anchorPath = statusItems
-            .filter {
-                $0.workingCopyStatus == .unversioned
-                    && (path == $0.relativePath || path.hasPrefix($0.relativePath + "/"))
-            }
-            .min { lhs, rhs in
-                lhs.relativePath.split(separator: "/").count < rhs.relativePath.split(separator: "/").count
-            }?
-            .relativePath ?? path
-
-        let anchorURL = project.workingCopyRoot.appendingPathComponent(anchorPath)
-        let parentURL = anchorURL.deletingLastPathComponent()
-        let pattern = anchorURL.lastPathComponent
-        guard !pattern.isEmpty, !pattern.contains(where: \.isNewline) else {
-            present(SpoonError(title: "Path cannot be ignored", explanation: "SVN ignore patterns cannot contain line breaks."))
+        let parentURL = currentTarget.parentURL
+        let anchorPath = currentTarget.anchorPath
+        guard !pattern.isEmpty,
+              !pattern.contains(where: \.isNewline),
+              !pattern.contains("/") else {
+            present(SpoonError(title: "Path cannot be ignored", explanation: "SVN ignore patterns cannot contain line breaks or path separators."))
             return
         }
 
