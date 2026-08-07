@@ -102,6 +102,12 @@ final class CommandBuilderTests: XCTestCase {
         XCTAssertFalse(statusItem(workingCopyStatus: .missing).isCommitEligible)
         XCTAssertFalse(statusItem(workingCopyStatus: .conflicted).isCommitEligible)
         XCTAssertFalse(statusItem(workingCopyStatus: .modified, treeConflicted: true).isCommitEligible)
+
+        XCTAssertTrue(statusItem(workingCopyStatus: .modified).isStageable)
+        XCTAssertTrue(statusItem(workingCopyStatus: .unversioned).isStageable)
+        XCTAssertFalse(statusItem(workingCopyStatus: .ignored).isStageable)
+        XCTAssertFalse(statusItem(workingCopyStatus: .missing).isStageable)
+        XCTAssertFalse(statusItem(workingCopyStatus: .conflicted).isStageable)
     }
 
     private func statusItem(

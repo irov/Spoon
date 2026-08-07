@@ -182,6 +182,7 @@
 "Unstage All" = "Убрать все";
 "Stage Path" = "Подготовить путь";
 "Unstage Path" = "Убрать путь из подготовленных";
+"Add to SVN and Stage" = "Добавить в SVN и подготовить";
 "Stage Folder Paths" = "Подготовить пути в папке";
 "Unstage Folder Paths" = "Убрать пути папки из подготовленных";
 "All eligible paths are staged." = "Все доступные пути подготовлены.";

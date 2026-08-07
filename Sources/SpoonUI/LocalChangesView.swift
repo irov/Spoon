@@ -167,7 +167,7 @@ struct LocalChangesView: View {
                         .disabled(items.isEmpty)
                 } else {
                     Button("Stage All") { setStaged(items, staged: true) }
-                        .disabled(!items.contains(where: \.isCommitEligible))
+                        .disabled(model.isBusy || !items.contains(where: \.isStageable))
                 }
             }
             .buttonStyle(.borderless)
@@ -228,8 +228,8 @@ struct LocalChangesView: View {
             .labelsHidden()
             .toggleStyle(.checkbox)
             .controlSize(.small)
-            .disabled(!item.isCommitEligible)
-            .help(item.isCommitEligible ? (isStaged ? "Unstage Path" : "Stage Path") : "Add or schedule this path in SVN before committing")
+            .disabled(model.isBusy || (!isStaged && !item.isStageable))
+            .help(stageHelp(for: item, isStaged: isStaged))
             .accessibilityLabel(isStaged ? "Unstage Path" : "Stage Path")
 
             StatusBadge(status: item.workingCopyStatus)
@@ -259,10 +259,11 @@ struct LocalChangesView: View {
         .contentShape(Rectangle())
         .onTapGesture { Task { await model.loadDiff(path: item.relativePath) } }
         .contextMenu {
-            if item.isCommitEligible {
+            if isStaged || item.isStageable {
                 Button(isStaged ? "Unstage" : "Stage") {
                     setStaged([item], staged: !isStaged)
                 }
+                .disabled(model.isBusy)
                 Divider()
             }
             Button("Open") { Task { await model.open(path: item.relativePath) } }
@@ -314,7 +315,7 @@ struct LocalChangesView: View {
                     .foregroundStyle(isStaged ? Color.accentColor : Color.secondary)
             }
             .buttonStyle(.plain)
-            .disabled(items.isEmpty)
+            .disabled(model.isBusy || items.isEmpty)
             .help(isStaged ? "Unstage Folder Paths" : "Stage Folder Paths")
             .accessibilityLabel(isStaged ? "Unstage paths in \(node.name)" : "Stage paths in \(node.name)")
 
@@ -335,12 +336,19 @@ struct LocalChangesView: View {
     }
 
     private func setStaged(_ items: [StatusItem], staged: Bool) {
-        let paths = Set(items.filter(\.isCommitEligible).map(\.relativePath))
         if staged {
-            model.selectedPaths.formUnion(paths)
+            let paths = items.filter(\.isStageable).map(\.relativePath)
+            Task { await model.stage(paths: paths) }
         } else {
-            model.selectedPaths.subtract(paths)
+            model.selectedPaths.subtract(items.map(\.relativePath))
         }
+    }
+
+    private func stageHelp(for item: StatusItem, isStaged: Bool) -> LocalizedStringKey {
+        if isStaged { return "Unstage Path" }
+        if item.workingCopyStatus == .unversioned { return "Add to SVN and Stage" }
+        if item.isStageable { return "Stage Path" }
+        return "Add or schedule this path in SVN before committing"
     }
 
     private var commitComposer: some View {
@@ -581,7 +589,7 @@ private struct ChangeTreeNode: Identifiable {
     }
 
     private static func selectable(_ item: StatusItem) -> Bool {
-        item.isCommitEligible
+        item.isStageable
     }
 
     private struct TreeEntry {
