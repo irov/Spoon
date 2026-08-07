@@ -221,14 +221,13 @@ struct LocalChangesView: View {
 
     private func changeRow(_ item: StatusItem, title: String, showSeparator: Bool, isStaged: Bool) -> some View {
         HStack(spacing: 6) {
-            Button {
-                setStaged([item], staged: !isStaged)
-            } label: {
-                Image(systemName: isStaged ? "minus.circle" : "plus.circle")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(item.isCommitEligible ? Color.accentColor : Color.secondary)
-            }
-            .buttonStyle(.plain)
+            Toggle("", isOn: Binding(
+                get: { model.selectedPaths.contains(item.relativePath) },
+                set: { setStaged([item], staged: $0) }
+            ))
+            .labelsHidden()
+            .toggleStyle(.checkbox)
+            .controlSize(.small)
             .disabled(!item.isCommitEligible)
             .help(item.isCommitEligible ? (isStaged ? "Unstage Path" : "Stage Path") : "Add or schedule this path in SVN before committing")
             .accessibilityLabel(isStaged ? "Unstage Path" : "Stage Path")
@@ -310,9 +309,9 @@ struct LocalChangesView: View {
             Button {
                 setStaged(items, staged: !isStaged)
             } label: {
-                Image(systemName: isStaged ? "minus.circle" : "plus.circle")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.accentColor)
+                Image(systemName: isStaged ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 13))
+                    .foregroundStyle(isStaged ? Color.accentColor : Color.secondary)
             }
             .buttonStyle(.plain)
             .disabled(items.isEmpty)
