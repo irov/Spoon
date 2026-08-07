@@ -391,6 +391,35 @@ public final class AppModel {
         try? await storage?.saveDraft(CommitDraft(projectID: project.id, message: commitMessage, selectedRelativePaths: selectedPaths))
     }
 
+    public func stage(paths: [String]) async {
+        guard let project = selectedProject else { return }
+        let requestedPaths = Set(paths)
+        let requestedItems = statusItems.filter { requestedPaths.contains($0.relativePath) && $0.isStageable }
+        guard !requestedItems.isEmpty else { return }
+
+        let unversionedPaths = requestedItems
+            .filter { $0.workingCopyStatus == .unversioned }
+            .map(\.relativePath)
+
+        guard !unversionedPaths.isEmpty else {
+            selectedPaths.formUnion(requestedItems.map(\.relativePath))
+            return
+        }
+
+        await withActivity("Adding and staging paths…") {
+            activityMessage = try await svn.add(
+                project: project,
+                targets: absolute(unversionedPaths, project: project)
+            )
+            try await reloadStatus(project: project)
+            let stagedPaths = statusItems
+                .filter { requestedPaths.contains($0.relativePath) && $0.isCommitEligible }
+                .map(\.relativePath)
+            selectedPaths.formUnion(stagedPaths)
+            activityMessage = "Staged \(stagedPaths.count) path(s)."
+        }
+    }
+
     public func add(paths: [String]) async {
         guard let project = selectedProject else { return }
         await withActivity("Adding paths…") {

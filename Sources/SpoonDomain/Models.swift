@@ -213,6 +213,14 @@ public struct StatusItem: Codable, Hashable, Identifiable, Sendable {
 
         return workingCopyStatus.isCommitChange || propertyStatus.isCommitChange
     }
+
+    public var isStageable: Bool {
+        isCommitEligible || (
+            workingCopyStatus == .unversioned
+                && !treeConflicted
+                && propertyStatus != .conflicted
+        )
+    }
 }
 
 private extension WorkingCopyStatus {
