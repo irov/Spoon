@@ -205,6 +205,25 @@ public struct StatusItem: Codable, Hashable, Identifiable, Sendable {
         self.externalRootID = externalRootID
         self.lock = lock
     }
+
+    public var isCommitEligible: Bool {
+        guard !treeConflicted,
+              workingCopyStatus != .conflicted,
+              propertyStatus != .conflicted else { return false }
+
+        return workingCopyStatus.isCommitChange || propertyStatus.isCommitChange
+    }
+}
+
+private extension WorkingCopyStatus {
+    var isCommitChange: Bool {
+        switch self {
+        case .modified, .added, .deleted, .replaced, .merged:
+            true
+        default:
+            false
+        }
+    }
 }
 
 public struct WorkingCopyInfo: Codable, Hashable, Sendable {

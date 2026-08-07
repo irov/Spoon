@@ -90,4 +90,31 @@ final class CommandBuilderTests: XCTestCase {
         XCTAssertGreaterThan(result.output.count, 256_000)
         XCTAssertTrue(String(decoding: result.output.suffix(8), as: UTF8.self).contains("100000"))
     }
+
+    func testOnlyScheduledLocalChangesAreCommitEligible() {
+        XCTAssertTrue(statusItem(workingCopyStatus: .modified).isCommitEligible)
+        XCTAssertTrue(statusItem(workingCopyStatus: .added).isCommitEligible)
+        XCTAssertTrue(statusItem(workingCopyStatus: .deleted).isCommitEligible)
+        XCTAssertTrue(statusItem(workingCopyStatus: .normal, propertyStatus: .modified).isCommitEligible)
+
+        XCTAssertFalse(statusItem(workingCopyStatus: .unversioned).isCommitEligible)
+        XCTAssertFalse(statusItem(workingCopyStatus: .ignored).isCommitEligible)
+        XCTAssertFalse(statusItem(workingCopyStatus: .missing).isCommitEligible)
+        XCTAssertFalse(statusItem(workingCopyStatus: .conflicted).isCommitEligible)
+        XCTAssertFalse(statusItem(workingCopyStatus: .modified, treeConflicted: true).isCommitEligible)
+    }
+
+    private func statusItem(
+        workingCopyStatus: WorkingCopyStatus,
+        propertyStatus: WorkingCopyStatus = .none,
+        treeConflicted: Bool = false
+    ) -> StatusItem {
+        StatusItem(
+            relativePath: "path.txt",
+            absolutePath: URL(fileURLWithPath: "/tmp/path.txt"),
+            workingCopyStatus: workingCopyStatus,
+            propertyStatus: propertyStatus,
+            treeConflicted: treeConflicted
+        )
+    }
 }
