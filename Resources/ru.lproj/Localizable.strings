@@ -23,6 +23,8 @@
 "Filter paths" = "Фильтр путей";
 "Ignored" = "Игнорируемые";
 "Properties" = "Свойства";
+"SVN Properties" = "Свойства SVN";
+"Select to show the SVN property diff. Properties are staged with their path." = "Выберите, чтобы показать diff свойств SVN. Свойства подготавливаются вместе со своим путём.";
 "Switched" = "Переключён";
 "Copied" = "Скопирован";
 "Add" = "Добавить";

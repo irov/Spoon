@@ -23,6 +23,8 @@
 "Filter paths" = "Filter paths";
 "Ignored" = "Ignored";
 "Properties" = "Properties";
+"SVN Properties" = "SVN Properties";
+"Select to show the SVN property diff. Properties are staged with their path." = "Select to show the SVN property diff. Properties are staged with their path.";
 "Switched" = "Switched";
 "Copied" = "Copied";
 "Add" = "Add";

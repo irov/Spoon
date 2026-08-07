@@ -6,7 +6,6 @@ struct LocalChangesView: View {
     @AppStorage("localChangesPresentation") private var presentationRawValue = LocalChangesPresentation.tree.rawValue
     @State private var pendingRevert: [String] = []
     @State private var recursiveRevert = false
-    @State private var propertyTarget: StatusItem?
     @State private var lockTarget: StatusItem?
     @State private var changelistTarget: StatusItem?
     @State private var deleteTarget: StatusItem?
@@ -98,7 +97,6 @@ struct LocalChangesView: View {
         }
         .onChange(of: model.commitMessage) { _, _ in Task { await model.saveDraft() } }
         .onChange(of: model.selectedPaths) { _, _ in Task { await model.saveDraft() } }
-        .sheet(item: $propertyTarget) { PropertiesSheet(model: model, item: $0) }
         .sheet(item: $lockTarget) { LockSheet(model: model, item: $0) }
         .sheet(item: $changelistTarget) { ChangelistSheet(model: model, item: $0) }
         .sheet(item: $moveTarget) { MoveWorkingCopyItemSheet(model: model, item: $0) }
@@ -203,7 +201,7 @@ struct LocalChangesView: View {
                 ForEach(ChangeTreeNode.build(from: items)) { node in
                     ExpandedChangeTreeBranch(node: node) { node in
                         if let item = node.item {
-                            return AnyView(changeRow(item, title: node.name, showSeparator: false, isStaged: isStaged))
+                            return AnyView(changeItemRows(item, title: node.name, showSeparator: false, isStaged: isStaged))
                         } else {
                             return AnyView(folderRow(node, isStaged: isStaged))
                         }
@@ -214,11 +212,29 @@ struct LocalChangesView: View {
             .environment(\.defaultMinListRowHeight, 22)
         } else {
             List(items) { item in
-                changeRow(item, title: item.relativePath, showSeparator: true, isStaged: isStaged)
+                changeItemRows(item, title: item.relativePath, showSeparator: true, isStaged: isStaged)
             }
             .listStyle(.inset)
             .environment(\.defaultMinListRowHeight, 22)
         }
+    }
+
+    private func changeItemRows(_ item: StatusItem, title: String, showSeparator: Bool, isStaged: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if !item.isPropertyOnlyChange {
+                changeRow(item, title: title, showSeparator: false, isStaged: isStaged)
+            }
+            if item.hasPropertyChange {
+                propertyChangeRow(
+                    item,
+                    isStaged: isStaged,
+                    stagesPath: item.isPropertyOnlyChange,
+                    nested: !item.isPropertyOnlyChange
+                )
+            }
+        }
+        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+        .listRowSeparator(showSeparator ? .visible : .hidden)
     }
 
     private func changeRow(_ item: StatusItem, title: String, showSeparator: Bool, isStaged: Bool) -> some View {
@@ -234,16 +250,17 @@ struct LocalChangesView: View {
             .help(stageHelp(for: item, isStaged: isStaged))
             .accessibilityLabel(isStaged ? "Unstage Path" : "Stage Path")
 
-            StatusBadge(status: item.workingCopyStatus)
+            if item.hasWorkingCopyChange {
+                StatusBadge(status: item.workingCopyStatus)
+            } else {
+                Color.clear.frame(width: 18, height: 18)
+            }
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.system(size: 11, weight: .medium))
                     .lineLimit(1)
                     .truncationMode(.middle)
                 HStack(spacing: 6) {
-                    if item.propertyStatus != .none && item.propertyStatus != .normal {
-                        Label("Properties", systemImage: "tag").font(.system(size: 9.5)).foregroundStyle(.secondary)
-                    }
                     if item.switched { Text("Switched").font(.system(size: 9.5)).foregroundStyle(.orange) }
                     if item.copied { Text("Copied").font(.system(size: 9.5)).foregroundStyle(.secondary) }
                     if let changelist = item.changelist { Text(changelist).font(.system(size: 9.5)).foregroundStyle(.secondary) }
@@ -275,7 +292,6 @@ struct LocalChangesView: View {
                         .disabled(ExternalToolLauncher.application(for: preset) == nil || item.nodeKind == .directory || item.workingCopyStatus == .added)
                 }
             }
-            Button("Properties…") { propertyTarget = item }
             if item.workingCopyStatus == .unversioned {
                 Button("Add") { Task { await model.add(paths: [item.relativePath]) } }
                 Button("Add to Ignore") { ignoreTarget = model.ignoreTarget(for: item.relativePath) }
@@ -305,6 +321,49 @@ struct LocalChangesView: View {
                 pendingRevert = [item.relativePath]
             }
         }
+    }
+
+    private func propertyChangeRow(
+        _ item: StatusItem,
+        isStaged: Bool,
+        stagesPath: Bool,
+        nested: Bool
+    ) -> some View {
+        HStack(spacing: 6) {
+            if stagesPath {
+                Toggle("", isOn: Binding(
+                    get: { model.selectedPaths.contains(item.relativePath) },
+                    set: { setStaged([item], staged: $0) }
+                ))
+                .labelsHidden()
+                .toggleStyle(.checkbox)
+                .controlSize(.small)
+                .disabled(model.isBusy || (!isStaged && !item.isStageable))
+                .help(stageHelp(for: item, isStaged: isStaged))
+                .accessibilityLabel(isStaged ? "Unstage Path" : "Stage Path")
+            } else {
+                Color.clear.frame(width: 14, height: 14)
+            }
+
+            PropertyStatusBadge(status: item.propertyStatus)
+            Image(systemName: "tag.fill")
+                .font(.system(size: 9.5))
+                .foregroundStyle(.orange)
+            Text("SVN Properties")
+                .font(.system(size: 11, weight: .medium))
+            Spacer(minLength: 6)
+            Text(item.relativePath == "." ? "Working Copy" : item.relativePath)
+                .font(.system(size: 9.5))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.middle)
+        }
+        .padding(.leading, nested ? 24 : 0)
+        .padding(.vertical, 2)
+        .contentShape(Rectangle())
+        .onTapGesture { Task { await model.loadPropertyDiff(path: item.relativePath) } }
+        .help("Select to show the SVN property diff. Properties are staged with their path.")
+        .accessibilityLabel("SVN Properties — \(item.relativePath)")
     }
 
     private func folderRow(_ node: ChangeTreeNode, isStaged: Bool) -> some View {
@@ -476,42 +535,6 @@ private struct IgnoreSheet: View {
     }
 }
 
-private struct PropertiesSheet: View {
-    @Bindable var model: AppModel
-    let item: StatusItem
-    @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var value = ""
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Properties — \(item.relativePath)").font(.title3.bold())
-            List(model.inspectedProperties) { property in
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(property.name).font(.headline.monospaced())
-                        Spacer()
-                        Button("Delete", role: .destructive) { Task { await model.deleteProperty(path: item.relativePath, name: property.name) } }
-                    }
-                    Text(property.value).font(.body.monospaced()).textSelection(.enabled)
-                }
-            }
-            Divider()
-            TextField("Property name", text: $name)
-            TextEditor(text: $value).font(.body.monospaced()).frame(height: 90)
-            HStack {
-                Spacer()
-                Button("Close") { dismiss() }
-                Button("Set Property") { Task { await model.setProperty(path: item.relativePath, name: name, value: value) } }
-                    .buttonStyle(.borderedProminent).disabled(name.isEmpty)
-            }
-        }
-        .padding(20)
-        .frame(width: 620, height: 500)
-        .task { await model.loadProperties(path: item.relativePath) }
-    }
-}
-
 private struct LockSheet: View {
     @Bindable var model: AppModel
     let item: StatusItem
@@ -596,9 +619,48 @@ struct StatusBadge: View {
     private var accessibilityText: String { status.rawValue.capitalized }
 }
 
+private struct PropertyStatusBadge: View {
+    let status: WorkingCopyStatus
+
+    var body: some View {
+        Text("P")
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .frame(width: 18, height: 18)
+            .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 4))
+            .foregroundStyle(color)
+            .accessibilityLabel("Property \(status.rawValue)")
+    }
+
+    private var color: Color {
+        switch status {
+        case .added: .green
+        case .deleted, .missing: .red
+        case .conflicted, .obstructed: .orange
+        default: .purple
+        }
+    }
+}
+
 private enum LocalChangesPresentation: String {
     case tree
     case list
+}
+
+private extension StatusItem {
+    var hasWorkingCopyChange: Bool {
+        workingCopyStatus != .none && workingCopyStatus != .normal
+    }
+
+    var hasPropertyChange: Bool {
+        propertyStatus != .none && propertyStatus != .normal
+    }
+
+    var isPropertyOnlyChange: Bool {
+        hasPropertyChange
+            && !hasWorkingCopyChange
+            && (remoteStatus == .none || remoteStatus == .normal)
+            && !locked
+    }
 }
 
 private struct ExpandedChangeTreeBranch: View {

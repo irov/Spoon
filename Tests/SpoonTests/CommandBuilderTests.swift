@@ -46,6 +46,21 @@ final class CommandBuilderTests: XCTestCase {
         XCTAssertEqual(descriptor.arguments.suffix(2), ["--", "/tmp/file.swift"])
     }
 
+    func testDiffCanSelectTextOrPropertyChanges() {
+        let factory = SVNCommandFactory(
+            executable: URL(fileURLWithPath: "/usr/bin/svn"),
+            configDirectory: URL(fileURLWithPath: "/tmp/config")
+        )
+
+        let text = factory.diff(targets: ["/tmp/file.swift"], content: .textOnly)
+        XCTAssertTrue(text.arguments.contains("--ignore-properties"))
+        XCTAssertFalse(text.arguments.contains("--properties-only"))
+
+        let properties = factory.diff(targets: ["/tmp"], content: .propertiesOnly, depth: "empty")
+        XCTAssertTrue(properties.arguments.contains("--properties-only"))
+        XCTAssertEqual(properties.arguments.suffix(4), ["--depth", "empty", "--", "/tmp"])
+    }
+
     func testSVNErrorCodesAreStructuredAndDeduplicated() {
         let codes = SVNErrorExtractor.codes(in: "svn: E155004 locked\nsvn: E170001 auth\nsvn: E155004 again")
         XCTAssertEqual(codes.map(\.value), ["E155004", "E170001"])

@@ -4,6 +4,12 @@ import Security
 import SpoonDomain
 import SpoonSecurity
 
+public enum SVNDiffContent: Sendable {
+    case all
+    case textOnly
+    case propertiesOnly
+}
+
 public struct SVNCommandFactory: Sendable {
     public var executable: URL
     public var configDirectory: URL
@@ -131,12 +137,20 @@ public struct SVNCommandFactory: Sendable {
         targets: [String],
         revision: String? = nil,
         change: Int? = nil,
-        contextLines: Int? = nil
+        contextLines: Int? = nil,
+        content: SVNDiffContent = .all,
+        depth: String? = nil
     ) -> SVNCommandDescriptor<String> {
         var arguments = ["diff"]
         if let revision { arguments += ["-r", revision] }
         if let change { arguments += ["--change", String(change)] }
         if let contextLines { arguments += ["-x", "-U \(max(0, contextLines))"] }
+        switch content {
+        case .all: break
+        case .textOnly: arguments.append("--ignore-properties")
+        case .propertiesOnly: arguments.append("--properties-only")
+        }
+        if let depth { arguments += ["--depth", depth] }
         arguments.append("--")
         arguments += targets
         return descriptor(arguments: arguments, operation: .diff, operationClass: .workingCopyRead, targets: targets) { stdout, _ in

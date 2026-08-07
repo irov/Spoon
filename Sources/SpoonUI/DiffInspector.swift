@@ -261,6 +261,7 @@ private struct UnifiedDiffLineRow: View {
 
 private struct PropertyDiffRow: View {
     let text: String
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 0) {
@@ -268,16 +269,24 @@ private struct PropertyDiffRow: View {
             DiffLineNumber(number: nil)
             Divider()
             HStack(spacing: 6) {
-                Image(systemName: "tag").foregroundStyle(.orange)
+                if kind == .metadata {
+                    Image(systemName: "tag").foregroundStyle(.orange)
+                }
                 Text(verbatim: text).textSelection(.enabled)
                 Spacer(minLength: 12)
             }
             .padding(.leading, DiffMetrics.codeLeadingPadding)
             .frame(height: DiffMetrics.lineHeight)
-            .background(Color.orange.opacity(0.12))
+            .background(DiffPalette.lineBackground(for: kind, colorScheme: colorScheme))
         }
         .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
         .frame(height: DiffMetrics.lineHeight)
+    }
+
+    private var kind: DiffLineKind {
+        if text.hasPrefix("+") { return .addition }
+        if text.hasPrefix("-") { return .deletion }
+        return .metadata
     }
 }
 
@@ -305,6 +314,9 @@ private struct SideBySideDiffView: View {
                                     diffCell(row.right, side: .new, width: columnWidth)
                                 }
                             }
+                        }
+                        ForEach(Array(file.propertyChanges.enumerated()), id: \.offset) { _, property in
+                            PropertyDiffRow(text: property)
                         }
                     }
                 }
