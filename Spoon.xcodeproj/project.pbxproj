@@ -19,6 +19,7 @@
 		274FDEB0EEF8452485C7DA5C /* SecurityScopedBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 489C200FAC11DC3725E4B50B /* SecurityScopedBookmark.swift */; };
 		2D05C6E364AB9932009F9368 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E61E7ADF04C4EDF2432CDCB8 /* KeychainStore.swift */; };
 		2DA426E90102DB48AAE4B78D /* SecurityAndStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1572943B8175F9EC744E5748 /* SecurityAndStorageTests.swift */; };
+		2F246CA69687D94426001DAA /* FirebaseTelemetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29C7748951CDEF78F4826D37 /* FirebaseTelemetry.swift */; };
 		2FE0EBC455B03215D39E830C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63304568328CCD5DBB649D54 /* SettingsView.swift */; };
 		36AFF66FE818ADDD69593EE7 /* XMLParsers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12563A658EC32CA215AEDC3 /* XMLParsers.swift */; };
 		43BC0706EDF594529E4230F2 /* SpoonSecurity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; };
@@ -34,6 +35,7 @@
 		56F57F0438E4D30D981A73D9 /* SpoonDiagnostics.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5B0C9C6A76E2D976D3CC7BF2 /* SpoonSVN.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		5BC2B6A0AD79AC3EDBC7653B /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
+		5F234E0132A70E27A19BBCBE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 477C03B567AEA6F428427017 /* GoogleService-Info.plist */; };
 		62F1E41F7A5D508B575D12E6 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8529E6611CB8D5A56D56B9DC /* main.swift */; };
 		69498611AD9721798869ACEB /* WorkingCopyWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67AE2D7556075CBF0CD7DB9D /* WorkingCopyWatcher.swift */; };
 		71EB96E22B2A271B830709D8 /* SpoonStorage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5EDE80259042813CDA41140 /* SpoonStorage.framework */; };
@@ -67,6 +69,7 @@
 		CB334E7C9A24D76A415476CE /* SpoonUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6AE7209D10B45D9EC282D156 /* SpoonUI.framework */; };
 		CF034A716B501DF46034DFEE /* ToolchainIntegrity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0B0574FE310BBF7D179AF9 /* ToolchainIntegrity.swift */; };
 		D16206EC7F95FBED5DA9526B /* SpoonSVN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; };
+		D34F8C7B57DE8CB2D73068FB /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = E33BFA6CB3FC74CB32C70CE5 /* FirebaseCrashlytics */; };
 		D413825682A5033CACE19AB2 /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DA410251B71522AA55ABB4 /* ParserTests.swift */; };
 		DB8FA98168227EB1317A43ED /* Redactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA75F1393F00D1149F20F6D8 /* Redactor.swift */; };
 		DE473332B95581D78345F972 /* SpoonDiagnostics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */; };
@@ -75,6 +78,7 @@
 		E641D3C991A32A19650E8A2A /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
 		E9B0615C94498B7A18C20B7B /* SpoonSVN.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		ECF8FDF74FBF79DDFD5BCDBA /* CommandBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB673597694D849BC490C5FA /* CommandBuilderTests.swift */; };
+		ED231C08CA3124C154D98DBC /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = BD147516DE475F8C680380FF /* FirebaseAnalyticsCore */; };
 		ED578BD84D78E6DEF9793284 /* SVNExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E940A2A64DE5388FFBE59F78 /* SVNExecutor.swift */; };
 		F05F8965BAE910F03D068240 /* SpoonSVN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */; };
 		F4C4267669A3C8817895DE90 /* SecureTemporaryFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D533D3743A7B26E2D58977 /* SecureTemporaryFile.swift */; };
@@ -316,11 +320,13 @@
 		228FDDE5D3A33229FFF5AF72 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonSecurity.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		27E31CA0A349D1AA3846BF62 /* SpoonTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpoonTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		29C7748951CDEF78F4826D37 /* FirebaseTelemetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseTelemetry.swift; sourceTree = "<group>"; };
 		2B3A96BE4010DB78CD3EBE30 /* DiffInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiffInspector.swift; sourceTree = "<group>"; };
 		3DD6071AEDD88C9355DD6323 /* SpoonApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoonApp.swift; sourceTree = "<group>"; };
 		3EC6AAF66959FB62F85CF670 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		41E43C57BE4CC5D59642B0D5 /* DiagnosticExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticExporter.swift; sourceTree = "<group>"; };
 		466BEBC6ACF3EA46A40A60C3 /* SpoonSVN.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonSVN.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		477C03B567AEA6F428427017 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		489C200FAC11DC3725E4B50B /* SecurityScopedBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScopedBookmark.swift; sourceTree = "<group>"; };
 		4BA4614D33EFB6CE3EA153E5 /* SVNService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNService.swift; sourceTree = "<group>"; };
 		4C38B5F1FEA118E87A5A5AF8 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
@@ -380,6 +386,8 @@
 				8943510551B0F18F923C56CA /* SpoonSVN.framework in Frameworks */,
 				08EB59292772E34D8584C05E /* SpoonDiff.framework in Frameworks */,
 				9F323EB31205F61ECD55D930 /* SpoonDiagnostics.framework in Frameworks */,
+				ED231C08CA3124C154D98DBC /* FirebaseAnalyticsCore in Frameworks */,
+				D34F8C7B57DE8CB2D73068FB /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -469,6 +477,7 @@
 		2BFC77002B8186F08FD109AD /* Config */ = {
 			isa = PBXGroup;
 			children = (
+				477C03B567AEA6F428427017 /* GoogleService-Info.plist */,
 				228FDDE5D3A33229FFF5AF72 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Config;
@@ -582,6 +591,7 @@
 		B01CFA2AB3017CD3AF0CAAB1 /* SpoonApp */ = {
 			isa = PBXGroup;
 			children = (
+				29C7748951CDEF78F4826D37 /* FirebaseTelemetry.swift */,
 				3DD6071AEDD88C9355DD6323 /* SpoonApp.swift */,
 			);
 			path = SpoonApp;
@@ -748,6 +758,7 @@
 				338F662433B1AD9E0C0B5E0B /* Frameworks */,
 				26FFC623670AB2309C2CC640 /* Embed Frameworks */,
 				BC9F352B5E8653D539DF4CBE /* Embed Bundled SVN Toolchain */,
+				AEBECD768356874D48124871 /* Upload Crashlytics Symbols */,
 			);
 			buildRules = (
 			);
@@ -763,6 +774,8 @@
 			);
 			name = Spoon;
 			packageProductDependencies = (
+				BD147516DE475F8C680380FF /* FirebaseAnalyticsCore */,
+				E33BFA6CB3FC74CB32C70CE5 /* FirebaseCrashlytics */,
 			);
 			productName = Spoon;
 			productReference = B7DB400D005E7325D03769AD /* Spoon.app */;
@@ -897,6 +910,9 @@
 			);
 			mainGroup = DFFE904582EE79D6CE55651D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				CB712DEE5475AA7AC2611EB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 42A78F59D4F794FF719413E6 /* Products */;
 			projectDirPath = "";
@@ -922,6 +938,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				76DAE8293138BAC159C53179 /* Assets.xcassets in Resources */,
+				5F234E0132A70E27A19BBCBE /* GoogleService-Info.plist in Resources */,
 				72D4574A6F500807C95D8FEB /* Localizable.strings in Resources */,
 				55C581FE0BF05CF9854F32B8 /* PrivacyInfo.xcprivacy in Resources */,
 			);
@@ -930,6 +947,31 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		AEBECD768356874D48124871 /* Upload Crashlytics Symbols */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)",
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(PRODUCT_NAME)",
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Info.plist",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+				"$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(PRODUCT_NAME).debug.dylib",
+			);
+			name = "Upload Crashlytics Symbols";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"";
+		};
 		BC9F352B5E8653D539DF4CBE /* Embed Bundled SVN Toolchain */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -1005,6 +1047,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F246CA69687D94426001DAA /* FirebaseTelemetry.swift in Sources */,
 				26DA42CCD8633C25A698DDDE /* SpoonApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1211,21 +1254,17 @@
 				CODE_SIGN_ENTITLEMENTS = Config/Spoon.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Spoon;
-				INFOPLIST_KEY_CFBundleName = Spoon;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Yurii Levchenko";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				INFOPLIST_FILE = Config/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
+				OTHER_LDFLAGS = "$(inherited) -ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon;
 				PRODUCT_MODULE_NAME = SpoonApp;
 				PRODUCT_NAME = Spoon;
@@ -1650,21 +1689,17 @@
 				CODE_SIGN_ENTITLEMENTS = Config/Spoon.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Spoon;
-				INFOPLIST_KEY_CFBundleName = Spoon;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Yurii Levchenko";
-				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				INFOPLIST_FILE = Config/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
+				OTHER_LDFLAGS = "$(inherited) -ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon;
 				PRODUCT_MODULE_NAME = SpoonApp;
 				PRODUCT_NAME = Spoon;
@@ -1884,6 +1919,30 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		CB712DEE5475AA7AC2611EB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = exactVersion;
+				version = 12.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BD147516DE475F8C680380FF /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CB712DEE5475AA7AC2611EB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		E33BFA6CB3FC74CB32C70CE5 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = CB712DEE5475AA7AC2611EB9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4131C0C359B456EC223CDF33 /* Project object */;
 }

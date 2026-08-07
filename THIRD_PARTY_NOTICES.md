@@ -21,3 +21,14 @@ by the toolchain manifest.
 The macOS system libraries referenced by the executables are supplied by Apple
 and are not redistributed by Spoon. Spoon does not claim ownership of any
 third-party component or trademark.
+
+Spoon also links the following Swift Package Manager products:
+
+| Component | Version | License / terms |
+| --- | --- | --- |
+| Firebase Apple SDK (Core and Crashlytics) | 12.17.0 | Apache License 2.0 |
+| Google Analytics for Firebase | 12.17.0 | Google APIs Terms of Service and Google Analytics for Firebase terms |
+
+Firebase and Google Analytics are trademarks of Google LLC. Swift Package
+Manager includes the SDK privacy manifests in the application build; the
+applicable upstream licenses and terms are identified above.
