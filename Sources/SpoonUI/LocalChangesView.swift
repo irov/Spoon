@@ -122,11 +122,13 @@ struct LocalChangesView: View {
     private var changesList: some View {
         if presentation == .tree {
             List {
-                OutlineGroup(ChangeTreeNode.build(from: model.filteredStatusItems), children: \.children) { node in
-                    if let item = node.item {
-                        changeRow(item, title: node.name, showSeparator: false)
-                    } else {
-                        folderRow(node)
+                ForEach(ChangeTreeNode.build(from: model.filteredStatusItems)) { node in
+                    ExpandedChangeTreeBranch(node: node) { node in
+                        if let item = node.item {
+                            return AnyView(changeRow(item, title: node.name, showSeparator: false))
+                        } else {
+                            return AnyView(folderRow(node))
+                        }
                     }
                 }
             }
@@ -434,6 +436,26 @@ struct StatusBadge: View {
 private enum LocalChangesPresentation: String {
     case tree
     case list
+}
+
+private struct ExpandedChangeTreeBranch: View {
+    let node: ChangeTreeNode
+    let row: (ChangeTreeNode) -> AnyView
+    @State private var isExpanded = true
+
+    var body: some View {
+        if let children = node.children {
+            DisclosureGroup(isExpanded: $isExpanded) {
+                ForEach(children) { child in
+                    ExpandedChangeTreeBranch(node: child, row: row)
+                }
+            } label: {
+                row(node)
+            }
+        } else {
+            row(node)
+        }
+    }
 }
 
 private struct ChangeTreeNode: Identifiable {
