@@ -211,3 +211,10 @@
 "Details" = "Details";
 "Your email (optional)" = "Your email (optional)";
 "Open in Mail" = "Open in Mail";
+"Help Improve Spoon" = "Help Improve Spoon";
+"Allow Spoon to collect technical usage analytics and crash reports? This data helps us improve reliability. Repository contents, file contents, credentials, and commit messages are never collected. You can change this choice at any time in Settings." = "Allow Spoon to collect technical usage analytics and crash reports? This data helps us improve reliability. Repository contents, file contents, credentials, and commit messages are never collected. You can change this choice at any time in Settings.";
+"Allow" = "Allow";
+"Don't Allow" = "Don't Allow";
+"Privacy" = "Privacy";
+"Share technical analytics and crash reports" = "Share technical analytics and crash reports";
+"Send technical usage analytics and crash reports to help improve Spoon. Repository contents, file contents, credentials, and commit messages are never included." = "Send technical usage analytics and crash reports to help improve Spoon. Repository contents, file contents, credentials, and commit messages are never included.";

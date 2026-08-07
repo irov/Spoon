@@ -3,6 +3,8 @@ import SwiftUI
 
 @main
 struct SpoonApp: App {
+    @NSApplicationDelegateAdaptor(SpoonApplicationDelegate.self) private var applicationDelegate
+
     var body: some Scene {
         WindowGroup("Spoon") {
             SpoonWindow()
@@ -33,7 +35,17 @@ private struct SpoonWindow: View {
 
 private struct SettingsContainer: View {
     @State private var model = AppModel()
-    var body: some View { SettingsView(model: model) }
+    @AppStorage(TelemetryPreferences.collectionEnabledKey) private var technicalDataCollectionEnabled = false
+
+    var body: some View {
+        SettingsView(
+            model: model,
+            technicalDataCollectionEnabled: $technicalDataCollectionEnabled,
+            onTechnicalDataCollectionChanged: { enabled in
+                FirebaseTelemetry.shared.updateConsent(enabled: enabled)
+            }
+        )
+    }
 }
 
 private struct SpoonCommands: Commands {

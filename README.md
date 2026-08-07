@@ -39,7 +39,10 @@ Spoon runs in App Sandbox. Working-copy access is retained with app-scoped
 security bookmarks and handed to the sandbox-inheriting SVN runner over stdin.
 Credentials are stored in Keychain; passwords, bookmark data, and commit
 messages are never placed in command arguments, the environment, or diagnostics.
-The app has no telemetry and sends no crash reports. Diagnostic export is a
+Firebase Analytics and Crashlytics are disabled until the user explicitly
+allows technical data collection on first launch or in Settings. Spoon does not
+attach repository contents, file contents, credentials, commit messages, user
+identifiers, or custom path logs to Firebase. Diagnostic export remains a
 manual, local-only action.
 
 ## License

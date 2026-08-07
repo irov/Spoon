@@ -211,3 +211,10 @@
 "Details" = "Подробности";
 "Your email (optional)" = "Ваш email (необязательно)";
 "Open in Mail" = "Открыть в Почте";
+"Help Improve Spoon" = "Помогите улучшить Spoon";
+"Allow Spoon to collect technical usage analytics and crash reports? This data helps us improve reliability. Repository contents, file contents, credentials, and commit messages are never collected. You can change this choice at any time in Settings." = "Разрешить Spoon собирать техническую аналитику использования и отчёты о сбоях? Эти данные помогают повышать надёжность приложения. Содержимое репозиториев и файлов, учётные данные и сообщения коммитов никогда не собираются. Вы можете изменить этот выбор в Настройках в любое время.";
+"Allow" = "Разрешить";
+"Don't Allow" = "Не разрешать";
+"Privacy" = "Конфиденциальность";
+"Share technical analytics and crash reports" = "Отправлять техническую аналитику и отчёты о сбоях";
+"Send technical usage analytics and crash reports to help improve Spoon. Repository contents, file contents, credentials, and commit messages are never included." = "Отправляйте техническую аналитику использования и отчёты о сбоях, чтобы помочь улучшить Spoon. Содержимое репозиториев и файлов, учётные данные и сообщения коммитов никогда не включаются.";
