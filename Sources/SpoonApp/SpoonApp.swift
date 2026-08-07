@@ -13,6 +13,16 @@ struct SpoonApp: App {
         Settings {
             SettingsContainer()
         }
+
+        Window("Spoon Help", id: "spoon-help") {
+            SupportView()
+        }
+        .windowResizability(.contentSize)
+
+        Window("Feedback", id: "spoon-feedback") {
+            FeedbackView()
+        }
+        .windowResizability(.contentSize)
     }
 }
 
@@ -27,6 +37,8 @@ private struct SettingsContainer: View {
 }
 
 private struct SpoonCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+
     var body: some Commands {
         CommandGroup(after: .newItem) {
             Button("Open Working Copy…") { NotificationCenter.default.post(name: .spoonOpenWorkingCopy, object: nil) }
@@ -46,6 +58,10 @@ private struct SpoonCommands: Commands {
             Divider()
             Button("Command Palette") { NotificationCenter.default.post(name: .spoonCommandPalette, object: nil) }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
+        }
+        CommandGroup(replacing: .help) {
+            Button("Spoon Help") { openWindow(id: "spoon-help") }
+            Button("Send Feedback…") { openWindow(id: "spoon-feedback") }
         }
     }
 }

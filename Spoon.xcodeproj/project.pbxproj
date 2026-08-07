@@ -22,6 +22,7 @@
 		2FE0EBC455B03215D39E830C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63304568328CCD5DBB649D54 /* SettingsView.swift */; };
 		36AFF66FE818ADDD69593EE7 /* XMLParsers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B12563A658EC32CA215AEDC3 /* XMLParsers.swift */; };
 		43BC0706EDF594529E4230F2 /* SpoonSecurity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */; };
+		4828F7FE9BDCA20CCDC2DA0F /* SupportViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7BDDFFD0E5CA06ECB5BC08 /* SupportViews.swift */; };
 		4843DC78901BABF787BD0CDA /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
 		485255AE2A25C6FA062C6304 /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
 		4C711C5201E7F21D281365A8 /* SVNIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C52C09A72B21850703508 /* SVNIntegrationTests.swift */; };
@@ -310,6 +311,7 @@
 		1572943B8175F9EC744E5748 /* SecurityAndStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityAndStorageTests.swift; sourceTree = "<group>"; };
 		1B49B103202A8BE30C94EED3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		1D9CA170CFC222590E1BE75C /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		1E7BDDFFD0E5CA06ECB5BC08 /* SupportViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportViews.swift; sourceTree = "<group>"; };
 		20CFD73C8F1859C9994AF688 /* UnifiedDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedDiff.swift; sourceTree = "<group>"; };
 		228FDDE5D3A33229FFF5AF72 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2384FFE1681E6F817C0DB011 /* SpoonSecurity.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SpoonSecurity.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -529,6 +531,7 @@
 				67D41A32A54E5A393BD77B80 /* LocalChangesView.swift */,
 				1D9CA170CFC222590E1BE75C /* RootView.swift */,
 				63304568328CCD5DBB649D54 /* SettingsView.swift */,
+				1E7BDDFFD0E5CA06ECB5BC08 /* SupportViews.swift */,
 				EF7D0CFA1B765FADEFB830C0 /* WorkflowViews.swift */,
 				67AE2D7556075CBF0CD7DB9D /* WorkingCopyWatcher.swift */,
 			);
@@ -1028,6 +1031,7 @@
 				0788E4F38D74F36B96896A15 /* LocalChangesView.swift in Sources */,
 				55A4F5A129A9F55AF47FEDC7 /* RootView.swift in Sources */,
 				2FE0EBC455B03215D39E830C /* SettingsView.swift in Sources */,
+				4828F7FE9BDCA20CCDC2DA0F /* SupportViews.swift in Sources */,
 				4D2321644081B80353EA8757 /* WorkflowViews.swift in Sources */,
 				69498611AD9721798869ACEB /* WorkingCopyWatcher.swift in Sources */,
 			);
