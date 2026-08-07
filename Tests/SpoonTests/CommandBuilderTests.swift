@@ -29,6 +29,19 @@ final class CommandBuilderTests: XCTestCase {
         }
     }
 
+    func testFullFileDiffUsesInternalSVNContextOption() {
+        let factory = SVNCommandFactory(
+            executable: URL(fileURLWithPath: "/usr/bin/svn"),
+            configDirectory: URL(fileURLWithPath: "/tmp/config")
+        )
+        let descriptor = factory.diff(targets: ["/tmp/file.swift"], contextLines: Int(Int32.max))
+        guard let extensionIndex = descriptor.arguments.firstIndex(of: "-x") else {
+            return XCTFail("Expected the internal diff extension option")
+        }
+        XCTAssertEqual(descriptor.arguments[extensionIndex + 1], "-U 2147483647")
+        XCTAssertEqual(descriptor.arguments.suffix(2), ["--", "/tmp/file.swift"])
+    }
+
     func testSVNErrorCodesAreStructuredAndDeduplicated() {
         let codes = SVNErrorExtractor.codes(in: "svn: E155004 locked\nsvn: E170001 auth\nsvn: E155004 again")
         XCTAssertEqual(codes.map(\.value), ["E155004", "E170001"])

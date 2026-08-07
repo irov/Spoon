@@ -89,6 +89,12 @@ final class ParserTests: XCTestCase {
         ])
     }
 
+    func testUnifiedDiffIgnoresTrailingOutputTerminator() {
+        let text = "Index: hello.txt\n--- hello.txt\t(revision 1)\n+++ hello.txt\t(working copy)\n@@ -1 +1 @@\n-old\n+new\n"
+        let lines = UnifiedDiffParser.parse(text).files.first?.hunks.first?.lines
+        XCTAssertEqual(lines?.map(\.kind), [.deletion, .addition])
+    }
+
     func testPropertyParserPreservesMultilineValue() throws {
         let xml = """
         <?xml version="1.0"?><properties><target path="/tmp/wc/file.txt">

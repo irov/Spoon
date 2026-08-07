@@ -24,6 +24,8 @@ public final class AppModel {
     public var diffBeforeImageData: Data?
     public var diffAfterImageData: Data?
     public var diffBinaryDescription: String?
+    var diffContextMode: DiffContextMode = .changes
+    var isDiffContextLoading = false
     public var workingCopyInfo: WorkingCopyInfo?
     public var revisions: [RevisionRecord] = []
     public var selectedRevision: Int?
@@ -48,6 +50,15 @@ public final class AppModel {
     private var taskObserver: Task<Void, Never>?
     private var workingCopyWatcher: WorkingCopyWatcher?
     private var pendingAutomaticRefresh = false
+    private var currentDiffRequest: DiffRequest?
+
+    private static let fullFileDiffContextLines = Int(Int32.max)
+
+    private enum DiffRequest {
+        case workingCopy(path: String)
+        case revision(Int)
+        case revisionPath(path: String, revision: Int)
+    }
 
     public init() {
         svn = SVNService()
@@ -128,6 +139,7 @@ public final class AppModel {
         diffBeforeImageData = nil
         diffAfterImageData = nil
         diffBinaryDescription = nil
+        currentDiffRequest = nil
         selectedPaths = []
         repositoryURL = project.repositoryRootURL
         workingCopyWatcher?.watch(project.workingCopyRoot)
@@ -180,6 +192,7 @@ public final class AppModel {
         try? await storage?.removeProject(id: project.id)
         statusItems = []
         diffText = ""
+        currentDiffRequest = nil
         if selectedProject != nil { await refreshStatus() }
     }
 
@@ -211,6 +224,7 @@ public final class AppModel {
     }
 
     public func loadDiff(path: String) async {
+        currentDiffRequest = .workingCopy(path: path)
         guard let project = selectedProject else { return }
         do {
             let file = project.workingCopyRoot.appendingPathComponent(path)
@@ -280,7 +294,11 @@ public final class AppModel {
                 return
             }
 
-            diffText = try await svn.diff(project: project, paths: [file.path])
+            diffText = try await svn.diff(
+                project: project,
+                paths: [file.path],
+                contextLines: requestedDiffContextLines
+            )
             if diffText.isEmpty, item?.nodeKind != .directory {
                 let size = (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init)
                 diffBinaryDescription = size.map { "Binary file · \(ByteCountFormatter.string(fromByteCount: $0, countStyle: .file))" } ?? "Binary file"
@@ -485,17 +503,24 @@ public final class AppModel {
     }
 
     public func loadRevisionDiff(_ revision: Int) async {
+        currentDiffRequest = .revision(revision)
         guard let project = selectedProject else { return }
         do {
             diffBeforeImageData = nil
             diffAfterImageData = nil
             diffBinaryDescription = nil
             let target = project.repositoryRootURL?.absoluteString ?? project.workingCopyRoot.path
-            diffText = try await svn.diff(project: project, paths: [target], change: revision)
+            diffText = try await svn.diff(
+                project: project,
+                paths: [target],
+                change: revision,
+                contextLines: requestedDiffContextLines
+            )
         } catch { present(error) }
     }
 
     public func loadRevisionPathDiff(_ repositoryPath: String, revision: Int) async {
+        currentDiffRequest = .revisionPath(path: repositoryPath, revision: revision)
         guard let project = selectedProject else { return }
         do {
             diffBeforeImageData = nil
@@ -505,11 +530,37 @@ public final class AppModel {
             let target = project.repositoryRootURL?
                 .appendingPathComponent(relativePath)
                 .absoluteString ?? project.workingCopyRoot.appendingPathComponent(relativePath).path
-            diffText = try await svn.diff(project: project, paths: [target], change: revision)
+            diffText = try await svn.diff(
+                project: project,
+                paths: [target],
+                change: revision,
+                contextLines: requestedDiffContextLines
+            )
         } catch {
             diffText = ""
             present(error)
         }
+    }
+
+    func setDiffContextMode(_ mode: DiffContextMode) async {
+        guard mode != diffContextMode else { return }
+        diffContextMode = mode
+        guard let currentDiffRequest else { return }
+
+        isDiffContextLoading = true
+        defer { isDiffContextLoading = false }
+        switch currentDiffRequest {
+        case let .workingCopy(path):
+            await loadDiff(path: path)
+        case let .revision(revision):
+            await loadRevisionDiff(revision)
+        case let .revisionPath(path, revision):
+            await loadRevisionPathDiff(path, revision: revision)
+        }
+    }
+
+    private var requestedDiffContextLines: Int? {
+        diffContextMode == .fullFile ? Self.fullFileDiffContextLines : nil
     }
 
     public func loadRepository(url: URL? = nil) async {

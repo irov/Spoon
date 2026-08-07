@@ -7,6 +7,9 @@ struct DiffInspector: View {
     let beforeImageData: Data?
     let afterImageData: Data?
     let binaryDescription: String?
+    let contextMode: DiffContextMode
+    let isContextLoading: Bool
+    let onContextModeChange: (DiffContextMode) -> Void
     @State private var layout: DiffLayoutChoice = .unified
 
     var body: some View {
@@ -14,6 +17,25 @@ struct DiffInspector: View {
             HStack {
                 Text("Diff").font(.headline)
                 Spacer()
+                Picker("Context", selection: contextModeBinding) {
+                    Label("Changes Only", systemImage: "eye.slash")
+                        .labelStyle(.iconOnly)
+                        .tag(DiffContextMode.changes)
+                    Label("Full File", systemImage: "eye")
+                        .labelStyle(.iconOnly)
+                        .tag(DiffContextMode.fullFile)
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .controlSize(.small)
+                .frame(width: 70)
+                .disabled(!supportsContextModes || isContextLoading)
+                .help(contextMode == .fullFile ? "Showing Full File" : "Showing Changes Only")
+                .overlay {
+                    if isContextLoading {
+                        ProgressView().controlSize(.small)
+                    }
+                }
                 Picker("Layout", selection: $layout) {
                     Text("Unified").tag(DiffLayoutChoice.unified)
                     Text("Side by Side").tag(DiffLayoutChoice.sideBySide)
@@ -42,6 +64,17 @@ struct DiffInspector: View {
         }
     }
 
+    private var contextModeBinding: Binding<DiffContextMode> {
+        Binding(get: { contextMode }, set: onContextModeChange)
+    }
+
+    private var supportsContextModes: Bool {
+        beforeImageData == nil
+            && afterImageData == nil
+            && binaryDescription == nil
+            && text.contains("@@ ")
+    }
+
     private var imageComparison: some View {
         HStack(spacing: 0) {
             imagePane(title: "Before", data: beforeImageData)
@@ -64,6 +97,11 @@ struct DiffInspector: View {
         }
     }
 
+}
+
+enum DiffContextMode: String, CaseIterable {
+    case changes
+    case fullFile
 }
 
 private enum DiffLayoutChoice { case unified, sideBySide }

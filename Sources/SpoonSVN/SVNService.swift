@@ -53,8 +53,19 @@ public actor SVNService {
         try await perform(factory.list(url: url, revision: revision), projectID: project.id, workingCopyRoot: nil)
     }
 
-    public func diff(project: ProjectRecord, paths: [String], revision: String? = nil, change: Int? = nil) async throws -> String {
-        try await perform(factory.diff(targets: paths, revision: revision, change: change), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+    public func diff(
+        project: ProjectRecord,
+        paths: [String],
+        revision: String? = nil,
+        change: Int? = nil,
+        contextLines: Int? = nil
+    ) async throws -> String {
+        try await perform(
+            factory.diff(targets: paths, revision: revision, change: change, contextLines: contextLines),
+            projectID: project.id,
+            workingCopyRoot: project.workingCopyRoot,
+            securityScopedBookmark: project.workingCopyBookmark
+        )
     }
 
     public func blame(project: ProjectRecord, target: String, revision: String? = nil) async throws -> [BlameLine] {
