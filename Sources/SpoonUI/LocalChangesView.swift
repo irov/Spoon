@@ -119,16 +119,91 @@ struct LocalChangesView: View {
         LocalChangesPresentation(rawValue: presentationRawValue) ?? .tree
     }
 
+    private var unstagedItems: [StatusItem] {
+        model.filteredStatusItems.filter { !model.selectedPaths.contains($0.relativePath) }
+    }
+
+    private var stagedItems: [StatusItem] {
+        model.filteredStatusItems.filter { model.selectedPaths.contains($0.relativePath) }
+    }
+
     @ViewBuilder
     private var changesList: some View {
+        VSplitView {
+            changesSection(
+                title: "Unstaged",
+                emptyMessage: "All eligible paths are staged.",
+                items: unstagedItems,
+                isStaged: false
+            )
+            .frame(minHeight: 110)
+
+            changesSection(
+                title: "Staged",
+                emptyMessage: "Stage whole paths to include them in the commit.",
+                items: stagedItems,
+                isStaged: true
+            )
+            .frame(minHeight: 110)
+        }
+    }
+
+    private func changesSection(
+        title: LocalizedStringKey,
+        emptyMessage: LocalizedStringKey,
+        items: [StatusItem],
+        isStaged: Bool
+    ) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold))
+                Text(items.count, format: .number)
+                    .font(.system(size: 10, weight: .medium).monospacedDigit())
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if isStaged {
+                    Button("Unstage All") { setStaged(items, staged: false) }
+                        .disabled(items.isEmpty)
+                } else {
+                    Button("Stage All") { setStaged(items, staged: true) }
+                        .disabled(!items.contains(where: \.isCommitEligible))
+                }
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .padding(.horizontal, 10)
+            .frame(height: 30)
+            .background(.bar)
+
+            Divider()
+
+            if items.isEmpty {
+                VStack(spacing: 6) {
+                    Image(systemName: isStaged ? "tray" : "checkmark.circle")
+                        .font(.title3)
+                        .foregroundStyle(.tertiary)
+                    Text(emptyMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                changeRows(items: items, isStaged: isStaged)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func changeRows(items: [StatusItem], isStaged: Bool) -> some View {
         if presentation == .tree {
             List {
-                ForEach(ChangeTreeNode.build(from: model.filteredStatusItems)) { node in
+                ForEach(ChangeTreeNode.build(from: items)) { node in
                     ExpandedChangeTreeBranch(node: node) { node in
                         if let item = node.item {
-                            return AnyView(changeRow(item, title: node.name, showSeparator: false))
+                            return AnyView(changeRow(item, title: node.name, showSeparator: false, isStaged: isStaged))
                         } else {
-                            return AnyView(folderRow(node))
+                            return AnyView(folderRow(node, isStaged: isStaged))
                         }
                     }
                 }
@@ -136,28 +211,27 @@ struct LocalChangesView: View {
             .listStyle(.inset)
             .environment(\.defaultMinListRowHeight, 22)
         } else {
-            List(model.filteredStatusItems) { item in
-                changeRow(item, title: item.relativePath, showSeparator: true)
+            List(items) { item in
+                changeRow(item, title: item.relativePath, showSeparator: true, isStaged: isStaged)
             }
             .listStyle(.inset)
             .environment(\.defaultMinListRowHeight, 22)
         }
     }
 
-    private func changeRow(_ item: StatusItem, title: String, showSeparator: Bool) -> some View {
+    private func changeRow(_ item: StatusItem, title: String, showSeparator: Bool, isStaged: Bool) -> some View {
         HStack(spacing: 6) {
-            Toggle("", isOn: Binding(
-                get: { model.selectedPaths.contains(item.relativePath) },
-                set: { selected in
-                    if selected { model.selectedPaths.insert(item.relativePath) }
-                    else { model.selectedPaths.remove(item.relativePath) }
-                }
-            ))
-            .labelsHidden()
-            .toggleStyle(.checkbox)
-            .controlSize(.small)
+            Button {
+                setStaged([item], staged: !isStaged)
+            } label: {
+                Image(systemName: isStaged ? "minus.circle" : "plus.circle")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(item.isCommitEligible ? Color.accentColor : Color.secondary)
+            }
+            .buttonStyle(.plain)
             .disabled(!item.isCommitEligible)
-            .help(item.isCommitEligible ? "Select for Commit" : "Add or schedule this path in SVN before committing")
+            .help(item.isCommitEligible ? (isStaged ? "Unstage Path" : "Stage Path") : "Add or schedule this path in SVN before committing")
+            .accessibilityLabel(isStaged ? "Unstage Path" : "Stage Path")
 
             StatusBadge(status: item.workingCopyStatus)
             VStack(alignment: .leading, spacing: 1) {
@@ -186,6 +260,12 @@ struct LocalChangesView: View {
         .contentShape(Rectangle())
         .onTapGesture { Task { await model.loadDiff(path: item.relativePath) } }
         .contextMenu {
+            if item.isCommitEligible {
+                Button(isStaged ? "Unstage" : "Stage") {
+                    setStaged([item], staged: !isStaged)
+                }
+                Divider()
+            }
             Button("Open") { Task { await model.open(path: item.relativePath) } }
             Menu("Open Diff With") {
                 ForEach(ExternalToolPreset.allCases) { preset in
@@ -224,24 +304,20 @@ struct LocalChangesView: View {
         }
     }
 
-    private func folderRow(_ node: ChangeTreeNode) -> some View {
+    private func folderRow(_ node: ChangeTreeNode, isStaged: Bool) -> some View {
         let items = node.selectableItems
-        let selectedCount = items.lazy.filter { model.selectedPaths.contains($0.relativePath) }.count
         return HStack(spacing: 6) {
             Button {
-                if selectedCount == items.count {
-                    model.selectedPaths.subtract(items.map(\.relativePath))
-                } else {
-                    model.selectedPaths.formUnion(items.map(\.relativePath))
-                }
+                setStaged(items, staged: !isStaged)
             } label: {
-                Image(systemName: selectionSymbol(selectedCount: selectedCount, totalCount: items.count))
-                    .font(.system(size: 13))
-                    .foregroundStyle(selectedCount == 0 ? Color.secondary : Color.accentColor)
+                Image(systemName: isStaged ? "minus.circle" : "plus.circle")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.accentColor)
             }
             .buttonStyle(.plain)
             .disabled(items.isEmpty)
-            .accessibilityLabel("Select changes in \(node.name)")
+            .help(isStaged ? "Unstage Folder Paths" : "Stage Folder Paths")
+            .accessibilityLabel(isStaged ? "Unstage paths in \(node.name)" : "Stage paths in \(node.name)")
 
             Image(systemName: "folder.fill")
                 .font(.system(size: 11))
@@ -259,10 +335,13 @@ struct LocalChangesView: View {
         .listRowSeparator(.hidden)
     }
 
-    private func selectionSymbol(selectedCount: Int, totalCount: Int) -> String {
-        if selectedCount == 0 { return "square" }
-        if selectedCount == totalCount { return "checkmark.square.fill" }
-        return "minus.square.fill"
+    private func setStaged(_ items: [StatusItem], staged: Bool) {
+        let paths = Set(items.filter(\.isCommitEligible).map(\.relativePath))
+        if staged {
+            model.selectedPaths.formUnion(paths)
+        } else {
+            model.selectedPaths.subtract(paths)
+        }
     }
 
     private var commitComposer: some View {
@@ -270,7 +349,7 @@ struct LocalChangesView: View {
             HStack {
                 Text("Commit Message").font(.headline)
                 Spacer()
-                Text("\(model.selectedPaths.count) selected").foregroundStyle(.secondary)
+                Text("\(model.selectedPaths.count) staged").foregroundStyle(.secondary)
             }
             TextEditor(text: $model.commitMessage)
                 .font(.body)
@@ -282,7 +361,7 @@ struct LocalChangesView: View {
                     Text(model.activityMessage).lineLimit(1).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Commit Selected") { Task { await model.commitSelected() } }
+                Button("Commit Staged") { Task { await model.commitSelected() } }
                     .buttonStyle(.borderedProminent)
                     .disabled(model.selectedPaths.isEmpty || model.commitMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.isBusy)
             }

@@ -353,7 +353,7 @@ public final class AppModel {
         guard let project = selectedProject else { return }
         let selectedItems = statusItems.filter { selectedPaths.contains($0.relativePath) }
         guard !selectedItems.isEmpty else {
-            present(SpoonError(title: "Nothing selected", explanation: "Select at least one changed path to commit."))
+            present(SpoonError(title: "Nothing staged", explanation: "Stage at least one changed path to commit."))
             return
         }
         guard !commitMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -361,15 +361,15 @@ public final class AppModel {
             return
         }
         guard !selectedItems.contains(where: { $0.workingCopyStatus == .conflicted || $0.treeConflicted || $0.propertyStatus == .conflicted }) else {
-            present(SpoonError(title: "Unresolved conflict selected", explanation: "Resolve conflicts before committing."))
+            present(SpoonError(title: "Unresolved conflict staged", explanation: "Resolve conflicts before committing."))
             return
         }
         let ineligibleItems = selectedItems.filter { !$0.isCommitEligible }
         guard ineligibleItems.isEmpty else {
             let paths = ineligibleItems.prefix(5).map(\.relativePath).joined(separator: "\n")
             present(SpoonError(
-                title: String(localized: "Selected paths cannot be committed"),
-                explanation: String(localized: "Add unversioned paths to SVN, schedule missing paths for deletion, or deselect them before committing.") + "\n\n" + paths
+                title: String(localized: "Staged paths cannot be committed"),
+                explanation: String(localized: "Add unversioned paths to SVN, schedule missing paths for deletion, or unstage them before committing.") + "\n\n" + paths
             ))
             return
         }
