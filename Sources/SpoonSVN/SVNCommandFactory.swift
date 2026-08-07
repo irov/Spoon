@@ -127,10 +127,16 @@ public struct SVNCommandFactory: Sendable {
         }
     }
 
-    public func diff(targets: [String], revision: String? = nil, change: Int? = nil) -> SVNCommandDescriptor<String> {
+    public func diff(
+        targets: [String],
+        revision: String? = nil,
+        change: Int? = nil,
+        contextLines: Int? = nil
+    ) -> SVNCommandDescriptor<String> {
         var arguments = ["diff"]
         if let revision { arguments += ["-r", revision] }
         if let change { arguments += ["--change", String(change)] }
+        if let contextLines { arguments += ["-x", "-U \(max(0, contextLines))"] }
         arguments.append("--")
         arguments += targets
         return descriptor(arguments: arguments, operation: .diff, operationClass: .workingCopyRead, targets: targets) { stdout, _ in

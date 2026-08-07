@@ -112,7 +112,9 @@ public enum UnifiedDiffParser {
                 if currentFile == nil { currentFile = DiffFile(oldPath: "", newPath: "") }
                 currentFile?.propertyChanges.append(line)
             } else if currentHunk != nil {
-                if line.hasPrefix("+") {
+                if line.isEmpty {
+                    continue
+                } else if line.hasPrefix("+") {
                     currentHunk?.lines.append(DiffLine(kind: .addition, oldLineNumber: nil, newLineNumber: newLine, content: String(line.dropFirst())))
                     newLine += 1
                 } else if line.hasPrefix("-") {

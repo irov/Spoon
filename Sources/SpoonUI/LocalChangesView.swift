@@ -70,7 +70,10 @@ struct LocalChangesView: View {
                 text: model.diffText,
                 beforeImageData: model.diffBeforeImageData,
                 afterImageData: model.diffAfterImageData,
-                binaryDescription: model.diffBinaryDescription
+                binaryDescription: model.diffBinaryDescription,
+                contextMode: model.diffContextMode,
+                isContextLoading: model.isDiffContextLoading,
+                onContextModeChange: { mode in Task { await model.setDiffContextMode(mode) } }
             )
             .frame(minWidth: 460, idealWidth: 760)
             .frame(maxHeight: .infinity)
