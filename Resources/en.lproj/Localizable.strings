@@ -183,6 +183,7 @@
 "Stage Path" = "Stage Path";
 "Unstage Path" = "Unstage Path";
 "Add to SVN and Stage" = "Add to SVN and Stage";
+"Add to Ignore" = "Add to Ignore";
 "Stage Folder Paths" = "Stage Folder Paths";
 "Unstage Folder Paths" = "Unstage Folder Paths";
 "All eligible paths are staged." = "All eligible paths are staged.";

@@ -157,6 +157,25 @@ public struct SVNPropertyRecord: Codable, Hashable, Identifiable, Sendable {
     }
 }
 
+public enum SVNIgnoreProperty {
+    public static func adding(pattern: String, to existingValue: String) -> String {
+        guard !pattern.isEmpty, !pattern.contains(where: \.isNewline) else { return existingValue }
+        let existingPatterns = existingValue
+            .split(whereSeparator: \.isNewline)
+            .map(String.init)
+        guard !existingPatterns.contains(pattern) else { return existingValue }
+
+        let newline = existingValue.contains("\r\n") ? "\r\n" : "\n"
+        var updatedValue = existingValue
+        if !updatedValue.isEmpty, updatedValue.last?.isNewline != true {
+            updatedValue.append(newline)
+        }
+        updatedValue.append(pattern)
+        updatedValue.append(newline)
+        return updatedValue
+    }
+}
+
 public struct StatusItem: Codable, Hashable, Identifiable, Sendable {
     public var id: String { relativePath }
     public var relativePath: String

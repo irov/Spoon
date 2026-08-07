@@ -44,10 +44,42 @@ final class SVNIntegrationTests: XCTestCase {
         _ = try await service.revert(project: project, targets: [file.path])
         let cleanStatus = try await service.status(project: project)
         XCTAssertTrue(cleanStatus.isEmpty)
+        _ = try await service.update(project: project, targets: [workingCopy.path])
+
+        try Data("unrelated local edit\n".utf8).write(to: file)
+        let ignoredFile = workingCopy.appendingPathComponent("generated.profraw")
+        try Data("profile\n".utf8).write(to: ignoredFile)
+        _ = try await service.setProperty(
+            project: project,
+            name: "svn:ignore",
+            value: Data("generated.profraw\n".utf8),
+            targets: [workingCopy.path]
+        )
+
+        let ignoreStatus = try await service.status(project: project)
+        XCTAssertTrue(ignoreStatus.contains(where: { $0.relativePath == "." && $0.propertyStatus == .modified }))
+        XCTAssertTrue(ignoreStatus.contains(where: { $0.relativePath == "hello world.txt" && $0.workingCopyStatus == .modified }))
+        XCTAssertFalse(ignoreStatus.contains(where: { $0.relativePath == "generated.profraw" }))
+
+        let propertyRevision = try await service.commit(
+            project: project,
+            targets: [workingCopy.path],
+            message: "Ignore generated file"
+        )
+        XCTAssertEqual(propertyRevision, 2)
+
+        let afterPropertyCommit = try await service.status(project: project)
+        XCTAssertTrue(afterPropertyCommit.contains(where: { $0.relativePath == "hello world.txt" && $0.workingCopyStatus == .modified }))
+        XCTAssertFalse(afterPropertyCommit.contains(where: { $0.relativePath == "." }))
+        XCTAssertFalse(afterPropertyCommit.contains(where: { $0.relativePath == "generated.profraw" }))
+        let statusIncludingIgnored = try await service.status(project: project, showIgnored: true)
+        XCTAssertTrue(statusIncludingIgnored.contains(where: { $0.relativePath == "generated.profraw" && $0.workingCopyStatus == .ignored }))
+
+        _ = try await service.revert(project: project, targets: [file.path])
 
         info = try await service.info(path: workingCopy)
         project.repositoryRootURL = info.repositoryRootURL
-        XCTAssertEqual(info.revision, 0)
+        XCTAssertEqual(info.revision, 2)
     }
 
     func testBundledToolchainRepositoryMutationsPropertiesLocksSwitchAndMerge() async throws {

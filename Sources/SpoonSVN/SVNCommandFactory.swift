@@ -181,7 +181,7 @@ public struct SVNCommandFactory: Sendable {
         let messageFile = try SecureTemporaryFile(text: message, prefix: "commit-message")
         let targetsFile = try SecureTemporaryFile(text: targets.joined(separator: "\n") + "\n", prefix: "commit-targets")
         return descriptor(
-            arguments: ["commit", "--file", messageFile.url.path, "--targets", targetsFile.url.path],
+            arguments: ["commit", "--depth", "empty", "--file", messageFile.url.path, "--targets", targetsFile.url.path],
             operation: .commit,
             operationClass: .workingCopyWrite,
             targets: targets,

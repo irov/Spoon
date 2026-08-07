@@ -21,6 +21,10 @@ final class CommandBuilderTests: XCTestCase {
         let descriptor = try factory.commit(targets: ["/tmp/a file", "/tmp/-leading-dash"], message: "Unicode ✓ ' \" $(touch nope)")
         XCTAssertTrue(descriptor.arguments.contains("--file"))
         XCTAssertTrue(descriptor.arguments.contains("--targets"))
+        guard let depthIndex = descriptor.arguments.firstIndex(of: "--depth") else {
+            return XCTFail("Expected a non-recursive commit depth")
+        }
+        XCTAssertEqual(descriptor.arguments[depthIndex + 1], "empty")
         XCTAssertEqual(descriptor.retainedResources.count, 2)
         XCTAssertFalse(descriptor.sanitizedCommand.contains("Unicode ✓"))
         for resource in descriptor.retainedResources {
@@ -108,6 +112,16 @@ final class CommandBuilderTests: XCTestCase {
         XCTAssertFalse(statusItem(workingCopyStatus: .ignored).isStageable)
         XCTAssertFalse(statusItem(workingCopyStatus: .missing).isStageable)
         XCTAssertFalse(statusItem(workingCopyStatus: .conflicted).isStageable)
+    }
+
+    func testAddingSVNIgnoreRulePreservesExistingPatternsAndAvoidsDuplicates() {
+        let existing = "*.profraw\nbuild\n"
+        let updated = SVNIgnoreProperty.adding(pattern: "workspace.code-workspace", to: existing)
+
+        XCTAssertEqual(updated, "*.profraw\nbuild\nworkspace.code-workspace\n")
+        XCTAssertEqual(SVNIgnoreProperty.adding(pattern: "build", to: updated), updated)
+        XCTAssertEqual(SVNIgnoreProperty.adding(pattern: "file.txt", to: "*.tmp"), "*.tmp\nfile.txt\n")
+        XCTAssertEqual(SVNIgnoreProperty.adding(pattern: "DerivedData", to: "*.xcuserstate\r\n"), "*.xcuserstate\r\nDerivedData\r\n")
     }
 
     private func statusItem(
