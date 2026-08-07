@@ -58,10 +58,19 @@ public actor SVNService {
         paths: [String],
         revision: String? = nil,
         change: Int? = nil,
-        contextLines: Int? = nil
+        contextLines: Int? = nil,
+        content: SVNDiffContent = .all,
+        depth: String? = nil
     ) async throws -> String {
         try await perform(
-            factory.diff(targets: paths, revision: revision, change: change, contextLines: contextLines),
+            factory.diff(
+                targets: paths,
+                revision: revision,
+                change: change,
+                contextLines: contextLines,
+                content: content,
+                depth: depth
+            ),
             projectID: project.id,
             workingCopyRoot: project.workingCopyRoot,
             securityScopedBookmark: project.workingCopyBookmark

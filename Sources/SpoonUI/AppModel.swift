@@ -49,7 +49,6 @@ public final class AppModel {
     public var repositoryEntries: [RepositoryEntry] = []
     public var tasks: [TaskRecord] = []
     public var capabilities: SVNCapabilitySet?
-    public var inspectedProperties: [SVNPropertyRecord] = []
     public var blameLines: [BlameLine] = []
     public var blameTitle = ""
     public var repositoryFileData: Data?
@@ -70,6 +69,7 @@ public final class AppModel {
 
     private enum DiffRequest {
         case workingCopy(path: String)
+        case workingCopyProperties(path: String)
         case revision(Int)
         case revisionPath(path: String, revision: Int)
     }
@@ -311,9 +311,13 @@ public final class AppModel {
             diffText = try await svn.diff(
                 project: project,
                 paths: [file.path],
-                contextLines: requestedDiffContextLines
+                contextLines: requestedDiffContextLines,
+                content: .textOnly
             )
-            if diffText.isEmpty, item?.nodeKind != .directory {
+            let hasWorkingCopyChange = item.map {
+                $0.workingCopyStatus != .none && $0.workingCopyStatus != .normal
+            } ?? false
+            if diffText.isEmpty, item?.nodeKind != .directory, hasWorkingCopyChange {
                 let size = (try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init)
                 diffBinaryDescription = size.map { "Binary file · \(ByteCountFormatter.string(fromByteCount: $0, countStyle: .file))" } ?? "Binary file"
             }
@@ -321,6 +325,51 @@ public final class AppModel {
             diffText = ""
             present(error)
         }
+    }
+
+    public func loadPropertyDiff(path: String) async {
+        currentDiffRequest = .workingCopyProperties(path: path)
+        guard let project = selectedProject else { return }
+        do {
+            diffBeforeImageData = nil
+            diffAfterImageData = nil
+            diffBinaryDescription = nil
+            let target = project.workingCopyRoot.appendingPathComponent(path).path
+            let rawDiff = try await svn.diff(
+                project: project,
+                paths: [target],
+                content: .propertiesOnly,
+                depth: "empty"
+            )
+            diffText = Self.propertyDiffForDisplay(rawDiff, relativePath: path)
+        } catch {
+            diffText = ""
+            present(error)
+        }
+    }
+
+    private static func propertyDiffForDisplay(_ diff: String, relativePath: String) -> String {
+        let displayPath = relativePath == "." ? String(localized: "Working Copy") : relativePath
+        let propertyPath = "\(displayPath) · \(String(localized: "SVN Properties"))"
+        var replacedIndex = false
+        return diff
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { line in
+                if !replacedIndex, line.hasPrefix("Index: ") {
+                    replacedIndex = true
+                    return "Index: \(propertyPath)"
+                }
+                if line.hasPrefix("--- ") || line.hasPrefix("+++ ") {
+                    let prefix = String(line.prefix(4))
+                    let suffix = line.firstIndex(of: "\t").map { String(line[$0...]) } ?? ""
+                    return "\(prefix)\(propertyPath)\(suffix)"
+                }
+                if line.hasPrefix("Property changes on: ") {
+                    return "Property changes on: \(displayPath)"
+                }
+                return String(line)
+            }
+            .joined(separator: "\n")
     }
 
     private static func localFileDiff(path: String, contents: String, added: Bool) -> String {
@@ -502,6 +551,13 @@ public final class AppModel {
                 targets: [parentURL.path]
             )
             try await reloadStatus(project: project)
+            if let propertyItem = statusItems.first(where: {
+                $0.absolutePath.standardizedFileURL == parentURL.standardizedFileURL
+                    && $0.propertyStatus != .none
+                    && $0.propertyStatus != .normal
+            }) {
+                await loadPropertyDiff(path: propertyItem.relativePath)
+            }
             activityMessage = "Added \(anchorPath) to svn:ignore."
         }
     }
@@ -559,33 +615,6 @@ public final class AppModel {
         guard let project = selectedProject else { return }
         await withActivity(name == nil ? "Removing changelist…" : "Assigning changelist…") {
             activityMessage = try await svn.setChangelist(project: project, name: name, targets: absolute(paths, project: project))
-            try await reloadStatus(project: project)
-        }
-    }
-
-    public func loadProperties(path: String) async {
-        guard let project = selectedProject else { return }
-        do {
-            inspectedProperties = try await svn.properties(project: project, target: project.workingCopyRoot.appendingPathComponent(path).path)
-        } catch { present(error) }
-    }
-
-    public func setProperty(path: String, name: String, value: String) async {
-        guard let project = selectedProject else { return }
-        await withActivity("Setting property…") {
-            let target = project.workingCopyRoot.appendingPathComponent(path).path
-            activityMessage = try await svn.setProperty(project: project, name: name, value: Data(value.utf8), targets: [target])
-            inspectedProperties = try await svn.properties(project: project, target: target)
-            try await reloadStatus(project: project)
-        }
-    }
-
-    public func deleteProperty(path: String, name: String) async {
-        guard let project = selectedProject else { return }
-        await withActivity("Deleting property…") {
-            let target = project.workingCopyRoot.appendingPathComponent(path).path
-            activityMessage = try await svn.deleteProperty(project: project, name: name, targets: [target])
-            inspectedProperties = try await svn.properties(project: project, target: target)
             try await reloadStatus(project: project)
         }
     }
@@ -668,6 +697,8 @@ public final class AppModel {
         switch currentDiffRequest {
         case let .workingCopy(path):
             await loadDiff(path: path)
+        case let .workingCopyProperties(path):
+            await loadPropertyDiff(path: path)
         case let .revision(revision):
             await loadRevisionDiff(revision)
         case let .revisionPath(path, revision):
@@ -845,8 +876,16 @@ public final class AppModel {
         )
         statusItems = try await svn.status(project: project, remote: remote, showIgnored: showIgnored)
         selectedPaths.formIntersection(Set(statusItems.filter(\.isCommitEligible).map(\.relativePath)))
-        if let first = selectedPaths.first {
-            await loadDiff(path: first)
+        if let first = selectedPaths.first,
+           let selectedItem = statusItems.first(where: { $0.relativePath == first }) {
+            let propertyOnly = selectedItem.propertyStatus != .none
+                && selectedItem.propertyStatus != .normal
+                && (selectedItem.workingCopyStatus == .none || selectedItem.workingCopyStatus == .normal)
+            if propertyOnly {
+                await loadPropertyDiff(path: first)
+            } else {
+                await loadDiff(path: first)
+            }
         }
     }
 

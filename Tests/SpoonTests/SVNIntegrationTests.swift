@@ -116,6 +116,14 @@ final class SVNIntegrationTests: XCTestCase {
         _ = try await service.setProperty(project: project, name: "spoon:test", value: Data("value\n".utf8), targets: [file.path])
         let properties = try await service.properties(project: project, target: file.path)
         XCTAssertEqual(properties.first(where: { $0.name == "spoon:test" })?.value, "value\n")
+        let propertyDiff = try await service.diff(
+            project: project,
+            paths: [file.path],
+            content: .propertiesOnly,
+            depth: "empty"
+        )
+        XCTAssertTrue(propertyDiff.contains("Property changes on:"))
+        XCTAssertTrue(propertyDiff.contains("spoon:test"))
         _ = try await service.revert(project: project, targets: [file.path])
 
         _ = try await service.lock(project: project, targets: [file.path], message: "Spoon lock")
