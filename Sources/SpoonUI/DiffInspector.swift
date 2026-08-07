@@ -7,6 +7,7 @@ struct DiffInspector: View {
     let beforeImageData: Data?
     let afterImageData: Data?
     let binaryDescription: String?
+    let pathBase: String?
     let contextMode: DiffContextMode
     let isContextLoading: Bool
     let onContextModeChange: (DiffContextMode) -> Void
@@ -14,8 +15,9 @@ struct DiffInspector: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("Diff").font(.headline)
+            HStack(spacing: 8) {
+                Text("Diff")
+                    .font(.system(size: 12, weight: .semibold))
                 Spacer()
                 Picker("Context", selection: contextModeBinding) {
                     Label("Changes Only", systemImage: "eye.slash")
@@ -41,9 +43,11 @@ struct DiffInspector: View {
                     Text("Side by Side").tag(DiffLayoutChoice.sideBySide)
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 220)
+                .controlSize(.small)
+                .frame(width: 180)
             }
-            .padding(10)
+            .padding(.horizontal, 8)
+            .frame(height: 34)
             Divider()
             if beforeImageData != nil || afterImageData != nil {
                 imageComparison
@@ -56,9 +60,9 @@ struct DiffInspector: View {
                 if diff.files.isEmpty {
                     PlainDiffText(text: text)
                 } else if layout == .unified {
-                    UnifiedDiffView(diff: diff)
+                    UnifiedDiffView(diff: diff, pathBase: pathBase)
                 } else {
-                    SideBySideDiffView(diff: diff)
+                    SideBySideDiffView(diff: diff, pathBase: pathBase)
                 }
             }
         }
@@ -107,11 +111,11 @@ enum DiffContextMode: String, CaseIterable {
 private enum DiffLayoutChoice { case unified, sideBySide }
 
 private enum DiffMetrics {
-    static let codeFontSize: CGFloat = 11
-    static let metadataFontSize: CGFloat = 10
-    static let lineNumberWidth: CGFloat = 42
-    static let markerWidth: CGFloat = 20
-    static let lineHeight: CGFloat = 18
+    static let codeFontSize: CGFloat = 10
+    static let metadataFontSize: CGFloat = 9.5
+    static let lineNumberWidth: CGFloat = 34
+    static let lineHeight: CGFloat = 16
+    static let codeLeadingPadding: CGFloat = 7
 }
 
 private struct PlainDiffText: View {
@@ -137,17 +141,21 @@ private struct PlainDiffText: View {
 
 private struct UnifiedDiffView: View {
     let diff: UnifiedDiff
+    let pathBase: String?
 
     var body: some View {
         GeometryReader { geometry in
             ScrollView([.horizontal, .vertical]) {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(diff.files) { file in
-                        DiffFileHeader(file: file)
+                        DiffFileHeader(file: file, pathBase: pathBase)
                         ForEach(file.hunks) { hunk in
                             UnifiedHunkHeader(hunk: hunk)
                             ForEach(hunk.lines) { line in
-                                UnifiedDiffLineRow(line: line)
+                                UnifiedDiffLineRow(
+                                    line: line,
+                                    minimumWidth: max(geometry.size.width, 720)
+                                )
                             }
                         }
                         ForEach(Array(file.propertyChanges.enumerated()), id: \.offset) { _, property in
@@ -167,25 +175,37 @@ private struct UnifiedDiffView: View {
 
 private struct DiffFileHeader: View {
     let file: DiffFile
+    let pathBase: String?
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
+            Spacer(minLength: 8)
             Image(systemName: "doc.text")
                 .foregroundStyle(.secondary)
-            Text(file.newPath.isEmpty ? file.oldPath : file.newPath)
+            Text(displayPath)
                 .font(.system(size: DiffMetrics.metadataFontSize, weight: .semibold, design: .monospaced))
                 .textSelection(.enabled)
-            if !file.oldPath.isEmpty, !file.newPath.isEmpty, file.oldPath != file.newPath {
-                Text("← \(file.oldPath)")
-                    .font(.system(size: 9.5, design: .monospaced))
-                    .foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 12)
+                .lineLimit(1)
+                .truncationMode(.middle)
+            Spacer(minLength: 8)
         }
-        .padding(.horizontal, 10)
-        .frame(height: 27)
-        .background(Color.primary.opacity(0.075))
+        .padding(.horizontal, 8)
+        .frame(height: 25)
+        .background(Color.primary.opacity(0.055))
         .overlay(alignment: .bottom) { Divider() }
+        .help(fullPath)
+    }
+
+    private var fullPath: String {
+        file.newPath.isEmpty ? file.oldPath : file.newPath
+    }
+
+    private var displayPath: String {
+        guard let pathBase, !pathBase.isEmpty else { return fullPath }
+        let prefix = pathBase.hasSuffix("/") ? pathBase : pathBase + "/"
+        if fullPath == pathBase { return URL(fileURLWithPath: fullPath).lastPathComponent }
+        if fullPath.hasPrefix(prefix) { return String(fullPath.dropFirst(prefix.count)) }
+        return fullPath
     }
 }
 
@@ -194,54 +214,47 @@ private struct UnifiedHunkHeader: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            Text(hunk.oldStart, format: .number)
-                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
-            Text(hunk.newStart, format: .number)
-                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
-            Rectangle()
-                .fill(Color.blue.opacity(0.8))
-                .frame(width: 3)
-            Text(verbatim: hunk.header)
-                .padding(.leading, 9)
-            Spacer(minLength: 12)
+            DiffLineNumber(number: hunk.oldStart)
+            DiffLineNumber(number: hunk.newStart)
+            Divider()
+            HStack(spacing: 0) {
+                Text(verbatim: hunk.header)
+                    .padding(.leading, DiffMetrics.codeLeadingPadding)
+                Spacer(minLength: 12)
+            }
+            .frame(height: 20)
+            .background(Color.primary.opacity(0.04))
         }
         .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
-        .foregroundStyle(Color.blue)
-        .padding(.trailing, 8)
-        .frame(height: 22)
-        .background(Color.blue.opacity(0.12))
+        .foregroundStyle(.secondary)
+        .frame(height: 20)
     }
 }
 
 private struct UnifiedDiffLineRow: View {
     let line: DiffLine
+    let minimumWidth: CGFloat
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 0) {
-            lineNumber(line.oldLineNumber)
-            lineNumber(line.newLineNumber)
+            DiffLineNumber(number: line.oldLineNumber)
+            DiffLineNumber(number: line.newLineNumber)
             Rectangle()
-                .fill(line.accentColor)
-                .frame(width: 3)
-            Text(line.marker)
-                .foregroundStyle(line.accentColor)
-                .frame(width: DiffMetrics.markerWidth, alignment: .center)
+                .fill(Color.primary.opacity(0.12))
+                .frame(width: 1)
             Text(verbatim: line.content.isEmpty ? " " : line.content)
+                .padding(.leading, DiffMetrics.codeLeadingPadding)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: true, vertical: false)
             Spacer(minLength: 12)
         }
         .font(.system(size: DiffMetrics.codeFontSize, weight: .regular, design: .monospaced))
         .frame(minHeight: DiffMetrics.lineHeight)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background { Rectangle().fill(line.backgroundColor) }
-    }
-
-    private func lineNumber(_ number: Int?) -> some View {
-        Text(number.map(String.init) ?? "")
-            .foregroundStyle(.tertiary)
-            .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
-            .padding(.trailing, 6)
+        .frame(minWidth: minimumWidth, alignment: .leading)
+        .background {
+            Rectangle().fill(DiffPalette.lineBackground(for: line.kind, colorScheme: colorScheme))
+        }
     }
 }
 
@@ -250,22 +263,26 @@ private struct PropertyDiffRow: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            Color.clear.frame(width: DiffMetrics.lineNumberWidth * 2)
-            Rectangle().fill(Color.orange.opacity(0.8)).frame(width: 3)
-            Image(systemName: "tag").frame(width: DiffMetrics.markerWidth).foregroundStyle(.orange)
-            Text(verbatim: text)
-                .textSelection(.enabled)
-            Spacer(minLength: 12)
+            DiffLineNumber(number: nil)
+            DiffLineNumber(number: nil)
+            Divider()
+            HStack(spacing: 6) {
+                Image(systemName: "tag").foregroundStyle(.orange)
+                Text(verbatim: text).textSelection(.enabled)
+                Spacer(minLength: 12)
+            }
+            .padding(.leading, DiffMetrics.codeLeadingPadding)
+            .frame(height: DiffMetrics.lineHeight)
+            .background(Color.orange.opacity(0.12))
         }
         .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
-        .frame(minHeight: DiffMetrics.lineHeight)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background { Rectangle().fill(Color.orange.opacity(0.10)) }
+        .frame(height: DiffMetrics.lineHeight)
     }
 }
 
 private struct SideBySideDiffView: View {
     let diff: UnifiedDiff
+    let pathBase: String?
 
     var body: some View {
         GeometryReader { geometry in
@@ -273,7 +290,7 @@ private struct SideBySideDiffView: View {
             ScrollView([.horizontal, .vertical]) {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(diff.files) { file in
-                        DiffFileHeader(file: file)
+                        DiffFileHeader(file: file, pathBase: pathBase)
                         ForEach(file.hunks) { hunk in
                             HStack(spacing: 0) {
                                 sideHunkHeader(hunk, old: true, width: columnWidth)
@@ -300,31 +317,29 @@ private struct SideBySideDiffView: View {
     }
 
     private func sideHunkHeader(_ hunk: DiffHunk, old: Bool, width: CGFloat) -> some View {
-        HStack(spacing: 8) {
-            Text(old ? hunk.oldStart : hunk.newStart, format: .number)
-                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
-            Text(verbatim: hunk.header)
-            Spacer(minLength: 8)
+        HStack(spacing: 0) {
+            DiffLineNumber(number: old ? hunk.oldStart : hunk.newStart)
+            Divider()
+            HStack {
+                Text(verbatim: hunk.header)
+                Spacer(minLength: 8)
+            }
+            .padding(.leading, DiffMetrics.codeLeadingPadding)
+            .background(Color.primary.opacity(0.04))
         }
         .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
-        .foregroundStyle(Color.blue)
-        .frame(width: width, height: 22)
-        .background(Color.blue.opacity(0.12))
+        .foregroundStyle(.secondary)
+        .frame(width: width, height: 20)
     }
 
     private func diffCell(_ line: DiffLine?, side: DiffSide, width: CGFloat) -> some View {
         HStack(spacing: 0) {
-            Text(side.lineNumber(for: line).map(String.init) ?? "")
-                .frame(width: DiffMetrics.lineNumberWidth, alignment: .trailing)
-                .padding(.trailing, 6)
-                .foregroundStyle(.tertiary)
+            DiffLineNumber(number: side.lineNumber(for: line))
             Rectangle()
-                .fill(side.accentColor(for: line))
-                .frame(width: 3)
-            Text(side.marker(for: line))
-                .frame(width: DiffMetrics.markerWidth)
-                .foregroundStyle(side.accentColor(for: line))
+                .fill(Color.primary.opacity(0.12))
+                .frame(width: 1)
             Text(verbatim: line?.content.isEmpty == false ? line?.content ?? "" : " ")
+                .padding(.leading, DiffMetrics.codeLeadingPadding)
                 .textSelection(.enabled)
                 .fixedSize(horizontal: true, vertical: false)
             Spacer(minLength: 8)
@@ -332,8 +347,13 @@ private struct SideBySideDiffView: View {
         .font(.system(size: DiffMetrics.codeFontSize, weight: .regular, design: .monospaced))
         .frame(width: width, alignment: .leading)
         .frame(minHeight: DiffMetrics.lineHeight)
-        .background(side.backgroundColor(for: line))
+        .clipped()
+        .background {
+            Rectangle().fill(side.backgroundColor(for: line, colorScheme: colorScheme))
+        }
     }
+
+    @Environment(\.colorScheme) private var colorScheme
 }
 
 private enum DiffSide {
@@ -347,58 +367,51 @@ private enum DiffSide {
         }
     }
 
-    func marker(for line: DiffLine?) -> String {
-        guard let line else { return "" }
-        return switch (self, line.kind) {
-        case (.old, .deletion): "−"
-        case (.new, .addition): "+"
-        default: ""
-        }
-    }
-
-    func accentColor(for line: DiffLine?) -> Color {
-        guard let line else { return .clear }
-        return switch (self, line.kind) {
-        case (.old, .deletion): Color.red
-        case (.new, .addition): Color.green
-        default: Color.clear
-        }
-    }
-
-    func backgroundColor(for line: DiffLine?) -> Color {
+    func backgroundColor(for line: DiffLine?, colorScheme: ColorScheme) -> Color {
         guard let line else { return Color.primary.opacity(0.018) }
         return switch (self, line.kind) {
-        case (.old, .deletion): Color.red.opacity(0.28)
-        case (.new, .addition): Color.green.opacity(0.24)
+        case (.old, .deletion): DiffPalette.deletionBackground(colorScheme)
+        case (.new, .addition): DiffPalette.additionBackground(colorScheme)
         default: Color.clear
         }
+    }
+
+}
+
+private struct DiffLineNumber: View {
+    let number: Int?
+
+    var body: some View {
+        Text(number.map(String.init) ?? "")
+            .font(.system(size: DiffMetrics.metadataFontSize, design: .monospaced))
+            .monospacedDigit()
+            .foregroundStyle(.tertiary)
+            .padding(.trailing, 5)
+            .frame(width: DiffMetrics.lineNumberWidth, height: DiffMetrics.lineHeight, alignment: .trailing)
+            .background(Color(nsColor: .textBackgroundColor))
     }
 }
 
-private extension DiffLine {
-    var marker: String {
+private enum DiffPalette {
+    static func lineBackground(for kind: DiffLineKind, colorScheme: ColorScheme) -> Color {
         switch kind {
-        case .addition: "+"
-        case .deletion: "−"
-        case .context, .metadata: ""
-        }
-    }
-
-    var accentColor: Color {
-        switch kind {
-        case .addition: .green
-        case .deletion: .red
-        case .metadata: .orange
+        case .addition: additionBackground(colorScheme)
+        case .deletion: deletionBackground(colorScheme)
+        case .metadata: Color.orange.opacity(colorScheme == .dark ? 0.16 : 0.10)
         case .context: .clear
         }
     }
 
-    var backgroundColor: Color {
-        switch kind {
-        case .addition: Color.green.opacity(0.24)
-        case .deletion: Color.red.opacity(0.28)
-        case .metadata: Color.orange.opacity(0.10)
-        case .context: .clear
-        }
+    static func additionBackground(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark
+            ? Color(red: 0.12, green: 0.29, blue: 0.17)
+            : Color(red: 0.84, green: 0.96, blue: 0.86)
     }
+
+    static func deletionBackground(_ colorScheme: ColorScheme) -> Color {
+        colorScheme == .dark
+            ? Color(red: 0.34, green: 0.16, blue: 0.17)
+            : Color(red: 1.00, green: 0.87, blue: 0.87)
+    }
+
 }
