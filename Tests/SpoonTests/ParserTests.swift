@@ -67,6 +67,22 @@ final class ParserTests: XCTestCase {
         XCTAssertEqual(rows.first?.right?.kind, .addition)
     }
 
+    func testUnifiedDiffParsesCRLFHunkLines() {
+        let text = "Index: hello.txt\n"
+            + "===================================================================\n"
+            + "--- hello.txt\t(revision 1)\n"
+            + "+++ hello.txt\t(working copy)\n"
+            + "@@ -1,2 +1,2 @@\n"
+            + " unchanged\r\n"
+            + "-hello\r\n"
+            + "+hello world\r\n"
+
+        let lines = UnifiedDiffParser.parse(text).files.first?.hunks.first?.lines
+
+        XCTAssertEqual(lines?.map(\.kind), [.context, .deletion, .addition])
+        XCTAssertEqual(lines?.map(\.content), ["unchanged", "hello", "hello world"])
+    }
+
     func testUnifiedDiffSeparatesPropertyChangesFromTextHunk() {
         let text = """
         Index: hello.txt

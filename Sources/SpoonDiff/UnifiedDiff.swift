@@ -64,7 +64,10 @@ public enum DiffLineKind: String, Hashable, Sendable {
 
 public enum UnifiedDiffParser {
     public static func parse(_ text: String) -> UnifiedDiff {
-        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let normalizedText = text
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+        let lines = normalizedText.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         var files: [DiffFile] = []
         var currentFile: DiffFile?
         var currentHunk: DiffHunk?

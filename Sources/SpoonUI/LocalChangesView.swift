@@ -71,6 +71,7 @@ struct LocalChangesView: View {
                 beforeImageData: model.diffBeforeImageData,
                 afterImageData: model.diffAfterImageData,
                 binaryDescription: model.diffBinaryDescription,
+                pathBase: model.selectedProject?.workingCopyRoot.path,
                 contextMode: model.diffContextMode,
                 isContextLoading: model.isDiffContextLoading,
                 onContextModeChange: { mode in Task { await model.setDiffContextMode(mode) } }
