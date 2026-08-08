@@ -10,7 +10,7 @@ struct DiffInspector: View {
     let pathBase: String?
     let contextMode: DiffContextMode
     let isContextLoading: Bool
-    let onContextModeChange: (DiffContextMode) -> Void
+    let onContextModeChange: @Sendable (DiffContextMode) -> Void
     @State private var layout: DiffLayoutChoice = .unified
 
     var body: some View {
@@ -104,7 +104,7 @@ struct DiffInspector: View {
 
 }
 
-enum DiffContextMode: String, CaseIterable {
+enum DiffContextMode: String, CaseIterable, Sendable {
     case changes
     case fullFile
 }
