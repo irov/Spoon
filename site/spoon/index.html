@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Spoon Subversion is a native macOS client for visual SVN changes, history, repository browsing, branches, and merges.">
+  <title>Spoon Subversion</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="index.html"><span class="brand__mark">S</span>Spoon Subversion</a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#screenshots">Screenshots</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Native SVN client for macOS</p>
+        <h1>Spoon</h1>
+        <p class="hero__copy">Review local changes, prepare selective commits, explore history, and work with Subversion repositories in a focused native Mac interface.</p>
+        <p class="hero__copy">Spoon runs inside App Sandbox, stores credentials in Keychain, and uses a bundled Apple silicon SVN toolchain.</p>
+        <div class="actions">
+          <a class="button button--primary" href="#screenshots">See Spoon in Action</a>
+          <a class="button" href="privacy.html">Privacy Policy</a>
+        </div>
+      </div>
+
+      <aside class="product-panel" aria-label="Diff preview">
+        <div class="product-panel__bar">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <div class="diff-preview">
+          <div class="diff-preview__header">
+            <strong>Local Changes</strong>
+            <span>Unified Diff</span>
+          </div>
+          <div class="diff-line diff-line--context"><span>41</span><code>func repositoryStatus() {</code></div>
+          <div class="diff-line diff-line--deletion"><span>42</span><code>-    refresh()</code></div>
+          <div class="diff-line diff-line--addition"><span>42</span><code>+    refreshStatus()</code></div>
+          <div class="diff-line diff-line--context"><span>43</span><code>}</code></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="feature-list" aria-label="Product summary">
+      <div class="feature">
+        <h2>Visual local changes</h2>
+        <p>Use Unstaged and Staged sections, tree or flat views, and unified or side-by-side diffs.</p>
+      </div>
+      <div class="feature">
+        <h2>History and repositories</h2>
+        <p>Explore revisions, changed paths, blame, repository folders, branches, tags, and server-side operations.</p>
+      </div>
+      <div class="feature">
+        <h2>Private by default</h2>
+        <p>Technical analytics and crash reports remain disabled until the user explicitly allows collection.</p>
+      </div>
+    </section>
+
+    <section class="showcase" id="screenshots" aria-labelledby="screenshots-title">
+      <div class="showcase__heading">
+        <p class="eyebrow">Built for real SVN workflows</p>
+        <h2 id="screenshots-title">Everything important stays visible</h2>
+        <p>Review changes, understand history, and browse repository structure without leaving a focused native Mac workspace.</p>
+      </div>
+
+      <div class="screenshot-grid">
+        <figure class="screenshot-card screenshot-card--featured">
+          <a href="assets/screenshots/local-changes.png" aria-label="Open full-size Local Changes screenshot">
+            <img src="assets/screenshots/local-changes.png" width="1440" height="900" alt="Spoon Local Changes view with separate Unstaged and Staged sections and a highlighted code diff">
+          </a>
+          <figcaption>
+            <strong>Stage complete paths with confidence</strong>
+            <span>Keep commit selection, message, file status, SVN properties, and a readable unified diff in one view.</span>
+          </figcaption>
+        </figure>
+
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/history.png" aria-label="Open full-size History screenshot">
+            <img src="assets/screenshots/history.png" width="1440" height="900" loading="lazy" alt="Spoon History view showing revisions, changed paths, and a revision diff">
+          </a>
+          <figcaption>
+            <strong>Understand every revision</strong>
+            <span>Inspect commit history, changed paths, authors, and the exact diff for a selected revision.</span>
+          </figcaption>
+        </figure>
+
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/repository-browser.png" aria-label="Open full-size Repository Browser screenshot">
+            <img src="assets/screenshots/repository-browser.png" width="1440" height="900" loading="lazy" alt="Spoon Repository Browser displaying trunk, branches, and tags">
+          </a>
+          <figcaption>
+            <strong>Explore the repository directly</strong>
+            <span>Browse trunk, branches, and tags at HEAD or a chosen revision before performing server-side work.</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <span>© 2026 Wonderland LLC</span>
+      <span>Contact: <a href="mailto:support@wonderland-games.com">support@wonderland-games.com</a></span>
+    </div>
+  </footer>
+</body>
+</html>
