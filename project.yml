@@ -180,10 +180,16 @@ targets:
     postBuildScripts:
       - name: Embed Bundled SVN Toolchain
         script: '"$SRCROOT/Tools/embed-toolchain.sh"'
+        inputFileLists:
+          - "$(SRCROOT)/Config/ToolchainInputs.xcfilelist"
+        outputFileLists:
+          - "$(SRCROOT)/Config/ToolchainOutputs.xcfilelist"
         basedOnDependencyAnalysis: false
       - name: Upload Crashlytics Symbols
         script: '"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"'
         inputFiles:
+          - "$(BUILD_DIR)/../../SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"
+          - "$(BUILD_DIR)/../../SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/upload-symbols"
           - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)"
           - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Resources/DWARF/$(PRODUCT_NAME)"
           - "$(DWARF_DSYM_FOLDER_PATH)/$(DWARF_DSYM_FILE_NAME)/Contents/Info.plist"

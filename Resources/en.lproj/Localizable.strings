@@ -3,6 +3,8 @@
 "Open Working Copy…" = "Open Working Copy…";
 "Open Working Copy" = "Open Working Copy";
 "Open SVN Working Copy" = "Open SVN Working Copy";
+"This Isn't an SVN Working Copy" = "This Isn't an SVN Working Copy";
+"The selected folder doesn't contain Subversion working-copy data. Nothing was changed. Choose an existing SVN working copy, or use Checkout to create one." = "The selected folder doesn't contain Subversion working-copy data. Nothing was changed. Choose an existing SVN working copy, or use Checkout to create one.";
 "Checkout…" = "Checkout…";
 "Checkout" = "Checkout";
 "Projects" = "Projects";
@@ -23,7 +25,6 @@
 "Filter paths" = "Filter paths";
 "Ignored" = "Ignored";
 "Properties" = "Properties";
-"SVN Properties" = "SVN Properties";
 "Select to show the SVN property diff. Properties are staged with their path." = "Select to show the SVN property diff. Properties are staged with their path.";
 "Switched" = "Switched";
 "Copied" = "Copied";
@@ -157,6 +158,8 @@
 "Version 1.0.0 (1)" = "Version 1.0.0 (1)";
 "Working Copy" = "Working Copy";
 "Before" = "Before";
+"Add" = "Add";
+"Deleted" = "Deleted";
 "No Image" = "No Image";
 "Destination path" = "Destination path";
 "Schedule path for deletion?" = "Schedule path for deletion?";

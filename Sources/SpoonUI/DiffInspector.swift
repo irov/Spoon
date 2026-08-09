@@ -7,6 +7,9 @@ struct DiffInspector: View {
     let beforeImageData: Data?
     let afterImageData: Data?
     let binaryDescription: String?
+    let revisionImagePreviews: [RevisionImagePreview]
+    let beforeImageTitle: String
+    let afterImageTitle: String
     let pathBase: String?
     let contextMode: DiffContextMode
     let isContextLoading: Bool
@@ -54,16 +57,20 @@ struct DiffInspector: View {
                 imageComparison
             } else if let binaryDescription {
                 ContentUnavailableView("Binary File", systemImage: "doc.fill", description: Text(binaryDescription))
-            } else if text.isEmpty {
+            } else if text.isEmpty && revisionImagePreviews.isEmpty {
                 ContentUnavailableView("No Diff Selected", systemImage: "doc.text.magnifyingglass", description: Text("Select a changed path or revision."))
             } else {
                 let diff = UnifiedDiffParser.parse(text)
                 if diff.files.isEmpty {
-                    PlainDiffText(text: text)
+                    if revisionImagePreviews.isEmpty {
+                        PlainDiffText(text: text)
+                    } else {
+                        RevisionImageGallery(previews: revisionImagePreviews)
+                    }
                 } else if layout == .unified {
-                    UnifiedDiffView(diff: diff, pathBase: pathBase)
+                    UnifiedDiffView(diff: diff, pathBase: pathBase, imagePreviews: revisionImagePreviews)
                 } else {
-                    SideBySideDiffView(diff: diff, pathBase: pathBase)
+                    SideBySideDiffView(diff: diff, pathBase: pathBase, imagePreviews: revisionImagePreviews)
                 }
             }
         }
@@ -80,15 +87,23 @@ struct DiffInspector: View {
             && text.contains("@@ ")
     }
 
+    @ViewBuilder
     private var imageComparison: some View {
-        HStack(spacing: 0) {
-            imagePane(title: "Before", data: beforeImageData)
-            Divider()
-            imagePane(title: "Working Copy", data: afterImageData)
+        if beforeImageData == nil, afterImageData != nil {
+            imagePane(title: "Add", data: afterImageData)
+        } else if beforeImageData != nil, afterImageData == nil {
+            imagePane(title: "Deleted", data: beforeImageData)
+        } else {
+            HSplitView {
+                imagePane(title: beforeImageTitle, data: beforeImageData)
+                    .frame(minWidth: 200, idealWidth: 500, maxWidth: .infinity, maxHeight: .infinity)
+                imagePane(title: afterImageTitle, data: afterImageData)
+                    .frame(minWidth: 200, idealWidth: 500, maxWidth: .infinity, maxHeight: .infinity)
+            }
         }
     }
 
-    private func imagePane(title: LocalizedStringKey, data: Data?) -> some View {
+    private func imagePane(title: String, data: Data?) -> some View {
         VStack(spacing: 0) {
             Text(title).font(.caption.bold()).foregroundStyle(.secondary).padding(8)
             Divider()
@@ -100,8 +115,85 @@ struct DiffInspector: View {
                 ContentUnavailableView("No Image", systemImage: "photo.badge.exclamationmark")
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+}
+
+private struct RevisionImageGallery: View {
+    let previews: [RevisionImagePreview]
+
+    var body: some View {
+        GeometryReader { geometry in
+            ScrollView(.vertical) {
+                LazyVStack(spacing: 0) {
+                    ForEach(previews) { preview in
+                        HStack(spacing: 6) {
+                            Image(systemName: "photo")
+                                .foregroundStyle(.secondary)
+                            Text(preview.repositoryPath)
+                                .font(.system(size: DiffMetrics.metadataFontSize, weight: .semibold, design: .monospaced))
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 10)
+                        .frame(height: 25)
+                        .background(Color.primary.opacity(0.055))
+                        RevisionImageComparison(preview: preview)
+                            .frame(width: geometry.size.width, height: 320)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct RevisionImageComparison: View {
+    let preview: RevisionImagePreview
+
+    var body: some View {
+        Group {
+            if preview.beforeData == nil, preview.afterData != nil {
+                pane(title: "Add · r\(preview.revision)", data: preview.afterData)
+            } else if preview.beforeData != nil, preview.afterData == nil {
+                pane(title: "Deleted · r\(preview.revision)", data: preview.beforeData)
+            } else {
+                HSplitView {
+                    pane(title: beforeTitle, data: preview.beforeData)
+                        .frame(minWidth: 200, idealWidth: 500, maxWidth: .infinity, maxHeight: .infinity)
+                    pane(title: "Revision · r\(preview.revision)", data: preview.afterData)
+                        .frame(minWidth: 200, idealWidth: 500, maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+        }
+        .background(Color.primary.opacity(0.018))
+        .overlay(alignment: .bottom) { Divider() }
+    }
+
+    private var beforeTitle: String {
+        preview.beforeRevision.map { "Before · r\($0)" } ?? "Before"
+    }
+
+    private func pane(title: String, data: Data?) -> some View {
+        VStack(spacing: 0) {
+            Text(title)
+                .font(.caption.bold())
+                .foregroundStyle(.secondary)
+                .padding(7)
+            Divider()
+            if let data, let image = NSImage(data: data) {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .padding(12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ContentUnavailableView("No Image", systemImage: "photo.badge.exclamationmark")
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
 }
 
 enum DiffContextMode: String, CaseIterable, Sendable {
@@ -143,6 +235,7 @@ private struct PlainDiffText: View {
 private struct UnifiedDiffView: View {
     let diff: UnifiedDiff
     let pathBase: String?
+    let imagePreviews: [RevisionImagePreview]
 
     var body: some View {
         GeometryReader { geometry in
@@ -150,6 +243,10 @@ private struct UnifiedDiffView: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(diff.files) { file in
                         DiffFileHeader(file: file, pathBase: pathBase)
+                        if let preview = imagePreview(for: file) {
+                            RevisionImageComparison(preview: preview)
+                                .frame(width: max(geometry.size.width, 720), height: 320)
+                        }
                         ForEach(file.hunks) { hunk in
                             UnifiedHunkHeader(hunk: hunk)
                             ForEach(hunk.lines) { line in
@@ -159,7 +256,7 @@ private struct UnifiedDiffView: View {
                                 )
                             }
                         }
-                        ForEach(Array(file.propertyChanges.enumerated()), id: \.offset) { _, property in
+                        ForEach(Array(properties(for: file).enumerated()), id: \.offset) { _, property in
                             PropertyDiffRow(text: property)
                         }
                     }
@@ -171,6 +268,16 @@ private struct UnifiedDiffView: View {
                 )
             }
         }
+    }
+
+    private func imagePreview(for file: DiffFile) -> RevisionImagePreview? {
+        let path = file.newPath.isEmpty ? file.oldPath : file.newPath
+        return imagePreviews.first { $0.matches(diffPath: path) }
+    }
+
+    private func properties(for file: DiffFile) -> [String] {
+        guard imagePreview(for: file) != nil else { return file.propertyChanges }
+        return file.propertyChanges.filter { !$0.hasPrefix("Cannot display:") }
     }
 }
 
@@ -293,6 +400,7 @@ private struct PropertyDiffRow: View {
 private struct SideBySideDiffView: View {
     let diff: UnifiedDiff
     let pathBase: String?
+    let imagePreviews: [RevisionImagePreview]
 
     var body: some View {
         GeometryReader { geometry in
@@ -301,6 +409,10 @@ private struct SideBySideDiffView: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(diff.files) { file in
                         DiffFileHeader(file: file, pathBase: pathBase)
+                        if let preview = imagePreview(for: file) {
+                            RevisionImageComparison(preview: preview)
+                                .frame(width: max(geometry.size.width, columnWidth * 2 + 1), height: 320)
+                        }
                         ForEach(file.hunks) { hunk in
                             HStack(spacing: 0) {
                                 sideHunkHeader(hunk, old: true, width: columnWidth)
@@ -315,7 +427,7 @@ private struct SideBySideDiffView: View {
                                 }
                             }
                         }
-                        ForEach(Array(file.propertyChanges.enumerated()), id: \.offset) { _, property in
+                        ForEach(Array(properties(for: file).enumerated()), id: \.offset) { _, property in
                             PropertyDiffRow(text: property)
                         }
                     }
@@ -327,6 +439,16 @@ private struct SideBySideDiffView: View {
                 )
             }
         }
+    }
+
+    private func imagePreview(for file: DiffFile) -> RevisionImagePreview? {
+        let path = file.newPath.isEmpty ? file.oldPath : file.newPath
+        return imagePreviews.first { $0.matches(diffPath: path) }
+    }
+
+    private func properties(for file: DiffFile) -> [String] {
+        guard imagePreview(for: file) != nil else { return file.propertyChanges }
+        return file.propertyChanges.filter { !$0.hasPrefix("Cannot display:") }
     }
 
     private func sideHunkHeader(_ hunk: DiffHunk, old: Bool, width: CGFloat) -> some View {

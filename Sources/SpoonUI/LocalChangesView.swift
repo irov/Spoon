@@ -71,6 +71,9 @@ struct LocalChangesView: View {
                 beforeImageData: model.diffBeforeImageData,
                 afterImageData: model.diffAfterImageData,
                 binaryDescription: model.diffBinaryDescription,
+                revisionImagePreviews: [],
+                beforeImageTitle: "Before",
+                afterImageTitle: "Working Copy",
                 pathBase: model.selectedProject?.workingCopyRoot.path,
                 contextMode: model.diffContextMode,
                 isContextLoading: model.isDiffContextLoading,
@@ -220,21 +223,7 @@ struct LocalChangesView: View {
     }
 
     private func changeItemRows(_ item: StatusItem, title: String, showSeparator: Bool, isStaged: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            if !item.isPropertyOnlyChange {
-                changeRow(item, title: title, showSeparator: false, isStaged: isStaged)
-            }
-            if item.hasPropertyChange {
-                propertyChangeRow(
-                    item,
-                    isStaged: isStaged,
-                    stagesPath: item.isPropertyOnlyChange,
-                    nested: !item.isPropertyOnlyChange
-                )
-            }
-        }
-        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
-        .listRowSeparator(showSeparator ? .visible : .hidden)
+        changeRow(item, title: title, showSeparator: showSeparator, isStaged: isStaged)
     }
 
     private func changeRow(_ item: StatusItem, title: String, showSeparator: Bool, isStaged: Bool) -> some View {
@@ -252,14 +241,21 @@ struct LocalChangesView: View {
 
             if item.hasWorkingCopyChange {
                 StatusBadge(status: item.workingCopyStatus)
+            } else if item.hasPropertyChange {
+                PropertyStatusBadge(status: item.propertyStatus)
             } else {
                 Color.clear.frame(width: 18, height: 18)
             }
             VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(.system(size: 11, weight: .medium))
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                HStack(spacing: 6) {
+                    Text(title)
+                        .font(.system(size: 11, weight: .medium))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    if item.hasPropertyChange {
+                        propertyIndicator(item)
+                    }
+                }
                 HStack(spacing: 6) {
                     if item.switched { Text("Switched").font(.system(size: 9.5)).foregroundStyle(.orange) }
                     if item.copied { Text("Copied").font(.system(size: 9.5)).foregroundStyle(.secondary) }
@@ -276,7 +272,15 @@ struct LocalChangesView: View {
         .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
         .listRowSeparator(showSeparator ? .visible : .hidden)
         .contentShape(Rectangle())
-        .onTapGesture { Task { await model.loadDiff(path: item.relativePath) } }
+        .onTapGesture {
+            Task {
+                if item.isPropertyOnlyChange {
+                    await model.loadPropertyDiff(path: item.relativePath)
+                } else {
+                    await model.loadDiff(path: item.relativePath)
+                }
+            }
+        }
         .contextMenu {
             if isStaged || item.isStageable {
                 Button(isStaged ? "Unstage" : "Stage") {
@@ -323,47 +327,22 @@ struct LocalChangesView: View {
         }
     }
 
-    private func propertyChangeRow(
-        _ item: StatusItem,
-        isStaged: Bool,
-        stagesPath: Bool,
-        nested: Bool
-    ) -> some View {
-        HStack(spacing: 6) {
-            if stagesPath {
-                Toggle("", isOn: Binding(
-                    get: { model.selectedPaths.contains(item.relativePath) },
-                    set: { setStaged([item], staged: $0) }
-                ))
-                .labelsHidden()
-                .toggleStyle(.checkbox)
-                .controlSize(.small)
-                .disabled(model.isBusy || (!isStaged && !item.isStageable))
-                .help(stageHelp(for: item, isStaged: isStaged))
-                .accessibilityLabel(isStaged ? "Unstage Path" : "Stage Path")
-            } else {
-                Color.clear.frame(width: 14, height: 14)
-            }
-
-            PropertyStatusBadge(status: item.propertyStatus)
-            Image(systemName: "tag.fill")
-                .font(.system(size: 9.5))
-                .foregroundStyle(.orange)
-            Text("SVN Properties")
-                .font(.system(size: 11, weight: .medium))
-            Spacer(minLength: 6)
-            Text(item.relativePath == "." ? "Working Copy" : item.relativePath)
-                .font(.system(size: 9.5))
+    private func propertyIndicator(_ item: StatusItem) -> some View {
+        Button {
+            Task { await model.loadPropertyDiff(path: item.relativePath) }
+        } label: {
+            Label("Properties", systemImage: "tag.fill")
+                .font(.system(size: 9.5, weight: .medium))
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(Color.primary.opacity(0.06), in: Capsule())
+                .overlay(Capsule().stroke(Color.primary.opacity(0.10)))
         }
-        .padding(.leading, nested ? 24 : 0)
-        .padding(.vertical, 2)
-        .contentShape(Rectangle())
-        .onTapGesture { Task { await model.loadPropertyDiff(path: item.relativePath) } }
+        .buttonStyle(.plain)
+        .fixedSize()
         .help("Select to show the SVN property diff. Properties are staged with their path.")
-        .accessibilityLabel("SVN Properties — \(item.relativePath)")
+        .accessibilityLabel("Properties — \(item.relativePath)")
     }
 
     private func folderRow(_ node: ChangeTreeNode, isStaged: Bool) -> some View {
@@ -402,7 +381,7 @@ struct LocalChangesView: View {
             let paths = items.filter(\.isStageable).map(\.relativePath)
             Task { await model.stage(paths: paths) }
         } else {
-            model.selectedPaths.subtract(items.map(\.relativePath))
+            model.unstage(paths: items.map(\.relativePath))
         }
     }
 

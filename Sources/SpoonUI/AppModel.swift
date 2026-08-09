@@ -21,6 +21,27 @@ struct SVNIgnoreTarget: Identifiable, Sendable {
     }
 }
 
+struct RevisionImagePreview: Identifiable, Sendable {
+    var id: String { repositoryPath }
+    let repositoryPath: String
+    let beforeData: Data?
+    let afterData: Data?
+    let beforeRevision: Int?
+    let revision: Int
+
+    func matches(diffPath: String) -> Bool {
+        let repositoryPath = Self.normalized(repositoryPath)
+        let diffPath = Self.normalized(diffPath)
+        return repositoryPath == diffPath
+            || repositoryPath.hasSuffix("/\(diffPath)")
+            || diffPath.hasSuffix("/\(repositoryPath)")
+    }
+
+    private static func normalized(_ path: String) -> String {
+        path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+    }
+}
+
 @MainActor
 @Observable
 public final class AppModel {
@@ -38,6 +59,9 @@ public final class AppModel {
     public var diffBeforeImageData: Data?
     public var diffAfterImageData: Data?
     public var diffBinaryDescription: String?
+    var revisionImagePreviews: [RevisionImagePreview] = []
+    var diffBeforeImageTitle = "Before"
+    var diffAfterImageTitle = "Working Copy"
     var diffContextMode: DiffContextMode = .changes
     var isDiffContextLoading = false
     public var workingCopyInfo: WorkingCopyInfo?
@@ -153,6 +177,9 @@ public final class AppModel {
         diffBeforeImageData = nil
         diffAfterImageData = nil
         diffBinaryDescription = nil
+        revisionImagePreviews = []
+        diffBeforeImageTitle = "Before"
+        diffAfterImageTitle = "Working Copy"
         currentDiffRequest = nil
         selectedPaths = []
         repositoryURL = project.repositoryRootURL
@@ -246,6 +273,9 @@ public final class AppModel {
             diffBeforeImageData = nil
             diffAfterImageData = nil
             diffBinaryDescription = nil
+            revisionImagePreviews = []
+            diffBeforeImageTitle = "Before"
+            diffAfterImageTitle = "Working Copy"
             let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "webp", "tif", "tiff", "heic"]
             if imageExtensions.contains(file.pathExtension.lowercased()), item?.nodeKind != .directory {
                 if item?.workingCopyStatus != .added {
@@ -334,6 +364,7 @@ public final class AppModel {
             diffBeforeImageData = nil
             diffAfterImageData = nil
             diffBinaryDescription = nil
+            revisionImagePreviews = []
             let target = project.workingCopyRoot.appendingPathComponent(path).path
             let rawDiff = try await svn.diff(
                 project: project,
@@ -350,7 +381,7 @@ public final class AppModel {
 
     private static func propertyDiffForDisplay(_ diff: String, relativePath: String) -> String {
         let displayPath = relativePath == "." ? String(localized: "Working Copy") : relativePath
-        let propertyPath = "\(displayPath) · \(String(localized: "SVN Properties"))"
+        let propertyPath = "\(displayPath) · \(String(localized: "Properties"))"
         var replacedIndex = false
         return diff
             .split(separator: "\n", omittingEmptySubsequences: false)
@@ -458,17 +489,25 @@ public final class AppModel {
         guard let project = selectedProject else { return }
         let requestedPaths = Set(paths)
         let requestedItems = statusItems.filter { requestedPaths.contains($0.relativePath) && $0.isStageable }
-        guard !requestedItems.isEmpty else { return }
-        let requestedDirectoryPaths = requestedItems
+        let stageableItems = StatusItem.expandingSelection(requestedPaths, in: statusItems)
+            .filter(\.isStageable)
+        guard !stageableItems.isEmpty else { return }
+
+        let unversionedItems = requestedItems
+            .filter { $0.workingCopyStatus == .unversioned }
+        let unversionedDirectoryPaths = unversionedItems
             .filter { $0.nodeKind == .directory }
             .map(\.relativePath)
-
-        let unversionedPaths = requestedItems
-            .filter { $0.workingCopyStatus == .unversioned }
+        let unversionedPaths = unversionedItems
+            .filter { item in
+                !unversionedDirectoryPaths.contains {
+                    $0 != item.relativePath && item.relativePath.hasPrefix($0 + "/")
+                }
+            }
             .map(\.relativePath)
 
         guard !unversionedPaths.isEmpty else {
-            selectedPaths.formUnion(requestedItems.map(\.relativePath))
+            selectedPaths.formUnion(stageableItems.map(\.relativePath))
             return
         }
 
@@ -478,16 +517,19 @@ public final class AppModel {
                 targets: absolute(unversionedPaths, project: project)
             )
             try await reloadStatus(project: project)
-            let stagedPaths = statusItems
-                .filter { item in
-                    let isRequestedPath = requestedPaths.contains(item.relativePath)
-                        || requestedDirectoryPaths.contains { item.relativePath.hasPrefix($0 + "/") }
-                    return isRequestedPath && item.isCommitEligible
-                }
+            let stagedPaths = StatusItem.expandingSelection(requestedPaths, in: statusItems)
+                .filter(\.isCommitEligible)
                 .map(\.relativePath)
             selectedPaths.formUnion(stagedPaths)
             activityMessage = "Staged \(stagedPaths.count) path(s)."
         }
+    }
+
+    public func unstage(paths: [String]) {
+        let requestedPaths = Set(paths)
+        let pathsToUnstage = StatusItem.expandingSelection(requestedPaths, in: statusItems)
+            .map(\.relativePath)
+        selectedPaths.subtract(pathsToUnstage)
     }
 
     public func add(paths: [String]) async {
@@ -654,6 +696,9 @@ public final class AppModel {
             diffBeforeImageData = nil
             diffAfterImageData = nil
             diffBinaryDescription = nil
+            revisionImagePreviews = []
+            diffBeforeImageTitle = "Before"
+            diffAfterImageTitle = "Working Copy"
             let target = project.repositoryRootURL?.absoluteString ?? project.workingCopyRoot.path
             diffText = try await svn.diff(
                 project: project,
@@ -661,20 +706,42 @@ public final class AppModel {
                 change: revision,
                 contextLines: requestedDiffContextLines
             )
+
+            guard case let .revision(requestedRevision) = currentDiffRequest,
+                  requestedRevision == revision,
+                  let record = revisions.first(where: { $0.revision == revision }) else { return }
+            for path in record.changedPaths where Self.isImagePath(path) {
+                if let preview = await revisionImagePreview(for: path, revision: revision, project: project) {
+                    guard case let .revision(requestedRevision) = currentDiffRequest,
+                          requestedRevision == revision else { return }
+                    revisionImagePreviews.append(preview)
+                }
+            }
         } catch { present(error) }
     }
 
-    public func loadRevisionPathDiff(_ repositoryPath: String, revision: Int) async {
-        currentDiffRequest = .revisionPath(path: repositoryPath, revision: revision)
+    public func loadRevisionPathDiff(_ changedPath: ChangedPath, revision: Int) async {
+        currentDiffRequest = .revisionPath(path: changedPath.path, revision: revision)
         guard let project = selectedProject else { return }
         do {
             diffBeforeImageData = nil
             diffAfterImageData = nil
             diffBinaryDescription = nil
-            let relativePath = repositoryPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-            let target = project.repositoryRootURL?
-                .appendingPathComponent(relativePath)
-                .absoluteString ?? project.workingCopyRoot.appendingPathComponent(relativePath).path
+            revisionImagePreviews = []
+            diffBeforeImageTitle = "Before"
+            diffAfterImageTitle = "Working Copy"
+
+            if Self.isImagePath(changedPath),
+               let preview = await revisionImagePreview(for: changedPath, revision: revision, project: project) {
+                diffBeforeImageData = preview.beforeData
+                diffAfterImageData = preview.afterData
+                diffBeforeImageTitle = preview.beforeRevision.map { "Before · r\($0)" } ?? "Before"
+                diffAfterImageTitle = "Revision · r\(revision)"
+                diffText = ""
+                return
+            }
+
+            let target = repositoryTarget(for: changedPath.path, project: project)
             diffText = try await svn.diff(
                 project: project,
                 paths: [target],
@@ -702,8 +769,76 @@ public final class AppModel {
         case let .revision(revision):
             await loadRevisionDiff(revision)
         case let .revisionPath(path, revision):
-            await loadRevisionPathDiff(path, revision: revision)
+            let changedPath = revisions
+                .first(where: { $0.revision == revision })?
+                .changedPaths
+                .first(where: { $0.path == path })
+                ?? ChangedPath(path: path, action: .unknown)
+            await loadRevisionPathDiff(changedPath, revision: revision)
         }
+    }
+
+    private static func isImagePath(_ path: ChangedPath) -> Bool {
+        guard path.nodeKind != .directory else { return false }
+        let extensions: Set<String> = ["png", "jpg", "jpeg", "gif", "webp", "tif", "tiff", "heic"]
+        return extensions.contains(URL(fileURLWithPath: path.path).pathExtension.lowercased())
+    }
+
+    private func revisionImagePreview(
+        for path: ChangedPath,
+        revision: Int,
+        project: ProjectRecord
+    ) async -> RevisionImagePreview? {
+        var beforeData: Data?
+        var beforeRevision: Int?
+        var afterData: Data?
+
+        if path.action == .added,
+           let copyFromPath = path.copyFromPath,
+           let copyFromRevision = path.copyFromRevision {
+            beforeRevision = copyFromRevision
+            let target = repositoryTarget(for: copyFromPath, project: project, pegRevision: copyFromRevision)
+            beforeData = try? await svn.contents(
+                project: project,
+                target: target,
+                revision: String(copyFromRevision)
+            )
+        } else if path.action != .added {
+            let previousRevision = max(0, revision - 1)
+            beforeRevision = previousRevision
+            let target = repositoryTarget(for: path.path, project: project, pegRevision: previousRevision)
+            beforeData = try? await svn.contents(
+                project: project,
+                target: target,
+                revision: String(previousRevision)
+            )
+        }
+
+        if path.action != .deleted {
+            let target = repositoryTarget(for: path.path, project: project, pegRevision: revision)
+            afterData = try? await svn.contents(project: project, target: target, revision: String(revision))
+        }
+
+        guard beforeData != nil || afterData != nil else { return nil }
+        return RevisionImagePreview(
+            repositoryPath: path.path,
+            beforeData: beforeData,
+            afterData: afterData,
+            beforeRevision: beforeRevision,
+            revision: revision
+        )
+    }
+
+    private func repositoryTarget(
+        for repositoryPath: String,
+        project: ProjectRecord,
+        pegRevision: Int? = nil
+    ) -> String {
+        let relativePath = repositoryPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let target = project.repositoryRootURL?
+            .appendingPathComponent(relativePath)
+            .absoluteString ?? project.workingCopyRoot.appendingPathComponent(relativePath).path
+        return pegRevision.map { "\(target)@\($0)" } ?? target
     }
 
     private var requestedDiffContextLines: Int? {
@@ -929,8 +1064,7 @@ public final class AppModel {
         case .credentials:
             let account = "svn:\(challenge.host)"
             if !challenge.previousAttemptFailed,
-               let data = try await KeychainStore.shared.load(account: account),
-               let stored = try? JSONDecoder().decode(StoredSVNCredential.self, from: data) {
+               let stored = try await storedCredential(for: challenge.host) {
                 return SVNAuthenticationResponse(username: stored.username, password: stored.password, saveInKeychain: true)
             }
 
@@ -968,24 +1102,80 @@ public final class AppModel {
             return SVNAuthenticationResponse(username: result.0, password: result.1, saveInKeychain: result.2)
 
         case .serverTrust(let failures):
-            let accepted = await MainActor.run { () -> Bool in
+            let account = "svn-trust:\(challenge.host)"
+            if !challenge.previousAttemptFailed,
+               let data = try await KeychainStore.shared.load(account: account),
+               let stored = try? JSONDecoder().decode(StoredSVNServerTrust.self, from: data),
+               stored.acceptedServerFailures.isSuperset(of: failures) {
+                return try await authenticationResponse(
+                    trusting: stored.acceptedServerFailures,
+                    host: challenge.host
+                )
+            }
+            if challenge.previousAttemptFailed {
+                try? await KeychainStore.shared.remove(account: account)
+            }
+
+            let decision = await MainActor.run { () -> ServerTrustDecision? in
                 let alert = NSAlert()
                 alert.alertStyle = .critical
                 alert.messageText = "Server Certificate Is Not Trusted"
                 alert.informativeText = "\(challenge.host)\n\n\(challenge.message)"
-                alert.addButton(withTitle: "Trust for This Connection")
+                alert.addButton(withTitle: "Trust Once")
+                alert.addButton(withTitle: "Always Trust This Server")
                 alert.addButton(withTitle: "Cancel")
-                return alert.runModal() == .alertFirstButtonReturn
+                switch alert.runModal() {
+                case .alertFirstButtonReturn: return .once
+                case .alertSecondButtonReturn: return .always
+                default: return nil
+                }
             }
-            guard accepted else { throw CancellationError() }
-            return SVNAuthenticationResponse(acceptedServerFailures: failures)
+            guard let decision else { throw CancellationError() }
+            if decision == .always {
+                let stored = StoredSVNServerTrust(acceptedServerFailures: failures)
+                try await KeychainStore.shared.save(
+                    try JSONEncoder().encode(stored),
+                    account: account,
+                    label: "SVN server trust for \(challenge.host)"
+                )
+            }
+            return try await authenticationResponse(trusting: failures, host: challenge.host)
         }
     }
+
+    private static func storedCredential(for host: String) async throws -> StoredSVNCredential? {
+        guard let data = try await KeychainStore.shared.load(account: "svn:\(host)") else { return nil }
+        return try? JSONDecoder().decode(StoredSVNCredential.self, from: data)
+    }
+
+    private static func authenticationResponse(
+        trusting failures: Set<String>,
+        host: String
+    ) async throws -> SVNAuthenticationResponse {
+        guard let credential = try await storedCredential(for: host) else {
+            return SVNAuthenticationResponse(acceptedServerFailures: failures)
+        }
+        return SVNAuthenticationResponse(
+            username: credential.username,
+            password: credential.password,
+            saveInKeychain: true,
+            acceptedServerFailures: failures
+        )
+    }
+}
+
+private enum ServerTrustDecision {
+    case once
+    case always
 }
 
 private struct StoredSVNCredential: Codable, Sendable {
     var username: String
     var password: String
+}
+
+private struct StoredSVNServerTrust: Codable, Sendable {
+    var acceptedServerFailures: Set<String>
 }
 
 public struct PresentedError: Identifiable, Sendable {

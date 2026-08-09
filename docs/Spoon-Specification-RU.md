@@ -49,8 +49,8 @@ Spoon должен позволять разработчику выполнят�
 
 ### 5.1 Операционная система
 
-- macOS 13 и новее;
-- Spoon 1.0 поставляется как Universal-приложение для Apple Silicon и Intel.
+- macOS 15 и новее;
+- Spoon 1.0 поставляется только для Apple Silicon (`arm64`).
 
 ### 5.2 SVN
 
@@ -729,7 +729,6 @@ Integration tests используют тот же SVN binary, который в
 
 - самая новая и самая старая поддерживаемые версии macOS;
 - clean install на Apple Silicon;
-- Intel, если включён в scope;
 - case-sensitive и case-insensitive APFS;
 - local, removable и network working copies;
 - Unicode repository и paths.

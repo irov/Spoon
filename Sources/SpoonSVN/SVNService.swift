@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 import SpoonDomain
 
 public actor SVNService {
@@ -40,17 +41,18 @@ public actor SVNService {
             factory.status(root: project.workingCopyRoot, remote: remote, showIgnored: showIgnored),
             projectID: project.id,
             workingCopyRoot: project.workingCopyRoot,
-            securityScopedBookmark: project.workingCopyBookmark
+            securityScopedBookmark: project.workingCopyBookmark,
+            authenticationHost: project.repositoryRootURL?.host
         )
     }
 
     public func history(project: ProjectRecord, limit: Int = 100, search: String? = nil) async throws -> [RevisionRecord] {
         let target = project.repositoryRootURL?.absoluteString ?? project.workingCopyRoot.path
-        return try await perform(factory.log(target: target, limit: limit, search: search), projectID: project.id, workingCopyRoot: nil)
+        return try await perform(factory.log(target: target, limit: limit, search: search), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func repositoryList(project: ProjectRecord, url: URL, revision: String = "HEAD") async throws -> [RepositoryEntry] {
-        try await perform(factory.list(url: url, revision: revision), projectID: project.id, workingCopyRoot: nil)
+        try await perform(factory.list(url: url, revision: revision), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func diff(
@@ -73,32 +75,33 @@ public actor SVNService {
             ),
             projectID: project.id,
             workingCopyRoot: project.workingCopyRoot,
-            securityScopedBookmark: project.workingCopyBookmark
+            securityScopedBookmark: project.workingCopyBookmark,
+            authenticationHost: project.repositoryRootURL?.host
         )
     }
 
     public func blame(project: ProjectRecord, target: String, revision: String? = nil) async throws -> [BlameLine] {
-        var lines = try await perform(factory.blame(target: target, revision: revision), projectID: project.id, workingCopyRoot: nil)
-        let contents = try await perform(factory.cat(target: target, revision: revision ?? "HEAD"), projectID: project.id, workingCopyRoot: nil)
+        var lines = try await perform(factory.blame(target: target, revision: revision), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
+        let contents = try await perform(factory.cat(target: target, revision: revision ?? "HEAD"), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
         let sourceLines = String(decoding: contents, as: UTF8.self).split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
         for index in lines.indices where index < sourceLines.count { lines[index].content = sourceLines[index] }
         return lines
     }
 
     public func contents(project: ProjectRecord, target: String, revision: String = "HEAD") async throws -> Data {
-        try await perform(factory.cat(target: target, revision: revision), projectID: project.id, workingCopyRoot: nil, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.cat(target: target, revision: revision), projectID: project.id, workingCopyRoot: nil, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func properties(project: ProjectRecord, target: String, revision: String? = nil) async throws -> [SVNPropertyRecord] {
-        try await perform(factory.properties(target: target, revision: revision), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.properties(target: target, revision: revision), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func setProperty(project: ProjectRecord, name: String, value: Data, targets: [String]) async throws -> String {
-        try await perform(try factory.propertySet(name: name, value: value, targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(try factory.propertySet(name: name, value: value, targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func deleteProperty(project: ProjectRecord, name: String, targets: [String]) async throws -> String {
-        try await perform(factory.propertyDelete(name: name, targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.propertyDelete(name: name, targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func checkout(url: URL, destination: URL, revision: String = "HEAD", depth: String = "infinity", ignoreExternals: Bool = false, securityScopedBookmark: Data? = nil) async throws -> String {
@@ -110,72 +113,73 @@ public actor SVNService {
             factory.update(targets: targets ?? [project.workingCopyRoot.path], revision: revision, includeExternals: includeExternals),
             projectID: project.id,
             workingCopyRoot: project.workingCopyRoot,
-            securityScopedBookmark: project.workingCopyBookmark
+            securityScopedBookmark: project.workingCopyBookmark,
+            authenticationHost: project.repositoryRootURL?.host
         )
     }
 
     public func commit(project: ProjectRecord, targets: [String], message: String) async throws -> Int? {
-        try await perform(try factory.commit(targets: targets, message: message), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(try factory.commit(targets: targets, message: message), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func add(project: ProjectRecord, targets: [String]) async throws -> String {
-        try await perform(factory.add(targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.add(targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func delete(project: ProjectRecord, targets: [String], keepLocal: Bool = false) async throws -> String {
-        try await perform(factory.delete(targets: targets, keepLocal: keepLocal), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.delete(targets: targets, keepLocal: keepLocal), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func move(project: ProjectRecord, source: String, destination: String) async throws -> String {
-        try await perform(factory.move(source: source, destination: destination), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.move(source: source, destination: destination), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func revert(project: ProjectRecord, targets: [String], depth: String = "empty") async throws -> String {
-        try await perform(factory.revert(targets: targets, depth: depth), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.revert(targets: targets, depth: depth), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func cleanup(project: ProjectRecord) async throws -> String {
-        try await perform(factory.cleanup(root: project.workingCopyRoot), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.cleanup(root: project.workingCopyRoot), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func resolve(project: ProjectRecord, targets: [String], choice: ConflictResolution) async throws -> String {
-        try await perform(factory.resolve(targets: targets, choice: choice), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.resolve(targets: targets, choice: choice), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func lock(project: ProjectRecord, targets: [String], message: String? = nil) async throws -> String {
-        try await perform(try factory.lock(targets: targets, message: message), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(try factory.lock(targets: targets, message: message), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func unlock(project: ProjectRecord, targets: [String]) async throws -> String {
-        try await perform(factory.unlock(targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.unlock(targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func setChangelist(project: ProjectRecord, name: String?, targets: [String]) async throws -> String {
-        try await perform(factory.changelist(name: name, targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.changelist(name: name, targets: targets), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func switchWorkingCopy(project: ProjectRecord, url: URL, revision: String = "HEAD") async throws -> String {
-        try await perform(factory.switchWorkingCopy(url: url, path: project.workingCopyRoot, revision: revision), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.switchWorkingCopy(url: url, path: project.workingCopyRoot, revision: revision), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func merge(project: ProjectRecord, source: URL, revisionRange: String? = nil, dryRun: Bool = false, reverse: Bool = false) async throws -> String {
-        try await perform(factory.merge(source: source, target: project.workingCopyRoot, revisionRange: revisionRange, dryRun: dryRun, reverse: reverse), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark)
+        try await perform(factory.merge(source: source, target: project.workingCopyRoot, revisionRange: revisionRange, dryRun: dryRun, reverse: reverse), projectID: project.id, workingCopyRoot: project.workingCopyRoot, securityScopedBookmark: project.workingCopyBookmark, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func createRepositoryDirectory(project: ProjectRecord, url: URL, message: String) async throws -> Int? {
-        try await perform(try factory.repositoryMkdir(url: url, message: message), projectID: project.id, workingCopyRoot: nil)
+        try await perform(try factory.repositoryMkdir(url: url, message: message), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func repositoryCopy(project: ProjectRecord, source: URL, destination: URL, message: String, revision: String? = nil) async throws -> Int? {
-        try await perform(try factory.repositoryCopy(source: source, destination: destination, message: message, revision: revision), projectID: project.id, workingCopyRoot: nil)
+        try await perform(try factory.repositoryCopy(source: source, destination: destination, message: message, revision: revision), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func repositoryMove(project: ProjectRecord, source: URL, destination: URL, message: String) async throws -> Int? {
-        try await perform(try factory.repositoryMove(source: source, destination: destination, message: message), projectID: project.id, workingCopyRoot: nil)
+        try await perform(try factory.repositoryMove(source: source, destination: destination, message: message), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func repositoryDelete(project: ProjectRecord, url: URL, message: String) async throws -> Int? {
-        try await perform(try factory.repositoryDelete(url: url, message: message), projectID: project.id, workingCopyRoot: nil)
+        try await perform(try factory.repositoryDelete(url: url, message: message), projectID: project.id, workingCopyRoot: nil, authenticationHost: project.repositoryRootURL?.host)
     }
 
     public func cancel(taskID: UUID) async {
@@ -190,7 +194,8 @@ public actor SVNService {
         _ descriptor: SVNCommandDescriptor<Output>,
         projectID: UUID?,
         workingCopyRoot: URL?,
-        securityScopedBookmark: Data? = nil
+        securityScopedBookmark: Data? = nil,
+        authenticationHost: String? = nil
     ) async throws -> Output {
         let descriptor = descriptor.withSecurityScopedBookmark(securityScopedBookmark)
         let record = TaskRecord(
@@ -205,19 +210,25 @@ public actor SVNService {
             operationClass: descriptor.operationClass,
             workingCopyRoot: workingCopyRoot
         ) { [self] in
-            try await self.runWithAuthentication(descriptor, initialRecord: record)
+            try await self.runWithAuthentication(
+                descriptor,
+                initialRecord: record,
+                authenticationHost: authenticationHost
+            )
         }
     }
 
     private func runWithAuthentication<Output: Sendable>(
         _ descriptor: SVNCommandDescriptor<Output>,
-        initialRecord: TaskRecord
+        initialRecord: TaskRecord,
+        authenticationHost: String?
     ) async throws -> Output {
-        var cacheKey = descriptor.targets.lazy.compactMap { URL(string: $0)?.host }.first
+        var cacheKey = authenticationHost ?? descriptor.targets.lazy.compactMap { URL(string: $0)?.host }.first
         var applied = cacheKey.flatMap { authenticationCache[$0] } ?? SVNAuthenticationResponse()
         var attempted = applied.hasAuthentication ? descriptor.applying(authentication: applied) : descriptor
         var attemptedCredentials = applied.hasCredentials
         var attemptedServerTrust = applied.hasServerTrust
+        var helperLaunchRetries = descriptor.operationClass == .workingCopyRead || descriptor.operationClass == .repositoryRead ? 1 : 0
         for _ in 0..<5 {
             do {
                 let output = try await run(attempted, initialRecord: initialRecord)
@@ -226,9 +237,15 @@ public actor SVNService {
                 }
                 return output
             } catch let error as SpoonError {
+                if error.terminationSignal == SIGTRAP, helperLaunchRetries > 0 {
+                    helperLaunchRetries -= 1
+                    try await Task.sleep(for: .milliseconds(500))
+                    continue
+                }
                 guard var challenge = authenticationChallenge(
                     from: error,
                     descriptor: descriptor,
+                    authenticationHost: authenticationHost,
                     previousAttemptFailed: false
                 ), let authenticationProvider else { throw error }
                 cacheKey = challenge.host
@@ -254,11 +271,13 @@ public actor SVNService {
     private func authenticationChallenge<Output: Sendable>(
         from error: SpoonError,
         descriptor: SVNCommandDescriptor<Output>,
+        authenticationHost: String?,
         previousAttemptFailed: Bool
     ) -> SVNAuthenticationChallenge? {
         let text = error.explanation
         let target = descriptor.targets.first.flatMap(URL.init(string:))
-        let host = target?.host ?? "Subversion server"
+        let reportedURL = text.firstMatch(#"URL '([^']+)'"#).flatMap(URL.init(string:))
+        let host = authenticationHost ?? target?.host ?? reportedURL?.host ?? "Subversion server"
         let realm = text.firstMatch(#"Authentication realm:\s*([^\n]+)"#)
         if error.svnCodes.contains(where: { $0.value == "E170001" }) || text.localizedCaseInsensitiveContains("authentication failed") {
             return SVNAuthenticationChallenge(kind: .credentials, host: host, realm: realm, message: text, previousAttemptFailed: previousAttemptFailed)
@@ -328,7 +347,11 @@ public actor SVNService {
             failed.state = .failed
             failed.finishedAt = .now
             failed.summary = error.localizedDescription
-            if let spoonError = error as? SpoonError { failed.svnErrorCodes = spoonError.svnCodes }
+            if let spoonError = error as? SpoonError {
+                failed.exitCode = spoonError.exitCode
+                failed.terminationSignal = spoonError.terminationSignal
+                failed.svnErrorCodes = spoonError.svnCodes
+            }
             await registry.upsert(failed)
             throw error
         }

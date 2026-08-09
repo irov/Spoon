@@ -159,11 +159,37 @@ public actor SVNExecutor {
         let signal: Int32? = process.terminationReason == .uncaughtSignal ? process.terminationStatus : nil
 
         if process.terminationStatus != 0 && !wasCancelled {
+            if descriptor.operation == .info, codes.contains(SVNErrorCode("E155007")) {
+                throw SpoonError(
+                    title: String(localized: "This Isn't an SVN Working Copy", bundle: .main),
+                    explanation: String(
+                        localized: "The selected folder doesn't contain Subversion working-copy data. Nothing was changed. Choose an existing SVN working copy, or use Checkout to create one.",
+                        bundle: .main
+                    ),
+                    operation: descriptor.operation,
+                    svnCodes: codes,
+                    exitCode: process.terminationStatus,
+                    terminationSignal: signal
+                )
+            }
+            if let signal {
+                throw SpoonError(
+                    title: "Subversion helper stopped unexpectedly",
+                    explanation: "Spoon couldn't complete this command because its Subversion helper was interrupted.",
+                    operation: descriptor.operation,
+                    svnCodes: codes,
+                    exitCode: process.terminationStatus,
+                    terminationSignal: signal,
+                    recoverySuggestion: "Try the operation again. If it keeps happening, restart Spoon.",
+                    diagnosticDetails: descriptor.sanitizedCommand
+                )
+            }
             throw SpoonError(
                 title: "Subversion command failed",
                 explanation: Redactor.text(stderrText.isEmpty ? "svn exited with code \(process.terminationStatus)." : stderrText),
                 operation: descriptor.operation,
                 svnCodes: codes,
+                exitCode: process.terminationStatus,
                 recoverySuggestion: Self.recoverySuggestion(for: codes),
                 diagnosticDetails: descriptor.sanitizedCommand
             )

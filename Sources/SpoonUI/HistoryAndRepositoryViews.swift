@@ -39,7 +39,7 @@ struct HistoryView: View {
                     }
                 }
                 .gesture(
-                    DragGesture(minimumDistance: 0)
+                    DragGesture(minimumDistance: 0, coordinateSpace: .global)
                         .onChanged { value in
                             if detailPaneHeightAtDragStart == nil {
                                 detailPaneHeightAtDragStart = resolvedDetailHeight
@@ -230,6 +230,9 @@ struct HistoryView: View {
                 beforeImageData: model.diffBeforeImageData,
                 afterImageData: model.diffAfterImageData,
                 binaryDescription: model.diffBinaryDescription,
+                revisionImagePreviews: model.revisionImagePreviews,
+                beforeImageTitle: model.diffBeforeImageTitle,
+                afterImageTitle: model.diffAfterImageTitle,
                 pathBase: model.selectedProject?.workingCopyRoot.path,
                 contextMode: model.diffContextMode,
                 isContextLoading: model.isDiffContextLoading,
@@ -266,7 +269,7 @@ struct HistoryView: View {
     private func changedPathRow(_ path: ChangedPath, revision: RevisionRecord, treeStyle: Bool) -> some View {
         Button {
             selectedChangedPath = path.id
-            Task { await model.loadRevisionPathDiff(path.path, revision: revision.revision) }
+            Task { await model.loadRevisionPathDiff(path, revision: revision.revision) }
         } label: {
             HStack(spacing: 8) {
                 ChangedPathBadge(action: path.action)
@@ -329,7 +332,7 @@ struct HistoryView: View {
                 .onTapGesture {
                     detailTab = .commit
                     selectedChangedPath = path.id
-                    Task { await model.loadRevisionPathDiff(path.path, revision: revision.revision) }
+                    Task { await model.loadRevisionPathDiff(path, revision: revision.revision) }
                 }
             }
             .listStyle(.plain)
@@ -344,7 +347,7 @@ struct HistoryView: View {
     private func selectRevision(_ revision: RevisionRecord) {
         if let path = revision.changedPaths.first {
             selectedChangedPath = path.id
-            Task { await model.loadRevisionPathDiff(path.path, revision: revision.revision) }
+            Task { await model.loadRevisionPathDiff(path, revision: revision.revision) }
         } else {
             selectedChangedPath = nil
             Task { await model.loadRevisionDiff(revision.revision) }

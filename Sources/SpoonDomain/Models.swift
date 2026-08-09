@@ -246,6 +246,20 @@ public struct StatusItem: Codable, Hashable, Identifiable, Sendable {
                 && propertyStatus != .conflicted
         )
     }
+
+    public static func expandingSelection(
+        _ requestedPaths: Set<String>,
+        in statusItems: [StatusItem]
+    ) -> [StatusItem] {
+        let requestedDirectoryPaths = statusItems
+            .filter { requestedPaths.contains($0.relativePath) && $0.nodeKind == .directory }
+            .map(\.relativePath)
+
+        return statusItems.filter { item in
+            requestedPaths.contains(item.relativePath)
+                || requestedDirectoryPaths.contains { item.relativePath.hasPrefix($0 + "/") }
+        }
+    }
 }
 
 private extension WorkingCopyStatus {

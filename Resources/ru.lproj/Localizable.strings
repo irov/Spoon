@@ -3,6 +3,8 @@
 "Open Working Copy…" = "Открыть рабочую копию…";
 "Open Working Copy" = "Открыть рабочую копию";
 "Open SVN Working Copy" = "Открыть рабочую копию SVN";
+"This Isn't an SVN Working Copy" = "Это не рабочая копия SVN";
+"The selected folder doesn't contain Subversion working-copy data. Nothing was changed. Choose an existing SVN working copy, or use Checkout to create one." = "В выбранной папке нет служебных данных рабочей копии Subversion. Ничего не изменено. Выберите существующую рабочую копию SVN или создайте новую с помощью Checkout.";
 "Checkout…" = "Checkout…";
 "Checkout" = "Checkout";
 "Projects" = "Проекты";
@@ -23,7 +25,6 @@
 "Filter paths" = "Фильтр путей";
 "Ignored" = "Игнорируемые";
 "Properties" = "Свойства";
-"SVN Properties" = "Свойства SVN";
 "Select to show the SVN property diff. Properties are staged with their path." = "Выберите, чтобы показать diff свойств SVN. Свойства подготавливаются вместе со своим путём.";
 "Switched" = "Переключён";
 "Copied" = "Скопирован";
@@ -157,6 +158,8 @@
 "Version 1.0.0 (1)" = "Версия 1.0.0 (1)";
 "Working Copy" = "Рабочая копия";
 "Before" = "До";
+"Add" = "Добавление";
+"Deleted" = "Удалено";
 "No Image" = "Нет изображения";
 "Destination path" = "Путь назначения";
 "Schedule path for deletion?" = "Запланировать удаление пути?";

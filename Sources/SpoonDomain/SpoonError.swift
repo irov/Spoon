@@ -5,6 +5,8 @@ public struct SpoonError: Error, LocalizedError, Sendable {
     public var explanation: String
     public var operation: SVNOperation?
     public var svnCodes: [SVNErrorCode]
+    public var exitCode: Int32?
+    public var terminationSignal: Int32?
     public var recoverySuggestion: String?
     public var diagnosticDetails: String?
 
@@ -13,6 +15,8 @@ public struct SpoonError: Error, LocalizedError, Sendable {
         explanation: String,
         operation: SVNOperation? = nil,
         svnCodes: [SVNErrorCode] = [],
+        exitCode: Int32? = nil,
+        terminationSignal: Int32? = nil,
         recoverySuggestion: String? = nil,
         diagnosticDetails: String? = nil
     ) {
@@ -20,6 +24,8 @@ public struct SpoonError: Error, LocalizedError, Sendable {
         self.explanation = explanation
         self.operation = operation
         self.svnCodes = svnCodes
+        self.exitCode = exitCode
+        self.terminationSignal = terminationSignal
         self.recoverySuggestion = recoverySuggestion
         self.diagnosticDetails = diagnosticDetails
     }
