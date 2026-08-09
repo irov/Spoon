@@ -19,8 +19,9 @@ The product and technical specification is available in
 ## Build
 
 1. Install Xcode 26 or newer and XcodeGen.
-2. Run `Tools/vendor-toolchain.sh` to create the pinned arm64 Subversion/OpenSSH
+2. Run `Tools/vendor-toolchain.sh` to create the pinned arm64 Subversion
    payload, or use the checked-in payload after validating `Vendor/Toolchain/SHA256SUMS`.
+   SVN-over-SSH uses the system `/usr/bin/ssh` executable.
 3. Run `xcodegen generate`.
 4. Open `Spoon.xcodeproj`, or build with:
 

@@ -4,9 +4,8 @@ setopt KSH_ARRAYS
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-OUTPUT_DIR="$PROJECT_DIR/Vendor/Toolchain"
+OUTPUT_DIR="${TOOLCHAIN_OUTPUT_DIR:-$PROJECT_DIR/Vendor/Toolchain}"
 SVN_SOURCE="${SVN_SOURCE:-/opt/homebrew/bin/svn}"
-OPENSSH_PREFIX="${OPENSSH_PREFIX:-/opt/homebrew/opt/openssh}"
 
 if [[ -e "$OUTPUT_DIR" ]]; then
   echo "Refusing to replace existing $OUTPUT_DIR" >&2
@@ -24,28 +23,14 @@ if [[ "$SVN_VERSION" != "1.14.5" ]]; then
   echo "Expected Subversion 1.14.5, found $SVN_VERSION" >&2
   exit 2
 fi
-OPENSSH_VERSION="$($OPENSSH_PREFIX/bin/ssh -V 2>&1)"
-
 STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/spoon-toolchain.XXXXXX")"
 trap 'rm -rf "$STAGING_DIR"' EXIT
 mkdir -p "$STAGING_DIR/Helpers" "$STAGING_DIR/Libraries" "$STAGING_DIR/Licenses"
 
-declare -a HELPERS=(svn-core ssh ssh-agent ssh-add ssh-keygen ssh-keyscan scp sftp)
-for helper in "${HELPERS[@]}"; do
-  source_path="$SVN_SOURCE"
-  if [[ "$helper" != "svn-core" ]]; then
-    source_path="$OPENSSH_PREFIX/bin/$helper"
-    [[ -x "$source_path" ]] || source_path="$OPENSSH_PREFIX/libexec/$helper"
-  fi
-  if [[ ! -x "$source_path" ]]; then
-    echo "Missing helper: $helper ($source_path)" >&2
-    exit 2
-  fi
-  cp "$source_path" "$STAGING_DIR/Helpers/$helper"
-  chmod 0755 "$STAGING_DIR/Helpers/$helper"
-done
+cp "$SVN_SOURCE" "$STAGING_DIR/Helpers/svn-core"
+chmod 0755 "$STAGING_DIR/Helpers/svn-core"
 
-declare -a QUEUE=("$STAGING_DIR/Helpers/svn-core" "$STAGING_DIR/Helpers/ssh" "$STAGING_DIR/Helpers/ssh-agent" "$STAGING_DIR/Helpers/ssh-add" "$STAGING_DIR/Helpers/ssh-keygen" "$STAGING_DIR/Helpers/ssh-keyscan" "$STAGING_DIR/Helpers/scp" "$STAGING_DIR/Helpers/sftp")
+declare -a QUEUE=("$STAGING_DIR/Helpers/svn-core")
 declare -A COPIED_DEPENDENCIES=()
 
 queue_index=0
@@ -104,7 +89,13 @@ done
 
 
 "$STAGING_DIR/Helpers/svn-core" --version --quiet | grep -qx "1.14.5"
-"$STAGING_DIR/Helpers/ssh" -V 2>&1 | grep -q "OpenSSH_10.4p1"
+
+for binary in "$STAGING_DIR"/Helpers/* "$STAGING_DIR"/Libraries/*; do
+  if nm "$binary" 2>/dev/null | awk '{print $NF}' | grep -qx '___progname'; then
+    echo "Forbidden private API reference in $binary: ___progname" >&2
+    exit 2
+  fi
+done
 
 curl --fail --silent --show-error --location \
   'https://raw.githubusercontent.com/apache/subversion/1.14.x/LICENSE' \
@@ -112,9 +103,6 @@ curl --fail --silent --show-error --location \
 curl --fail --silent --show-error --location \
   'https://raw.githubusercontent.com/apache/subversion/1.14.x/NOTICE' \
   --output "$STAGING_DIR/Licenses/Subversion-NOTICE.txt"
-curl --fail --silent --show-error --location \
-  'https://raw.githubusercontent.com/openssh/openssh-portable/V_10_4_P1/LICENCE' \
-  --output "$STAGING_DIR/Licenses/OpenSSH-LICENCE.txt"
 curl --fail --silent --show-error --location \
   'https://raw.githubusercontent.com/apache/apr/1.7.x/LICENSE' \
   --output "$STAGING_DIR/Licenses/APR-LICENSE.txt"
@@ -127,9 +115,6 @@ curl --fail --silent --show-error --location \
 curl --fail --silent --show-error --location \
   'https://raw.githubusercontent.com/apache/apr-util/1.6.x/NOTICE' \
   --output "$STAGING_DIR/Licenses/APR-Util-NOTICE.txt"
-curl --fail --silent --show-error --location \
-  'https://raw.githubusercontent.com/NLnetLabs/ldns/1.9.2/LICENSE' \
-  --output "$STAGING_DIR/Licenses/LDNS-LICENSE.txt"
 curl --fail --silent --show-error --location \
   'https://raw.githubusercontent.com/lz4/lz4/v1.10.0/lib/LICENSE' \
   --output "$STAGING_DIR/Licenses/LZ4-LICENSE.txt"
@@ -146,13 +131,10 @@ curl --fail --silent --show-error --location \
   'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt' \
   --output "$STAGING_DIR/Licenses/Gettext-libintl-COPYING.LIB.txt"
 
-{
-  echo "Subversion $SVN_VERSION"
-  echo "$OPENSSH_VERSION"
-} > "$STAGING_DIR/VERSIONS.txt"
+echo "Subversion $SVN_VERSION" > "$STAGING_DIR/VERSIONS.txt"
 (cd "$STAGING_DIR" && find Helpers Libraries Licenses VERSIONS.txt -type f -print0 | sort -z | xargs -0 shasum -a 256) \
   > "$STAGING_DIR/SHA256SUMS"
-xcrun swift "$ROOT_DIR/Tools/generate-content-checksums.swift" \
+xcrun swift "$PROJECT_DIR/Tools/generate-content-checksums.swift" \
   "$STAGING_DIR" "$STAGING_DIR/CONTENT-SHA256SUMS"
 
 mkdir -p "$(dirname "$OUTPUT_DIR")"

@@ -13,9 +13,15 @@ public enum SVNDiffContent: Sendable {
 public struct SVNCommandFactory: Sendable {
     public var executable: URL
     public var configDirectory: URL
+    public var sshExecutable: URL
 
-    public init(executable: URL = SVNExecutableLocator.bundledSVN(), configDirectory: URL? = nil) {
+    public init(
+        executable: URL = SVNExecutableLocator.bundledSVN(),
+        configDirectory: URL? = nil,
+        sshExecutable: URL = URL(fileURLWithPath: "/usr/bin/ssh")
+    ) {
         self.executable = executable
+        self.sshExecutable = sshExecutable
         if let configDirectory {
             self.configDirectory = configDirectory
         } else {
@@ -35,7 +41,7 @@ public struct SVNCommandFactory: Sendable {
             for module in ["ra_svn", "ra_local", "ra_serf"] where text.contains(module) { modules.insert(module) }
             var providers = Set<String>()
             if text.localizedCaseInsensitiveContains("Keychain") { providers.insert("Keychain") }
-            let inspection = Self.inspectToolchain(executable: executable)
+            let inspection = Self.inspectToolchain(executable: executable, sshExecutable: sshExecutable)
             return SVNCapabilitySet(
                 version: version,
                 architecture: inspection.architecture,
@@ -51,7 +57,7 @@ public struct SVNCommandFactory: Sendable {
         }
     }
 
-    private static func inspectToolchain(executable: URL) -> (
+    private static func inspectToolchain(executable: URL, sshExecutable: URL) -> (
         architecture: String,
         isBundled: Bool,
         signatureValid: Bool,
@@ -74,11 +80,9 @@ public struct SVNCommandFactory: Sendable {
             && code.map { SecStaticCodeCheckValidity($0, [], nil) == errSecSuccess } == true
         let manifest = contents.appendingPathComponent("Resources/ThirdPartyLicenses/Toolchain-Content-SHA256SUMS.txt")
         let checksumsValid = ToolchainIntegrity.verifyManifest(manifest, relativeTo: contents)
-        let versions = contents.appendingPathComponent("Resources/ThirdPartyLicenses/Toolchain-VERSIONS.txt")
-        let openSSHVersion = (try? String(contentsOf: versions, encoding: .utf8))?
-            .split(separator: "\n")
-            .map(String.init)
-            .first(where: { $0.contains("OpenSSH_") })
+        let openSSHVersion = FileManager.default.isExecutableFile(atPath: sshExecutable.path)
+            ? "System (\(sshExecutable.path))"
+            : nil
         return (architecture, isBundled, signatureValid, checksumsValid, openSSHVersion)
     }
 
@@ -355,10 +359,9 @@ public struct SVNCommandFactory: Sendable {
             completeArguments.insert(contentsOf: ["--config-dir", configDirectory.path, "--non-interactive"], at: min(1, completeArguments.count))
         }
         var environment = SVNCommandDescriptor<Output>.stableEnvironment
-        let bundledSSH = executable.deletingLastPathComponent().appendingPathComponent("ssh")
-        if FileManager.default.isExecutableFile(atPath: bundledSSH.path) {
+        if FileManager.default.isExecutableFile(atPath: sshExecutable.path) {
             let sshConfig = configDirectory.appendingPathComponent("ssh/config").path
-            environment["SVN_SSH"] = "\"\(bundledSSH.path)\" -F \"\(sshConfig)\""
+            environment["SVN_SSH"] = "\"\(sshExecutable.path)\" -F \"\(sshConfig)\""
         }
         return SVNCommandDescriptor(
             executable: executable,

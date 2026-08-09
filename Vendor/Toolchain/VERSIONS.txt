@@ -1,2 +1,1 @@
 Subversion 1.14.5
-OpenSSH_10.4p1, OpenSSL 3.6.3 9 Jun 2026

@@ -17,6 +17,20 @@ final class CommandBuilderTests: XCTestCase {
         XCTAssertFalse(descriptor.arguments.contains("-c"))
     }
 
+    func testSVNSSHUsesSystemExecutableAndSpoonConfiguration() {
+        let factory = SVNCommandFactory(
+            executable: URL(fileURLWithPath: "/usr/bin/svn"),
+            configDirectory: URL(fileURLWithPath: "/tmp/spoon config")
+        )
+
+        let descriptor = factory.list(url: URL(string: "svn+ssh://example.com/repository")!)
+
+        XCTAssertEqual(
+            descriptor.environment["SVN_SSH"],
+            "\"/usr/bin/ssh\" -F \"/tmp/spoon config/ssh/config\""
+        )
+    }
+
     func testCommitUsesOwnerOnlyMessageAndTargetsFiles() throws {
         let factory = SVNCommandFactory(executable: URL(fileURLWithPath: "/usr/bin/svn"), configDirectory: URL(fileURLWithPath: "/tmp/config"))
         let descriptor = try factory.commit(targets: ["/tmp/a file", "/tmp/-leading-dash"], message: "Unicode ✓ ' \" $(touch nope)")

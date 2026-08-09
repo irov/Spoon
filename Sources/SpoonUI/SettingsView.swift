@@ -55,7 +55,7 @@ public struct SettingsView: View {
                 LabeledContent("Bundled toolchain", value: model.capabilities?.isBundled == true ? "Verified" : "Unavailable")
                 LabeledContent("Code signature", value: model.capabilities?.signatureValid == true ? "Valid" : "Invalid")
                 LabeledContent("Checksums", value: model.capabilities?.checksumsValid == true ? "Valid" : "Invalid")
-                LabeledContent("OpenSSH", value: model.capabilities?.openSSHVersion ?? "Unavailable")
+                LabeledContent("SSH transport", value: model.capabilities?.openSSHVersion ?? "Unavailable")
                 Button("Export Diagnostics…", action: exportDiagnostics)
             }
             .padding(20)

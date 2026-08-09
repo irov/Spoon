@@ -11,10 +11,8 @@ by the toolchain manifest.
 | Apache Portable Runtime | 1.7.6 | Apache License 2.0 |
 | Apache Portable Runtime Utility | 1.6.3 | Apache License 2.0 |
 | Apache Serf | 1.3.10 | Apache License 2.0 |
-| OpenSSH Portable | 10.4p1 | BSD-style and component licenses |
 | OpenSSL | 3.6.3 | Apache License 2.0 |
 | GNU libintl | 1.0 | GNU Lesser General Public License |
-| ldns | 1.9.2 | BSD 3-Clause License |
 | LZ4 | 1.10.0 | BSD 2-Clause License |
 | utf8proc | 2.11.3 | MIT License |
 

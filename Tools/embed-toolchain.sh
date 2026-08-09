@@ -14,6 +14,21 @@ if [[ ! -d "$SOURCE_DIR" ]]; then
 fi
 
 mkdir -p "$CONTENTS_DIR/Helpers" "$CONTENTS_DIR/Libraries" "$CONTENTS_DIR/Resources/ThirdPartyLicenses"
+for obsolete in \
+  "$CONTENTS_DIR/Helpers/scp" \
+  "$CONTENTS_DIR/Helpers/sftp" \
+  "$CONTENTS_DIR/Helpers/ssh" \
+  "$CONTENTS_DIR/Helpers/ssh-add" \
+  "$CONTENTS_DIR/Helpers/ssh-agent" \
+  "$CONTENTS_DIR/Helpers/ssh-keygen" \
+  "$CONTENTS_DIR/Helpers/ssh-keyscan" \
+  "$CONTENTS_DIR/Libraries/libldns.3.dylib" \
+  "$CONTENTS_DIR/Resources/ThirdPartyLicenses/LDNS-LICENSE.txt" \
+  "$CONTENTS_DIR/Resources/ThirdPartyLicenses/OpenSSH-LICENCE.txt"; do
+  if [[ -e "$obsolete" ]]; then
+    unlink "$obsolete"
+  fi
+done
 ditto "$SOURCE_DIR/Helpers" "$CONTENTS_DIR/Helpers"
 ditto "$SOURCE_DIR/Libraries" "$CONTENTS_DIR/Libraries"
 ditto "$SOURCE_DIR/Licenses" "$CONTENTS_DIR/Resources/ThirdPartyLicenses"
