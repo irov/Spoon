@@ -3,7 +3,7 @@
 ## Product
 
 - Name: `Spoon Subversion`
-- Subtitle: `Visual SVN client for Mac`
+- Subtitle: `Visual Subversion Client`
 - Primary category: `Developer Tools`
 - Secondary category: `Productivity`
 - Copyright: `2026 Wonderland LLC`
