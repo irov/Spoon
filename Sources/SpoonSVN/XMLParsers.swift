@@ -189,7 +189,13 @@ private final class StatusParserDelegate: NSObject, XMLParserDelegate {
         let relative = absolute.path == root.path ? "." : absolute.path.replacingOccurrences(of: rootPath, with: "", options: [.anchored])
         let itemStatus = WorkingCopyStatus(svnValue: wcAttributes["item"] ?? "unknown")
         let propertyStatus = WorkingCopyStatus(svnValue: wcAttributes["props"] ?? "none")
-        let remoteStatus = RemoteStatus(svnValue: remoteAttributes["item"])
+        let remoteItemStatus = RemoteStatus(svnValue: remoteAttributes["item"])
+        let remotePropertyStatus = RemoteStatus(svnValue: remoteAttributes["props"])
+        let remoteStatus = if remoteItemStatus == .none || remoteItemStatus == .normal {
+            remotePropertyStatus
+        } else {
+            remoteItemStatus
+        }
         let resourceValues = try? absolute.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
         let nodeKind: NodeKind = if resourceValues?.isSymbolicLink == true {
             .symbolicLink

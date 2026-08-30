@@ -14,6 +14,7 @@ struct SVNIgnoreTarget: Identifiable, Sendable {
     let parentURL: URL
     let exactPattern: String
     let nodeKind: NodeKind
+    let wasScheduledForAddition: Bool
 
     var extensionPattern: String? {
         guard nodeKind != .directory else { return nil }
@@ -79,6 +80,7 @@ public final class AppModel {
     public var repositoryFileTitle = ""
     public var error: PresentedError?
     public var activityMessage = ""
+    public var lastRemoteStatusCheck: Date?
 
     private let svn: SVNService
     private let storage: SQLiteStore?
@@ -87,6 +89,8 @@ public final class AppModel {
     private var taskObserver: Task<Void, Never>?
     private var workingCopyWatcher: WorkingCopyWatcher?
     private var pendingAutomaticRefresh = false
+    private var pendingAutomaticRemoteRefresh = false
+    private var isAutomaticRefreshInProgress = false
     private var currentDiffRequest: DiffRequest?
 
     private static let fullFileDiffContextLines = Int(Int32.max)
@@ -103,8 +107,8 @@ public final class AppModel {
         storage = try? SQLiteStore()
         workingCopyWatcher = nil
         SecureTemporaryFile.removeAbandonedFiles()
-        workingCopyWatcher = WorkingCopyWatcher { [weak self] in
-            self?.workingCopyDidChange()
+        workingCopyWatcher = WorkingCopyWatcher { [weak self] checkRemote in
+            self?.workingCopyDidChange(checkRemote: checkRemote)
         }
         Task { [svn] in
             await svn.setAuthenticationProvider { challenge in
@@ -163,7 +167,7 @@ public final class AppModel {
         } catch {
             present(error)
         }
-        if selectedProject != nil { await refreshStatus() }
+        if selectedProject != nil { await refreshStatus(remote: true) }
         workingCopyWatcher?.watch(selectedProject?.workingCopyRoot)
     }
 
@@ -183,10 +187,11 @@ public final class AppModel {
         currentDiffRequest = nil
         selectedPaths = []
         repositoryURL = project.repositoryRootURL
+        lastRemoteStatusCheck = nil
         workingCopyWatcher?.watch(project.workingCopyRoot)
         Task {
             await loadDraft(for: project)
-            await refreshStatus()
+            await refreshStatus(remote: true)
         }
     }
 
@@ -229,6 +234,7 @@ public final class AppModel {
         projects.removeAll { $0.id == project.id }
         projectScopes[project.id] = nil
         selectedProjectID = projects.first?.id
+        lastRemoteStatusCheck = nil
         workingCopyWatcher?.watch(selectedProject?.workingCopyRoot)
         try? await storage?.removeProject(id: project.id)
         statusItems = []
@@ -261,6 +267,37 @@ public final class AppModel {
         guard let project = selectedProject else { return }
         await withActivity(remote ? "Checking remote changes…" : "Refreshing changes…") {
             try await reloadStatus(project: project, remote: remote)
+            if remote, selectedSection == .history {
+                try await reloadHistory(project: project)
+            }
+        }
+    }
+
+    public func refreshAutomatically(remote: Bool = false) async {
+        guard let project = selectedProject else { return }
+        guard !isBusy, !isAutomaticRefreshInProgress else {
+            pendingAutomaticRefresh = true
+            pendingAutomaticRemoteRefresh = pendingAutomaticRemoteRefresh || remote
+            return
+        }
+
+        isAutomaticRefreshInProgress = true
+        do {
+            try await reloadStatus(project: project, remote: remote)
+            if remote, selectedSection == .history {
+                try await reloadHistory(project: project)
+            }
+        } catch {
+            // Background checks keep the last known state. A manual refresh still
+            // presents authentication, connectivity, and working-copy errors.
+        }
+        isAutomaticRefreshInProgress = false
+
+        if pendingAutomaticRefresh {
+            let checkRemote = pendingAutomaticRemoteRefresh
+            pendingAutomaticRefresh = false
+            pendingAutomaticRemoteRefresh = false
+            await refreshAutomatically(remote: checkRemote)
         }
     }
 
@@ -431,7 +468,7 @@ public final class AppModel {
                 project: project,
                 includeExternals: project.settingsOverride?.includeExternalsOnUpdate ?? true
             )
-            try await reloadStatus(project: project)
+            try await reloadStatus(project: project, remote: true)
         }
     }
 
@@ -475,7 +512,7 @@ public final class AppModel {
             commitMessage = ""
             selectedPaths = []
             try await storage?.saveDraft(CommitDraft(projectID: project.id))
-            try await reloadStatus(project: project)
+            try await reloadStatus(project: project, remote: true)
             revisions = try await svn.history(project: project, limit: 200, search: historySearch.isEmpty ? nil : historySearch)
         }
     }
@@ -541,17 +578,23 @@ public final class AppModel {
     }
 
     func ignoreTarget(for path: String) -> SVNIgnoreTarget? {
-        guard statusItems.contains(where: {
-            $0.relativePath == path && $0.workingCopyStatus == .unversioned
+        guard let requestedItem = statusItems.first(where: {
+            $0.relativePath == path && $0.canAddToIgnore
         }) else { return nil }
 
-        let unversionedAncestors = statusItems.filter {
-            $0.workingCopyStatus == .unversioned
-                && (path == $0.relativePath || path.hasPrefix($0.relativePath + "/"))
+        let anchorItem: StatusItem
+        if requestedItem.workingCopyStatus == .unversioned {
+            let unversionedAncestors = statusItems.filter {
+                $0.workingCopyStatus == .unversioned
+                    && (path == $0.relativePath || path.hasPrefix($0.relativePath + "/"))
+            }
+            guard let outermostUnversionedItem = unversionedAncestors.min(by: { lhs, rhs in
+                lhs.relativePath.split(separator: "/").count < rhs.relativePath.split(separator: "/").count
+            }) else { return nil }
+            anchorItem = outermostUnversionedItem
+        } else {
+            anchorItem = requestedItem
         }
-        guard let anchorItem = unversionedAncestors.min(by: { lhs, rhs in
-            lhs.relativePath.split(separator: "/").count < rhs.relativePath.split(separator: "/").count
-        }) else { return nil }
 
         let anchorURL = anchorItem.absolutePath
         return SVNIgnoreTarget(
@@ -559,7 +602,8 @@ public final class AppModel {
             anchorPath: anchorItem.relativePath,
             parentURL: anchorURL.deletingLastPathComponent(),
             exactPattern: anchorURL.lastPathComponent,
-            nodeKind: anchorItem.nodeKind
+            nodeKind: anchorItem.nodeKind,
+            wasScheduledForAddition: anchorItem.workingCopyStatus == .added
         )
     }
 
@@ -581,17 +625,27 @@ public final class AppModel {
             let properties = try await svn.properties(project: project, target: parentURL.path)
             let existingValue = properties.first(where: { $0.name == "svn:ignore" })?.value ?? ""
             let updatedValue = SVNIgnoreProperty.adding(pattern: pattern, to: existingValue)
-            guard updatedValue != existingValue else {
+
+            if updatedValue != existingValue {
+                activityMessage = try await svn.setProperty(
+                    project: project,
+                    name: "svn:ignore",
+                    value: Data(updatedValue.utf8),
+                    targets: [parentURL.path]
+                )
+            }
+
+            if currentTarget.wasScheduledForAddition {
+                activityMessage = try await svn.revert(
+                    project: project,
+                    targets: [currentTarget.parentURL.appendingPathComponent(currentTarget.exactPattern).path],
+                    depth: currentTarget.nodeKind == .directory ? "infinity" : "empty"
+                )
+            } else if updatedValue == existingValue {
                 activityMessage = "Path is already ignored."
                 return
             }
 
-            activityMessage = try await svn.setProperty(
-                project: project,
-                name: "svn:ignore",
-                value: Data(updatedValue.utf8),
-                targets: [parentURL.path]
-            )
             try await reloadStatus(project: project)
             if let propertyItem = statusItems.first(where: {
                 $0.absolutePath.standardizedFileURL == parentURL.standardizedFileURL
@@ -684,8 +738,7 @@ public final class AppModel {
     public func loadHistory() async {
         guard let project = selectedProject else { return }
         await withActivity("Loading history…") {
-            revisions = try await svn.history(project: project, limit: 200, search: historySearch.isEmpty ? nil : historySearch)
-            if selectedRevision == nil { selectedRevision = revisions.first?.revision }
+            try await reloadHistory(project: project)
         }
     }
 
@@ -1004,12 +1057,21 @@ public final class AppModel {
     }
 
     private func reloadStatus(project: ProjectRecord, remote: Bool = false) async throws {
-        workingCopyInfo = try? await svn.info(
+        let refreshedInfo = try? await svn.info(
             path: project.workingCopyRoot,
             projectID: project.id,
             securityScopedBookmark: project.workingCopyBookmark
         )
-        statusItems = try await svn.status(project: project, remote: remote, showIgnored: showIgnored)
+        let refreshedItems = try await svn.status(project: project, remote: remote, showIgnored: showIgnored)
+        guard selectedProjectID == project.id else { return }
+
+        workingCopyInfo = refreshedInfo
+        if remote {
+            statusItems = refreshedItems
+            lastRemoteStatusCheck = .now
+        } else {
+            statusItems = Self.preservingRemoteStatuses(from: statusItems, in: refreshedItems)
+        }
         selectedPaths.formIntersection(Set(statusItems.filter(\.isCommitEligible).map(\.relativePath)))
         if let first = selectedPaths.first,
            let selectedItem = statusItems.first(where: { $0.relativePath == first }) {
@@ -1024,12 +1086,50 @@ public final class AppModel {
         }
     }
 
-    private func workingCopyDidChange() {
+    private func reloadHistory(project: ProjectRecord) async throws {
+        let refreshedRevisions = try await svn.history(
+            project: project,
+            limit: 200,
+            search: historySearch.isEmpty ? nil : historySearch
+        )
+        guard selectedProjectID == project.id else { return }
+        revisions = refreshedRevisions
+        if selectedRevision == nil || !revisions.contains(where: { $0.revision == selectedRevision }) {
+            selectedRevision = revisions.first?.revision
+        }
+    }
+
+    private static func preservingRemoteStatuses(
+        from previousItems: [StatusItem],
+        in refreshedItems: [StatusItem]
+    ) -> [StatusItem] {
+        let previousRemoteItems = Dictionary(
+            previousItems
+                .filter { $0.remoteStatus != .none && $0.remoteStatus != .normal }
+                .map { ($0.relativePath, $0) },
+            uniquingKeysWith: { _, latest in latest }
+        )
+        var mergedItems = refreshedItems.map { refreshedItem in
+            var item = refreshedItem
+            if let previous = previousRemoteItems[item.relativePath] {
+                item.remoteStatus = previous.remoteStatus
+            }
+            return item
+        }
+        let refreshedPaths = Set(refreshedItems.map(\.relativePath))
+        mergedItems.append(contentsOf: previousRemoteItems.values.filter {
+            !refreshedPaths.contains($0.relativePath)
+        })
+        return mergedItems.sorted { $0.relativePath.localizedStandardCompare($1.relativePath) == .orderedAscending }
+    }
+
+    private func workingCopyDidChange(checkRemote: Bool) {
         guard selectedProject != nil else { return }
-        if isBusy {
+        if isBusy || isAutomaticRefreshInProgress {
             pendingAutomaticRefresh = true
+            pendingAutomaticRemoteRefresh = pendingAutomaticRemoteRefresh || checkRemote
         } else {
-            Task { await refreshStatus() }
+            Task { await refreshAutomatically(remote: checkRemote) }
         }
     }
 
@@ -1044,8 +1144,10 @@ public final class AppModel {
         }
         isBusy = false
         if pendingAutomaticRefresh {
+            let checkRemote = pendingAutomaticRemoteRefresh
             pendingAutomaticRefresh = false
-            Task { await refreshStatus() }
+            pendingAutomaticRemoteRefresh = false
+            Task { await refreshAutomatically(remote: checkRemote) }
         }
     }
 

@@ -25,13 +25,15 @@ final class ParserTests: XCTestCase {
         <?xml version="1.0"?><status><target path="/tmp/wc">
           <entry path="/tmp/wc/modified.txt"><wc-status item="modified" props="normal" revision="3"/></entry>
           <entry path="/tmp/wc/remote.txt"><wc-status item="normal" props="normal" revision="3"/><repos-status item="modified" props="none"/></entry>
+          <entry path="/tmp/wc/remote-properties"><wc-status item="normal" props="normal" revision="3"/><repos-status item="none" props="modified"/></entry>
           <entry path="/tmp/wc/clean.txt"><wc-status item="normal" props="normal" revision="3"/></entry>
         </target></status>
         """
         let items = try SVNXMLParsers.status(Data(xml.utf8), workingCopyRoot: URL(fileURLWithPath: "/tmp/wc"))
-        XCTAssertEqual(items.map(\.relativePath), ["modified.txt", "remote.txt"])
+        XCTAssertEqual(items.map(\.relativePath), ["modified.txt", "remote.txt", "remote-properties"])
         XCTAssertEqual(items[0].workingCopyStatus, .modified)
         XCTAssertEqual(items[1].remoteStatus, .modified)
+        XCTAssertEqual(items[2].remoteStatus, .modified)
     }
 
     func testStatusParserKeepsPropertyOnlyDirectoryChange() throws {

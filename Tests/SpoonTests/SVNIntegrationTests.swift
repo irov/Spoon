@@ -82,6 +82,93 @@ final class SVNIntegrationTests: XCTestCase {
         XCTAssertEqual(info.revision, 2)
     }
 
+    func testScheduledDirectoryAdditionCanBeRevertedAndIgnoredWithoutDeletingFiles() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("SpoonIgnoreIntegration-\(UUID().uuidString)", isDirectory: true)
+        let repository = root.appendingPathComponent("repository", isDirectory: true)
+        let workingCopy = root.appendingPathComponent("working-copy", isDirectory: true)
+        let config = root.appendingPathComponent("config", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try run(URL(fileURLWithPath: "/opt/homebrew/bin/svnadmin"), ["create", repository.path])
+        let service = SVNService(factory: SVNCommandFactory(executable: bundledSVN, configDirectory: config))
+        _ = try await service.checkout(url: repository.absoluteURL, destination: workingCopy)
+
+        let info = try await service.info(path: workingCopy)
+        let project = ProjectRecord(
+            displayName: "Ignore integration",
+            workingCopyRoot: workingCopy,
+            repositoryRootURL: info.repositoryRootURL,
+            repositoryUUID: info.repositoryUUID,
+            relativeURL: info.relativeURL
+        )
+        let generatedDirectory = workingCopy.appendingPathComponent("generated", isDirectory: true)
+        let generatedFile = generatedDirectory.appendingPathComponent("output.txt")
+        try FileManager.default.createDirectory(at: generatedDirectory, withIntermediateDirectories: true)
+        try Data("generated\n".utf8).write(to: generatedFile)
+
+        _ = try await service.add(project: project, targets: [generatedDirectory.path])
+        let addedStatus = try await service.status(project: project)
+        XCTAssertTrue(addedStatus.contains(where: {
+            $0.relativePath == "generated" && $0.workingCopyStatus == .added
+        }))
+        XCTAssertTrue(addedStatus.contains(where: {
+            $0.relativePath == "generated/output.txt" && $0.workingCopyStatus == .added
+        }))
+
+        _ = try await service.setProperty(
+            project: project,
+            name: "svn:ignore",
+            value: Data("generated\n".utf8),
+            targets: [workingCopy.path]
+        )
+        _ = try await service.revert(project: project, targets: [generatedDirectory.path], depth: "infinity")
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: generatedDirectory.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: generatedFile.path))
+        let ignoredStatus = try await service.status(project: project, showIgnored: true)
+        XCTAssertTrue(ignoredStatus.contains(where: {
+            $0.relativePath == "generated" && $0.workingCopyStatus == .ignored
+        }))
+        XCTAssertFalse(ignoredStatus.contains(where: {
+            $0.relativePath == "generated/output.txt" && $0.workingCopyStatus == .added
+        }))
+    }
+
+    func testAtSignPathCanBeAddedCommittedAndDiffed() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("SpoonPegIntegration-\(UUID().uuidString)", isDirectory: true)
+        let repository = root.appendingPathComponent("repository", isDirectory: true)
+        let workingCopy = root.appendingPathComponent("working-copy", isDirectory: true)
+        let config = root.appendingPathComponent("config", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try run(URL(fileURLWithPath: "/opt/homebrew/bin/svnadmin"), ["create", repository.path])
+        let service = SVNService(factory: SVNCommandFactory(executable: bundledSVN, configDirectory: config))
+        _ = try await service.checkout(url: repository.absoluteURL, destination: workingCopy)
+
+        let info = try await service.info(path: workingCopy)
+        let project = ProjectRecord(
+            displayName: "Peg integration",
+            workingCopyRoot: workingCopy,
+            repositoryRootURL: info.repositoryRootURL,
+            repositoryUUID: info.repositoryUUID,
+            relativeURL: info.relativeURL
+        )
+        let asset = workingCopy.appendingPathComponent("Icon-20x20@1x.png")
+        try Data("first\n".utf8).write(to: asset)
+
+        _ = try await service.add(project: project, targets: [asset.path])
+        let revision = try await service.commit(project: project, targets: [asset.path], message: "Add icon")
+        XCTAssertEqual(revision, 1)
+        let cleanStatus = try await service.status(project: project)
+        XCTAssertTrue(cleanStatus.isEmpty)
+
+        try Data("first\nsecond\n".utf8).write(to: asset)
+        let diff = try await service.diff(project: project, paths: [asset.path])
+        XCTAssertTrue(diff.contains("+second"))
+    }
+
     func testBundledToolchainRepositoryMutationsPropertiesLocksSwitchAndMerge() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("SpoonServerIntegration-\(UUID().uuidString)", isDirectory: true)
         let repository = root.appendingPathComponent("repository", isDirectory: true)

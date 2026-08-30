@@ -21,8 +21,24 @@ struct LocalChangesView: View {
                         .accessibilityIdentifier("changes-filter")
                     Toggle("Ignored", isOn: $model.showIgnored)
                         .toggleStyle(.checkbox)
-                    Text("\(model.filteredStatusItems.count) changes")
-                        .foregroundStyle(.secondary)
+                    if localChangeCount > 0 || incompleteItems.isEmpty && incomingItems.isEmpty {
+                        Text("\(localChangeCount) changes")
+                            .foregroundStyle(.secondary)
+                    }
+                    if !incomingItems.isEmpty {
+                        Label {
+                            Text(incomingItems.count, format: .number)
+                                .monospacedDigit()
+                        } icon: {
+                            Image(systemName: "arrow.down.circle.fill")
+                        }
+                            .foregroundStyle(.blue)
+                            .help("Incoming Changes")
+                    }
+                    if !incompleteItems.isEmpty {
+                        Label("\(incompleteItems.count) issues", systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                    }
                     Picker("Presentation", selection: $presentationRawValue) {
                         Label("Tree", systemImage: "list.bullet.indent")
                             .labelStyle(.iconOnly)
@@ -122,8 +138,28 @@ struct LocalChangesView: View {
         LocalChangesPresentation(rawValue: presentationRawValue) ?? .tree
     }
 
+    private var incompleteItems: [StatusItem] {
+        model.filteredStatusItems.filter { $0.workingCopyStatus == .incomplete }
+    }
+
+    private var incomingItems: [StatusItem] {
+        model.filteredStatusItems.filter(\.hasRemoteChange)
+    }
+
+    private var localChangeItems: [StatusItem] {
+        model.filteredStatusItems.filter {
+            $0.workingCopyStatus != .incomplete && $0.hasLocalChange
+        }
+    }
+
+    private var localChangeCount: Int {
+        localChangeItems.count
+    }
+
     private var unstagedItems: [StatusItem] {
-        model.filteredStatusItems.filter { !model.selectedPaths.contains($0.relativePath) }
+        localChangeItems.filter {
+            !model.selectedPaths.contains($0.relativePath)
+        }
     }
 
     private var stagedItems: [StatusItem] {
@@ -133,9 +169,19 @@ struct LocalChangesView: View {
     @ViewBuilder
     private var changesList: some View {
         VSplitView {
+            if !incomingItems.isEmpty {
+                incomingChangesSection
+                    .frame(minHeight: 130)
+            }
+
+            if !incompleteItems.isEmpty {
+                workingCopyIssuesSection
+                    .frame(minHeight: 140)
+            }
+
             changesSection(
                 title: "Unstaged",
-                emptyMessage: "All eligible paths are staged.",
+                emptyMessage: incompleteItems.isEmpty ? "All eligible paths are staged." : "No unstaged changes.",
                 items: unstagedItems,
                 isStaged: false
             )
@@ -148,6 +194,183 @@ struct LocalChangesView: View {
                 isStaged: true
             )
             .frame(minHeight: 110)
+        }
+    }
+
+    private var incomingChangesSection: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Label("Incoming Changes", systemImage: "arrow.down.circle.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.blue)
+                Text(incomingItems.count, format: .number)
+                    .font(.system(size: 10, weight: .medium).monospacedDigit())
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if let lastRemoteStatusCheck = model.lastRemoteStatusCheck {
+                    Text(lastRemoteStatusCheck, style: .relative)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .help("Last remote check")
+                }
+                Button("Update") {
+                    Task { await model.updateWorkingCopy() }
+                }
+                .disabled(model.isBusy)
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .padding(.horizontal, 10)
+            .frame(height: 30)
+            .background(.bar)
+
+            Divider()
+
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                Text("These paths were committed to the repository and are not in this working copy yet.")
+                Spacer()
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+
+            Divider()
+
+            List(incomingItems) { item in
+                incomingRow(item)
+            }
+            .listStyle(.inset)
+            .environment(\.defaultMinListRowHeight, 22)
+        }
+    }
+
+    private func incomingRow(_ item: StatusItem) -> some View {
+        HStack(spacing: 6) {
+            RemoteStatusBadge(status: item.remoteStatus)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(displayTitle(item.relativePath))
+                    .font(.system(size: 11, weight: .medium))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                Text(remoteStatusTitle(item.remoteStatus))
+                    .font(.system(size: 9.5, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            if item.hasLocalChange {
+                Label("Also changed locally", systemImage: "exclamationmark.triangle.fill")
+                    .font(.system(size: 9.5))
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.vertical, 1)
+        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+        .contentShape(Rectangle())
+    }
+
+    private func remoteStatusTitle(_ status: RemoteStatus) -> LocalizedStringKey {
+        switch status {
+        case .modified: "Modified on server"
+        case .added: "Added on server"
+        case .deleted: "Deleted on server"
+        case .replaced: "Replaced on server"
+        case .unknown: "Changed on server"
+        case .none, .normal: "Incoming change"
+        }
+    }
+
+    private var workingCopyIssuesSection: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Label("Working Copy Issues", systemImage: "exclamationmark.triangle.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.orange)
+                Text(incompleteItems.count, format: .number)
+                    .font(.system(size: 10, weight: .medium).monospacedDigit())
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Complete Update") {
+                    Task { await model.updateWorkingCopy() }
+                }
+                .disabled(model.isBusy)
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .padding(.horizontal, 10)
+            .frame(height: 30)
+            .background(.bar)
+
+            Divider()
+
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                Text("SVN did not finish updating these paths. Complete the update before committing.")
+                Spacer()
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+
+            Divider()
+
+            issueRows
+        }
+    }
+
+    @ViewBuilder
+    private var issueRows: some View {
+        if presentation == .tree {
+            List {
+                ForEach(ChangeTreeNode.build(from: incompleteItems)) { node in
+                    ExpandedChangeTreeBranch(node: node) { node in
+                        AnyView(issueRow(node))
+                    }
+                }
+            }
+            .listStyle(.inset)
+            .environment(\.defaultMinListRowHeight, 22)
+        } else {
+            List(incompleteItems) { item in
+                issueRow(ChangeTreeNode(item: item))
+            }
+            .listStyle(.inset)
+            .environment(\.defaultMinListRowHeight, 22)
+        }
+    }
+
+    private func issueRow(_ node: ChangeTreeNode) -> some View {
+        HStack(spacing: 6) {
+            if let item = node.item {
+                StatusBadge(status: item.workingCopyStatus)
+            } else {
+                Image(systemName: "folder.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.blue)
+                    .frame(width: 18, height: 18)
+            }
+
+            Text(displayTitle(node.name))
+                .font(.system(size: 11, weight: .medium))
+                .lineLimit(1)
+
+            if node.item != nil {
+                Text("Incomplete")
+                    .font(.system(size: 9.5, weight: .medium))
+                    .foregroundStyle(.orange)
+            }
+
+            Spacer()
+        }
+        .padding(.vertical, 1)
+        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+        .listRowSeparator(.hidden)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            guard let item = node.item else { return }
+            Task { await model.loadDiff(path: item.relativePath) }
         }
     }
 
@@ -248,7 +471,7 @@ struct LocalChangesView: View {
             }
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 6) {
-                    Text(title)
+                    Text(displayTitle(title))
                         .font(.system(size: 11, weight: .medium))
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -298,8 +521,11 @@ struct LocalChangesView: View {
             }
             if item.workingCopyStatus == .unversioned {
                 Button("Add") { Task { await model.add(paths: [item.relativePath]) } }
+            }
+            if item.canAddToIgnore {
                 Button("Add to Ignore") { ignoreTarget = model.ignoreTarget(for: item.relativePath) }
-            } else {
+            }
+            if item.workingCopyStatus != .unversioned {
                 Button("Move or Rename…") { moveTarget = item }
                 Button("Delete…", role: .destructive) { deleteTarget = item }
             }
@@ -385,6 +611,10 @@ struct LocalChangesView: View {
         }
     }
 
+    private func displayTitle(_ title: String) -> String {
+        title == "." ? String(localized: "Working Copy Root") : title
+    }
+
     private func stageHelp(for item: StatusItem, isStaged: Bool) -> LocalizedStringKey {
         if isStaged { return "Unstage Path" }
         if item.workingCopyStatus == .unversioned { return "Add to SVN and Stage" }
@@ -455,13 +685,33 @@ private struct IgnoreSheet: View {
         return target.exactPattern
     }
 
+    private var parentDisplayPath: String {
+        let components = target.anchorPath.split(separator: "/")
+        guard components.count > 1 else { return String(localized: "Working Copy Root") }
+        return components.dropLast().joined(separator: "/")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Add to Ignore").font(.title3.bold())
+            Text("Ignore this path?").font(.title3.bold())
 
             Label(target.anchorPath, systemImage: target.nodeKind == .directory ? "folder.fill" : "doc.fill")
                 .lineLimit(2)
                 .truncationMode(.middle)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("What will happen")
+                    .font(.callout.weight(.semibold))
+                Label("Keep files on disk", systemImage: "internaldrive")
+                if target.wasScheduledForAddition {
+                    Label("Remove this path from SVN", systemImage: "minus.circle")
+                }
+                Label("Ignore it from now on", systemImage: "eye.slash")
+            }
+            .font(.callout)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
 
             if let extensionPattern = target.extensionPattern {
                 Toggle(
@@ -469,9 +719,6 @@ private struct IgnoreSheet: View {
                     isOn: $ignoreExtension
                 )
                 .toggleStyle(.checkbox)
-            } else if target.nodeKind == .directory {
-                Text("This directory and its unversioned contents will be ignored by the directory name.")
-                    .foregroundStyle(.secondary)
             }
 
             GroupBox {
@@ -481,25 +728,19 @@ private struct IgnoreSheet: View {
                         Text(selectedPattern).font(.body.monospaced()).textSelection(.enabled)
                     }
                     GridRow {
-                        Text("Property target").foregroundStyle(.secondary)
-                        Text(target.parentURL.path)
-                            .font(.caption.monospaced())
-                            .lineLimit(2)
-                            .truncationMode(.middle)
+                        Text("In folder").foregroundStyle(.secondary)
+                        Text(parentDisplayPath)
+                            .font(.body.monospaced())
                             .textSelection(.enabled)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            Text("SVN stores the rule on the parent folder. Patterns match only its direct children.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }
-                Button("Add to Ignore") {
+                Button("Ignore") {
                     Task {
                         await model.addToIgnore(target: target, pattern: selectedPattern)
                         dismiss()
@@ -510,7 +751,7 @@ private struct IgnoreSheet: View {
             }
         }
         .padding(20)
-        .frame(width: 560)
+        .frame(width: 520)
     }
 }
 
@@ -571,6 +812,7 @@ struct StatusBadge: View {
 
     private var label: String {
         switch status {
+        case .none, .normal: ""
         case .modified: "M"
         case .added: "A"
         case .deleted: "D"
@@ -581,7 +823,9 @@ struct StatusBadge: View {
         case .unversioned: "?"
         case .ignored: "I"
         case .external: "X"
-        default: "•"
+        case .incomplete: "!"
+        case .merged: "G"
+        case .unknown: "?"
         }
     }
 
@@ -589,13 +833,15 @@ struct StatusBadge: View {
         switch status {
         case .added: .green
         case .deleted, .missing: .red
-        case .conflicted, .obstructed: .orange
+        case .conflicted, .obstructed, .incomplete, .unknown: .orange
         case .unversioned, .ignored: .secondary
         default: .blue
         }
     }
 
-    private var accessibilityText: String { status.rawValue.capitalized }
+    private var accessibilityText: String {
+        status == .incomplete ? String(localized: "Incomplete working copy") : status.rawValue.capitalized
+    }
 }
 
 private struct PropertyStatusBadge: View {
@@ -620,6 +866,39 @@ private struct PropertyStatusBadge: View {
     }
 }
 
+private struct RemoteStatusBadge: View {
+    let status: RemoteStatus
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 9, weight: .bold, design: .monospaced))
+            .frame(width: 18, height: 18)
+            .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 4))
+            .foregroundStyle(color)
+            .accessibilityLabel("Remote \(status.rawValue)")
+    }
+
+    private var label: String {
+        switch status {
+        case .modified: "M"
+        case .added: "A"
+        case .deleted: "D"
+        case .replaced: "R"
+        case .unknown: "?"
+        case .none, .normal: "↓"
+        }
+    }
+
+    private var color: Color {
+        switch status {
+        case .added: .green
+        case .deleted: .red
+        case .unknown: .orange
+        default: .blue
+        }
+    }
+}
+
 private enum LocalChangesPresentation: String {
     case tree
     case list
@@ -632,6 +911,14 @@ private extension StatusItem {
 
     var hasPropertyChange: Bool {
         propertyStatus != .none && propertyStatus != .normal
+    }
+
+    var hasLocalChange: Bool {
+        hasWorkingCopyChange || hasPropertyChange
+    }
+
+    var hasRemoteChange: Bool {
+        remoteStatus != .none && remoteStatus != .normal
     }
 
     var isPropertyOnlyChange: Bool {
@@ -673,6 +960,20 @@ private struct ChangeTreeNode: Identifiable {
     var selectableItems: [StatusItem] {
         let own = item.map { Self.selectable($0) ? [$0] : [] } ?? []
         return own + (children ?? []).flatMap(\.selectableItems)
+    }
+
+    init(item: StatusItem) {
+        name = item.relativePath
+        relativePath = item.relativePath
+        self.item = item
+        children = nil
+    }
+
+    private init(name: String, relativePath: String, item: StatusItem?, children: [ChangeTreeNode]?) {
+        self.name = name
+        self.relativePath = relativePath
+        self.item = item
+        self.children = children
     }
 
     static func build(from items: [StatusItem]) -> [ChangeTreeNode] {

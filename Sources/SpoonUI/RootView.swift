@@ -45,6 +45,22 @@ public struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .spoonCommit)) { _ in Task { await model.commitSelected() } }
         .onReceive(NotificationCenter.default.publisher(for: .spoonUpdate)) { _ in Task { await model.updateWorkingCopy() } }
         .onReceive(NotificationCenter.default.publisher(for: .spoonCommandPalette)) { _ in showCommandPalette = true }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            Task { await model.refreshAutomatically(remote: true) }
+        }
+        .task {
+            var activeTicks = 0
+            while !Task.isCancelled {
+                do {
+                    try await Task.sleep(for: .seconds(15))
+                } catch {
+                    return
+                }
+                guard NSApp.isActive else { continue }
+                activeTicks += 1
+                await model.refreshAutomatically(remote: activeTicks.isMultiple(of: 4))
+            }
+        }
     }
 
     @ViewBuilder

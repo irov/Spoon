@@ -62,7 +62,7 @@ struct HistoryView: View {
         .sheet(isPresented: $showBlame) { BlameSheet(model: model) }
         .task {
             let selectedBeforeLoad = model.selectedRevision
-            if model.revisions.isEmpty { await model.loadHistory() }
+            await model.loadHistory()
             if selectedBeforeLoad == model.selectedRevision,
                let revision = selectedRevisionRecord {
                 selectRevision(revision)

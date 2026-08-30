@@ -48,6 +48,26 @@ final class CommandBuilderTests: XCTestCase {
         }
     }
 
+    func testAtSignsAreEscapedOnlyInsideSVNTargetsFiles() throws {
+        let factory = SVNCommandFactory(
+            executable: URL(fileURLWithPath: "/usr/bin/svn"),
+            configDirectory: URL(fileURLWithPath: "/tmp/config")
+        )
+        let assetPath = "/tmp/AppIcon.appiconset/Icon-20x20@1x.png"
+
+        let trailingAtPath = "/tmp/file@"
+        let commit = try factory.commit(targets: [assetPath, trailingAtPath], message: "Update icon")
+        let targetsFile = try String(contentsOf: commit.retainedResources[1].url, encoding: .utf8)
+        XCTAssertEqual(targetsFile, "\(assetPath)@\n\(trailingAtPath)@\n")
+        XCTAssertEqual(commit.targets, [assetPath, trailingAtPath])
+
+        let diff = factory.diff(targets: [assetPath])
+        XCTAssertEqual(diff.arguments.suffix(2), ["--", assetPath])
+
+        let add = factory.add(targets: [trailingAtPath])
+        XCTAssertEqual(add.arguments.suffix(2), ["--", "\(trailingAtPath)@"])
+    }
+
     func testFullFileDiffUsesInternalSVNContextOption() {
         let factory = SVNCommandFactory(
             executable: URL(fileURLWithPath: "/usr/bin/svn"),
@@ -222,6 +242,13 @@ final class CommandBuilderTests: XCTestCase {
         XCTAssertFalse(statusItem(workingCopyStatus: .ignored).isStageable)
         XCTAssertFalse(statusItem(workingCopyStatus: .missing).isStageable)
         XCTAssertFalse(statusItem(workingCopyStatus: .conflicted).isStageable)
+
+        XCTAssertTrue(statusItem(workingCopyStatus: .unversioned).canAddToIgnore)
+        XCTAssertTrue(statusItem(workingCopyStatus: .added).canAddToIgnore)
+        XCTAssertFalse(statusItem(workingCopyStatus: .modified).canAddToIgnore)
+        XCTAssertFalse(statusItem(workingCopyStatus: .added, copied: true).canAddToIgnore)
+        XCTAssertFalse(statusItem(workingCopyStatus: .unversioned, treeConflicted: true).canAddToIgnore)
+        XCTAssertFalse(statusItem(workingCopyStatus: .added, propertyStatus: .conflicted).canAddToIgnore)
     }
 
     func testDirectoryStagingSelectionIncludesAllDescendants() {
@@ -265,7 +292,8 @@ final class CommandBuilderTests: XCTestCase {
         nodeKind: NodeKind = .unknown,
         workingCopyStatus: WorkingCopyStatus,
         propertyStatus: WorkingCopyStatus = .none,
-        treeConflicted: Bool = false
+        treeConflicted: Bool = false,
+        copied: Bool = false
     ) -> StatusItem {
         StatusItem(
             relativePath: relativePath,
@@ -273,6 +301,7 @@ final class CommandBuilderTests: XCTestCase {
             nodeKind: nodeKind,
             workingCopyStatus: workingCopyStatus,
             propertyStatus: propertyStatus,
+            copied: copied,
             treeConflicted: treeConflicted
         )
     }

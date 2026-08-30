@@ -197,7 +197,8 @@ public struct SVNCommandFactory: Sendable {
 
     public func commit(targets: [String], message: String) throws -> SVNCommandDescriptor<Int?> {
         let messageFile = try SecureTemporaryFile(text: message, prefix: "commit-message")
-        let targetsFile = try SecureTemporaryFile(text: targets.joined(separator: "\n") + "\n", prefix: "commit-targets")
+        let escapedTargets = targets.map(Self.escapingPegRevision)
+        let targetsFile = try SecureTemporaryFile(text: escapedTargets.joined(separator: "\n") + "\n", prefix: "commit-targets")
         return descriptor(
             arguments: ["commit", "--depth", "empty", "--file", messageFile.url.path, "--targets", targetsFile.url.path],
             operation: .commit,
@@ -211,7 +212,7 @@ public struct SVNCommandFactory: Sendable {
     }
 
     public func add(targets: [String], depth: String = "infinity") -> SVNCommandDescriptor<String> {
-        pathCommand(.add, arguments: ["add", "--depth", depth], targets: targets)
+        pathCommand(.add, arguments: ["add", "--depth", depth], targets: targets, escapePegRevisions: true)
     }
 
     public func delete(targets: [String], keepLocal: Bool = false) -> SVNCommandDescriptor<String> {
@@ -315,10 +316,15 @@ public struct SVNCommandFactory: Sendable {
         return textDescriptor(arguments: arguments, operation: .merge, operationClass: .workingCopyWrite, targets: [source.absoluteString, target.path])
     }
 
-    private func pathCommand(_ operation: SVNOperation, arguments: [String], targets: [String]) -> SVNCommandDescriptor<String> {
+    private func pathCommand(
+        _ operation: SVNOperation,
+        arguments: [String],
+        targets: [String],
+        escapePegRevisions: Bool = false
+    ) -> SVNCommandDescriptor<String> {
         var arguments = arguments
         arguments.append("--")
-        arguments += targets
+        arguments += escapePegRevisions ? targets.map(Self.escapingPegRevision) : targets
         return textDescriptor(arguments: arguments, operation: operation, operationClass: .workingCopyWrite, targets: targets)
     }
 
@@ -374,6 +380,13 @@ public struct SVNCommandFactory: Sendable {
             retainedResources: retainedResources,
             parser: parser
         )
+    }
+
+    private static func escapingPegRevision(in target: String) -> String {
+        // Entries read through `--targets` still use Subversion's peg revision
+        // syntax. An empty peg revision keeps `@` characters in filenames
+        // literal, including names that already end in `@`.
+        target.contains("@") ? target + "@" : target
     }
 
     private func configureSSH() {

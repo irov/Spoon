@@ -5,9 +5,10 @@ import Foundation
 final class WorkingCopyWatcher {
     nonisolated(unsafe) private var stream: FSEventStreamRef?
     private var debounceTask: Task<Void, Never>?
-    private let onChange: @MainActor @Sendable () -> Void
+    private var pendingRemoteRefresh = false
+    private let onChange: @MainActor @Sendable (_ checkRemote: Bool) -> Void
 
-    init(onChange: @escaping @MainActor @Sendable () -> Void) {
+    init(onChange: @escaping @MainActor @Sendable (_ checkRemote: Bool) -> Void) {
         self.onChange = onChange
     }
 
@@ -22,6 +23,7 @@ final class WorkingCopyWatcher {
 
     func watch(_ root: URL?) {
         debounceTask?.cancel()
+        pendingRemoteRefresh = false
         if let stream {
             FSEventStreamStop(stream)
             FSEventStreamInvalidate(stream)
@@ -41,12 +43,18 @@ final class WorkingCopyWatcher {
             guard let info else { return }
             let watcher = Unmanaged<WorkingCopyWatcher>.fromOpaque(info).takeUnretainedValue()
             let paths = unsafeBitCast(pathsPointer, to: NSArray.self) as? [String] ?? []
-            Task { @MainActor in
-                let containsWorkingFileChange = paths.prefix(count).contains { path in
-                    !path.contains("/.svn/") && !path.hasSuffix("/.svn")
+            var containsWorkingFileChange = false
+            var containsSVNMetadataChange = false
+            for path in paths.prefix(count) {
+                if WorkingCopyWatcher.isSVNMetadataPath(path) {
+                    containsSVNMetadataChange = true
+                } else {
+                    containsWorkingFileChange = true
                 }
-                guard containsWorkingFileChange else { return }
-                watcher.scheduleDebouncedChange()
+            }
+            Task { @MainActor in
+                guard containsWorkingFileChange || containsSVNMetadataChange else { return }
+                watcher.scheduleDebouncedChange(checkRemote: containsSVNMetadataChange)
             }
         }
         let flags = FSEventStreamCreateFlags(
@@ -69,12 +77,19 @@ final class WorkingCopyWatcher {
         FSEventStreamStart(created)
     }
 
-    private func scheduleDebouncedChange() {
+    nonisolated private static func isSVNMetadataPath(_ path: String) -> Bool {
+        path.contains("/.svn/") || path.hasSuffix("/.svn")
+    }
+
+    private func scheduleDebouncedChange(checkRemote: Bool) {
+        pendingRemoteRefresh = pendingRemoteRefresh || checkRemote
         debounceTask?.cancel()
-        debounceTask = Task { [onChange] in
+        debounceTask = Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(550))
-            guard !Task.isCancelled else { return }
-            onChange()
+            guard !Task.isCancelled, let self else { return }
+            let checkRemote = self.pendingRemoteRefresh
+            self.pendingRemoteRefresh = false
+            self.onChange(checkRemote)
         }
     }
 }

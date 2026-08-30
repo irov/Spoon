@@ -247,6 +247,12 @@ public struct StatusItem: Codable, Hashable, Identifiable, Sendable {
         )
     }
 
+    public var canAddToIgnore: Bool {
+        guard !treeConflicted, propertyStatus != .conflicted else { return false }
+        return workingCopyStatus == .unversioned
+            || (workingCopyStatus == .added && !copied)
+    }
+
     public static func expandingSelection(
         _ requestedPaths: Set<String>,
         in statusItems: [StatusItem]
