@@ -53,3 +53,8 @@ software remains subject to its own licenses; release builds include the
 corresponding notices.
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the bundled toolchain.
+
+## Support
+
+Spoon is developed as an open-source project. If it is useful to you, you can
+[sponsor its development through GitHub Sponsors](https://github.com/sponsors/irov).
