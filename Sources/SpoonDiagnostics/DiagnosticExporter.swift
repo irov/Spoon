@@ -58,6 +58,14 @@ public actor DiagnosticExporter {
             task.targets = task.targets.map(Self.redactPath)
             task.sanitizedCommand = Redactor.text(task.sanitizedCommand)
             task.summary = task.summary.map(Redactor.text)
+            task.outputLines = task.outputLines?.map { line in
+                SVNTaskOutputLine(
+                    id: line.id,
+                    timestamp: line.timestamp,
+                    kind: line.kind,
+                    text: Redactor.text(line.text)
+                )
+            }
             task.logReference = nil
             return task
         }

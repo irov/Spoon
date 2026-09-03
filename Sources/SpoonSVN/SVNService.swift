@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
 import SpoonDomain
+import SpoonSecurity
 
 public actor SVNService {
     public let executor: SVNExecutor
@@ -300,9 +301,13 @@ public actor SVNService {
         initialRecord: TaskRecord
     ) async throws -> Output {
         let execution = executor.start(descriptor, taskID: initialRecord.id)
-        var running = initialRecord
+        var running = await registry.record(id: initialRecord.id) ?? initialRecord
         running.state = .running
-        running.startedAt = .now
+        if running.startedAt == nil {
+            running.startedAt = .now
+        }
+        running.finishedAt = nil
+        running.appendOutput(kind: .command, text: "$ \(descriptor.sanitizedCommand)")
         await registry.upsert(running)
 
         let events = execution.events
@@ -312,41 +317,65 @@ public actor SVNService {
             var latest = runningSnapshot
             for await event in events {
                 switch event {
-                case .stdout(let line), .stderr(let line), .warning(let line), .progress(let line), .authenticationPrompt(let line):
-                    latest.summary = line
+                case .stdout(let line):
+                    let sanitized = Redactor.text(line)
+                    latest.summary = sanitized
+                    latest.appendOutput(kind: .standardOutput, text: sanitized)
                     await registry.upsert(latest)
-                case .started:
-                    break
+                case .stderr(let line):
+                    let sanitized = Redactor.text(line)
+                    latest.summary = sanitized
+                    latest.appendOutput(kind: .standardError, text: sanitized)
+                    await registry.upsert(latest)
+                case .warning(let line):
+                    let sanitized = Redactor.text(line)
+                    latest.summary = sanitized
+                    latest.appendOutput(kind: .warning, text: sanitized)
+                    await registry.upsert(latest)
+                case .progress(let line):
+                    let sanitized = Redactor.text(line)
+                    latest.summary = sanitized
+                    latest.appendOutput(kind: .progress, text: sanitized)
+                    await registry.upsert(latest)
+                case .authenticationPrompt(let line):
+                    let sanitized = Redactor.text(line)
+                    latest.summary = sanitized
+                    latest.appendOutput(kind: .authentication, text: sanitized)
+                    await registry.upsert(latest)
+                case .started(let processIdentifier):
+                    latest.appendOutput(kind: .system, text: "Started process \(processIdentifier).")
+                    await registry.upsert(latest)
                 }
             }
+            return latest
         }
 
         do {
             let result = try await execution.result.value
-            _ = await eventTask.result
-            var completed = running
+            var completed = await eventTask.value
             completed.state = .succeeded
             completed.finishedAt = .now
             completed.exitCode = result.exitCode
             completed.terminationSignal = result.terminationSignal
             completed.svnErrorCodes = result.svnErrorCodes
             completed.summary = "Completed"
+            completed.appendOutput(kind: .system, text: "Process completed with exit code \(result.exitCode).")
             await registry.upsert(completed)
             return result.output
         } catch is CancellationError {
-            eventTask.cancel()
-            var cancelled = running
+            var cancelled = await eventTask.value
             cancelled.state = .cancelled
             cancelled.finishedAt = .now
             cancelled.summary = "Cancelled"
+            cancelled.appendOutput(kind: .system, text: "Operation cancelled.")
             await registry.upsert(cancelled)
             throw CancellationError()
         } catch {
-            eventTask.cancel()
-            var failed = running
+            var failed = await eventTask.value
             failed.state = .failed
             failed.finishedAt = .now
             failed.summary = error.localizedDescription
+            failed.appendOutput(kind: .standardError, text: Redactor.text(error.localizedDescription))
             if let spoonError = error as? SpoonError {
                 failed.exitCode = spoonError.exitCode
                 failed.terminationSignal = spoonError.terminationSignal

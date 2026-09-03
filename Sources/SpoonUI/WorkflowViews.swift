@@ -183,17 +183,29 @@ struct CheckoutSheet: View {
     @Bindable var model: AppModel
     @Environment(\.dismiss) private var dismiss
     @State private var repository = ""
-    @State private var destination: URL?
+    @State private var destinationParent: URL?
+    @State private var destinationFolderName = ""
     @State private var revision = "HEAD"
     @State private var depth = "infinity"
     @State private var ignoreExternals = false
 
+    private var repositoryURL: URL? {
+        URL(string: repository.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    private var destination: URL? {
+        guard let destinationParent,
+              CheckoutDestination.isValidFolderName(destinationFolderName) else { return nil }
+        return destinationParent.appendingPathComponent(destinationFolderName, isDirectory: true)
+    }
+
     var body: some View {
         Form {
             TextField("Repository URL", text: $repository)
+            TextField("Working copy folder", text: $destinationFolderName)
             HStack {
                 LabeledContent("Destination", value: destination?.path ?? "Not selected")
-                Button("Choose…", action: chooseDestination)
+                Button("Choose Parent…", action: chooseDestinationParent)
             }
             TextField("Revision", text: $revision)
             Picker("Depth", selection: $depth) {
@@ -207,11 +219,12 @@ struct CheckoutSheet: View {
                 Spacer()
                 Button("Cancel") { dismiss() }
                 Button("Checkout") {
-                    guard let url = URL(string: repository), let destination else { return }
+                    guard let repositoryURL, let destinationParent, let destination else { return }
                     Task {
                         if await model.checkout(
-                            repositoryURL: url,
+                            repositoryURL: repositoryURL,
                             destination: destination,
+                            securityScopeRoot: destinationParent,
                             revision: revision,
                             depth: depth,
                             ignoreExternals: ignoreExternals
@@ -219,20 +232,30 @@ struct CheckoutSheet: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(URL(string: repository) == nil || destination == nil || model.isBusy)
+                .disabled(repositoryURL == nil || destination == nil || model.isBusy)
             }
         }
         .padding(20)
         .frame(width: 620)
+        .onChange(of: repository) { oldValue, newValue in
+            let previousSuggestion = URL(string: oldValue.trimmingCharacters(in: .whitespacesAndNewlines))
+                .flatMap(CheckoutDestination.suggestedFolderName)
+            guard destinationFolderName.isEmpty || destinationFolderName == previousSuggestion else { return }
+            destinationFolderName = URL(string: newValue.trimmingCharacters(in: .whitespacesAndNewlines))
+                .flatMap(CheckoutDestination.suggestedFolderName) ?? ""
+        }
     }
 
-    private func chooseDestination() {
+    private func chooseDestinationParent() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.directoryURL = destinationParent
+        panel.message = String(localized: "Choose where Spoon should create the working-copy folder.")
         panel.prompt = String(localized: "Choose")
-        if panel.runModal() == .OK { destination = panel.url }
+        if panel.runModal() == .OK { destinationParent = panel.url }
     }
 
 }

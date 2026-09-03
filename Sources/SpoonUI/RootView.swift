@@ -6,6 +6,7 @@ public struct RootView: View {
     @Bindable private var model: AppModel
     @State private var showCheckout = false
     @State private var showCommandPalette = false
+    @State private var showOperationConsole = false
 
     public init(model: AppModel) {
         self.model = model
@@ -23,6 +24,19 @@ public struct RootView: View {
                 }
                 content
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                if showOperationConsole {
+                    Divider()
+                    OperationConsoleView(
+                        model: model,
+                        onOpenTaskCenter: {
+                            model.selectedSection = .tasks
+                            showOperationConsole = false
+                        },
+                        onClose: { showOperationConsole = false }
+                    )
+                    .frame(minHeight: 180, idealHeight: 240, maxHeight: 340)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
@@ -30,9 +44,21 @@ public struct RootView: View {
         .frame(minWidth: 1_180, minHeight: 720)
         .toolbar { toolbar }
         .alert(item: $model.error) { error in
-            Alert(
+            let message = Text([error.message, error.details].compactMap { $0 }.joined(separator: "\n\n"))
+            if let recovery = error.recoveryAction {
+                return Alert(
+                    title: Text(error.title),
+                    message: message,
+                    primaryButton: .default(Text(recovery.actionTitle)) {
+                        model.error = nil
+                        Task { await model.performRecovery(recovery) }
+                    },
+                    secondaryButton: .cancel(Text("Not Now"))
+                )
+            }
+            return Alert(
                 title: Text(error.title),
-                message: Text([error.message, error.details].compactMap { $0 }.joined(separator: "\n\n")),
+                message: message,
                 dismissButton: .default(Text("OK"))
             )
         }
@@ -45,6 +71,9 @@ public struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .spoonCommit)) { _ in Task { await model.commitSelected() } }
         .onReceive(NotificationCenter.default.publisher(for: .spoonUpdate)) { _ in Task { await model.updateWorkingCopy() } }
         .onReceive(NotificationCenter.default.publisher(for: .spoonCommandPalette)) { _ in showCommandPalette = true }
+        .onReceive(NotificationCenter.default.publisher(for: .spoonToggleConsole)) { _ in
+            withAnimation(.easeInOut(duration: 0.16)) { showOperationConsole.toggle() }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             Task { await model.refreshAutomatically(remote: true) }
         }
@@ -101,34 +130,59 @@ public struct RootView: View {
         ToolbarItemGroup(placement: .navigation) {
             Button(action: openWorkingCopy) { Label("Open", systemImage: "plus") }
                 .help("Open Working Copy")
-            Button { showCheckout = true } label: { Label("Checkout", systemImage: "square.and.arrow.down") }
-                .help("Checkout")
-        }
-        ToolbarItemGroup {
             Button { Task { await model.refreshStatus() } } label: { Label("Refresh", systemImage: "arrow.clockwise") }
                 .keyboardShortcut("r", modifiers: .command)
-                .disabled(model.selectedProject == nil || model.isBusy)
-            Button { Task { await model.refreshStatus(remote: true) } } label: { Label("Check Remote", systemImage: "network") }
-                .keyboardShortcut("r", modifiers: [.command, .option])
                 .disabled(model.selectedProject == nil || model.isBusy)
             Button { Task { await model.updateWorkingCopy() } } label: { Label("Update", systemImage: "arrow.down.circle") }
                 .keyboardShortcut("u", modifiers: .command)
                 .disabled(model.selectedProject == nil || model.isBusy)
-            Button {
-                model.selectedSection = .tasks
+            Menu {
+                Button { Task { await model.refreshStatus(remote: true) } } label: {
+                    Label("Check Remote", systemImage: "network")
+                }
+                .keyboardShortcut("r", modifiers: [.command, .option])
+                .disabled(model.selectedProject == nil || model.isBusy)
+                Divider()
+                Button { showCheckout = true } label: {
+                    Label("Checkout", systemImage: "square.and.arrow.down")
+                }
             } label: {
-                Label("Tasks", systemImage: "list.bullet.rectangle.portrait")
+                Label("More", systemImage: "ellipsis.circle")
             }
-            .disabled(model.selectedProject == nil)
+            .help("More Working Copy Actions")
         }
         ToolbarItem(placement: .principal) {
             if let project = model.selectedProject {
-                VStack(spacing: 1) {
-                    Text(project.displayName).font(.headline)
-                    Text(model.workingCopyInfo.map { "r\($0.revision)" } ?? "SVN")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.16)) { showOperationConsole.toggle() }
+                } label: {
+                    HStack(spacing: 8) {
+                        VStack(spacing: 1) {
+                            Text(project.displayName).font(.headline)
+                            Text(model.workingCopyInfo.map { "r\($0.revision)" } ?? "SVN")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        if model.isBusy {
+                            ProgressView()
+                                .controlSize(.small)
+                        } else {
+                            Image(systemName: "terminal")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(showOperationConsole ? Color.accentColor.opacity(0.14) : Color.clear)
+                    )
+                    .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
+                .buttonStyle(.plain)
+                .help(model.isBusy ? "\(model.activityMessage) — Click to show activity" : "Show Activity Console")
+                .accessibilityLabel(model.isBusy ? "\(model.activityMessage). Show Activity Console" : "Show Activity Console")
             }
         }
         ToolbarItem(placement: .primaryAction) {
@@ -136,10 +190,12 @@ public struct RootView: View {
                 Label("Commit", systemImage: "arrow.up.circle.fill")
             }
             .keyboardShortcut("k", modifiers: .command)
-            .disabled(model.selectedPaths.isEmpty || model.isBusy)
-        }
-        ToolbarItem(placement: .status) {
-            if model.isBusy { ProgressView().controlSize(.small).help(model.activityMessage) }
+            .disabled(
+                model.selectedPaths.isEmpty
+                    || model.commitMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    || model.isBusy
+            )
+            .help(model.selectedPaths.isEmpty ? "Stage paths to commit" : "Commit \(model.selectedPaths.count) staged path(s)")
         }
     }
 
@@ -153,6 +209,15 @@ public struct RootView: View {
         panel.resolvesAliases = true
         guard panel.runModal() == .OK, let url = panel.url else { return }
         Task { await model.addWorkingCopy(url: url) }
+    }
+}
+
+private extension SpoonRecoveryAction {
+    var actionTitle: LocalizedStringKey {
+        switch self {
+        case .cleanupWorkingCopy: "Run Cleanup"
+        case .cleanupAndRetryUpdate: "Cleanup and Retry"
+        }
     }
 }
 
@@ -171,14 +236,6 @@ private struct SidebarView: View {
                     Section {
                         sectionRow(.localChanges, title: "Local Changes", count: model.statusItems.count)
                         sectionRow(.history, title: "All Commits")
-                    }
-
-                    Section {
-                        HStack(spacing: 6) {
-                            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                            TextField("Filter", text: $model.filterText)
-                                .textFieldStyle(.plain)
-                        }
                     }
 
                     Section("Working Copy") {
@@ -323,41 +380,119 @@ private struct SidebarView: View {
 private struct ProjectTabStrip: View {
     @Bindable var model: AppModel
     let openWorkingCopy: () -> Void
+    @State private var hoveredProjectID: UUID?
 
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 0) {
+        HStack(spacing: 6) {
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal) {
+                    HStack(spacing: 6) {
+                        ForEach(model.projects) { project in
+                            projectTab(project)
+                                .id(project.id)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                }
+                .scrollIndicators(.never, axes: .horizontal)
+                .onChange(of: model.selectedProjectID) { _, selectedProjectID in
+                    guard let selectedProjectID else { return }
+                    withAnimation(.easeInOut(duration: 0.16)) {
+                        proxy.scrollTo(selectedProjectID, anchor: .center)
+                    }
+                }
+            }
+
+            Divider().frame(height: 22)
+
+            Menu {
                 ForEach(model.projects) { project in
                     Button {
                         model.selectProject(project)
                     } label: {
-                        HStack(spacing: 7) {
-                            Image(systemName: "externaldrive")
-                                .font(.caption)
-                            Text(project.displayName).lineLimit(1)
-                            if project.isFavorite {
-                                Image(systemName: "star.fill").font(.caption2).foregroundStyle(.yellow)
-                            }
+                        if project.id == model.selectedProjectID {
+                            Label(project.displayName, systemImage: "checkmark")
+                        } else {
+                            Text(project.displayName)
                         }
-                        .padding(.horizontal, 14)
-                        .frame(height: 34)
-                        .background(project.id == model.selectedProjectID ? Color.primary.opacity(0.10) : Color.clear)
-                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
-                    Divider().frame(height: 22)
                 }
-                Button(action: openWorkingCopy) {
-                    Image(systemName: "plus")
-                        .frame(width: 34, height: 34)
-                        .contentShape(Rectangle())
+            } label: {
+                Label("All Projects", systemImage: "chevron.down")
+                    .labelStyle(.iconOnly)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .menuStyle(.borderlessButton)
+            .help("All Projects")
+
+            Button(action: openWorkingCopy) {
+                Label("Open Working Copy", systemImage: "plus")
+                    .labelStyle(.iconOnly)
+                    .frame(width: 28, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Open Working Copy")
+            .padding(.trailing, 8)
+        }
+        .frame(height: 42)
+        .background(.bar)
+    }
+
+    private func projectTab(_ project: ProjectRecord) -> some View {
+        let isSelected = project.id == model.selectedProjectID
+        let isHovered = project.id == hoveredProjectID
+
+        return Button {
+            model.selectProject(project)
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: isSelected ? "externaldrive.fill" : "externaldrive")
+                    .font(.caption)
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                Text(project.displayName)
+                    .font(.callout.weight(isSelected ? .semibold : .regular))
+                    .lineLimit(1)
+                if project.isFavorite {
+                    Image(systemName: "star.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.yellow)
                 }
-                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 11)
+            .frame(minWidth: 110, maxWidth: 190, minHeight: 28)
+            .background(
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(
+                        isSelected
+                            ? Color.accentColor.opacity(0.15)
+                            : isHovered ? Color.primary.opacity(0.07) : Color.clear
+                    )
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .stroke(isSelected ? Color.accentColor.opacity(0.42) : Color.clear)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .help(project.workingCopyRoot.path)
+        .onHover { hovering in hoveredProjectID = hovering ? project.id : nil }
+        .contextMenu {
+            Button(project.isFavorite ? "Remove from Favorites" : "Add to Favorites") {
+                Task { await model.toggleFavorite(project) }
+            }
+            Button("Reveal in Finder") {
+                NSWorkspace.shared.activateFileViewerSelecting([project.workingCopyRoot])
+            }
+            Divider()
+            Button("Remove Project", role: .destructive) {
+                if model.selectedProjectID != project.id { model.selectProject(project) }
+                Task { await model.removeSelectedProject() }
             }
         }
-        .frame(height: 34)
-        .scrollIndicators(.hidden)
-        .background(.bar)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
@@ -383,4 +518,5 @@ public extension Notification.Name {
     static let spoonCommit = Notification.Name("Spoon.Commit")
     static let spoonUpdate = Notification.Name("Spoon.Update")
     static let spoonCommandPalette = Notification.Name("Spoon.CommandPalette")
+    static let spoonToggleConsole = Notification.Name("Spoon.ToggleConsole")
 }

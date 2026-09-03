@@ -1,9 +1,36 @@
 import Foundation
 import SpoonDomain
+import SpoonSecurity
 import SpoonSVN
 import XCTest
 
 final class SVNIntegrationTests: XCTestCase {
+    func testCheckoutCreatesMissingWorkingCopyFolderUsingParentPermission() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("SpoonCheckoutPermission-\(UUID().uuidString)", isDirectory: true)
+        let repository = root.appendingPathComponent("repository", isDirectory: true)
+        let destinationParent = root.appendingPathComponent("checkouts", isDirectory: true)
+        let destination = destinationParent.appendingPathComponent("Example Project", isDirectory: true)
+        let config = root.appendingPathComponent("config", isDirectory: true)
+        try FileManager.default.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try run(URL(fileURLWithPath: "/opt/homebrew/bin/svnadmin"), ["create", repository.path])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: destination.path))
+
+        let service = SVNService(factory: SVNCommandFactory(executable: bundledSVN, configDirectory: config))
+        let parentBookmark = try SecurityScopedBookmark(url: destinationParent).data
+        _ = try await service.checkout(
+            url: repository.absoluteURL,
+            destination: destination,
+            securityScopedBookmark: parentBookmark
+        )
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: destination.path))
+        let info = try await service.info(path: destination, securityScopedBookmark: parentBookmark)
+        XCTAssertEqual(info.workingCopyRoot.standardizedFileURL, destination.standardizedFileURL)
+    }
+
     func testDisposableRepositoryWorkingCopyLifecycle() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("SpoonIntegration-\(UUID().uuidString)", isDirectory: true)
         let repository = root.appendingPathComponent("repository", isDirectory: true)

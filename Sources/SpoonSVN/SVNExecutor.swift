@@ -190,7 +190,7 @@ public actor SVNExecutor {
                 operation: descriptor.operation,
                 svnCodes: codes,
                 exitCode: process.terminationStatus,
-                recoverySuggestion: Self.recoverySuggestion(for: codes),
+                recoverySuggestion: Self.recoverySuggestion(for: codes, operation: descriptor.operation),
                 diagnosticDetails: descriptor.sanitizedCommand
             )
         }
@@ -254,9 +254,17 @@ public actor SVNExecutor {
         }
     }
 
-    private static func recoverySuggestion(for codes: [SVNErrorCode]) -> String? {
+    private static func recoverySuggestion(
+        for codes: [SVNErrorCode],
+        operation: SVNOperation
+    ) -> String? {
         let values = Set(codes.map(\.value))
-        if values.contains("E155004") { return "Run the safe working-copy cleanup flow, then refresh status." }
+        if values.contains("E155004") {
+            if operation == .cleanup {
+                return "Close other SVN clients using this working copy, then try Cleanup again."
+            }
+            return "Run the safe working-copy cleanup flow, then refresh status."
+        }
         if values.contains("E155036") { return "Review the working-copy upgrade warning and upgrade explicitly if appropriate." }
         if values.contains("E170001") { return "Check the saved credential profile and authenticate again." }
         if values.contains("E155015") { return "Resolve the selected conflicts before committing." }

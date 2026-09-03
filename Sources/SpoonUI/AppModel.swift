@@ -153,11 +153,19 @@ public final class AppModel {
             let stream = await svn.taskUpdates()
             for await records in stream {
                 guard !Task.isCancelled else { break }
-                await MainActor.run {
-                    self?.tasks = records
+                let changedRecords = await MainActor.run { () -> [TaskRecord] in
+                    guard let self else { return [] }
+                    let previous = Dictionary(uniqueKeysWithValues: self.tasks.map { ($0.id, $0) })
+                    var merged = previous
+                    for record in records { merged[record.id] = record }
+                    self.tasks = Array(merged.values)
+                        .sorted { $0.createdAt > $1.createdAt }
+                        .prefix(500)
+                        .map { $0 }
+                    return records.filter { previous[$0.id] != $0 }
                 }
                 if let storage = self?.storage {
-                    for record in records { try? await storage.saveTask(record) }
+                    for record in changedRecords { try? await storage.saveTask(record) }
                 }
             }
         }
@@ -206,21 +214,23 @@ public final class AppModel {
     public func checkout(
         repositoryURL: URL,
         destination: URL,
+        securityScopeRoot: URL? = nil,
         revision: String,
         depth: String,
         ignoreExternals: Bool
     ) async -> Bool {
         var succeeded = false
         await withActivity("Checking out repository…") {
-            let scope = ResolvedSecurityScope(url: destination)
-            _ = scope
+            let securityScopeRoot = securityScopeRoot ?? destination
+            let scope = ResolvedSecurityScope(url: securityScopeRoot)
+            defer { withExtendedLifetime(scope) {} }
             activityMessage = try await svn.checkout(
                 url: repositoryURL,
                 destination: destination,
                 revision: revision,
                 depth: depth,
                 ignoreExternals: ignoreExternals,
-                securityScopedBookmark: try SecurityScopedBookmark(url: destination).data
+                securityScopedBookmark: try SecurityScopedBookmark(url: securityScopeRoot).data
             )
             try await registerWorkingCopy(url: destination, requireSelectedRoot: false)
             if let project = selectedProject { try await reloadStatus(project: project) }
@@ -477,6 +487,26 @@ public final class AppModel {
         await withActivity("Cleaning working copy…") {
             activityMessage = try await svn.cleanup(project: project)
             try await reloadStatus(project: project)
+        }
+    }
+
+    public func performRecovery(_ recovery: SpoonRecoveryAction) async {
+        guard let project = selectedProject else { return }
+        await withActivity(String(localized: "Repairing working copy…")) {
+            _ = try await svn.cleanup(project: project)
+
+            switch recovery {
+            case .cleanupWorkingCopy:
+                activityMessage = String(localized: "Cleanup completed.")
+                try await reloadStatus(project: project)
+            case .cleanupAndRetryUpdate:
+                activityMessage = String(localized: "Cleanup completed. Retrying update…")
+                activityMessage = try await svn.update(
+                    project: project,
+                    includeExternals: project.settingsOverride?.includeExternalsOnUpdate ?? true
+                )
+                try await reloadStatus(project: project, remote: true)
+            }
         }
     }
 
@@ -1153,7 +1183,29 @@ public final class AppModel {
 
     private func present(_ error: Error) {
         if let spoon = error as? SpoonError {
-            self.error = PresentedError(title: spoon.title, message: spoon.explanation, details: spoon.diagnosticDetails)
+            if let recovery = spoon.recoveryAction {
+                let message: String
+                switch recovery {
+                case .cleanupWorkingCopy:
+                    message = String(localized: "Subversion left this working copy locked after an interrupted operation. Spoon can run a safe cleanup. Your local files will not be removed.")
+                case .cleanupAndRetryUpdate:
+                    message = String(localized: "Subversion left this working copy locked after an interrupted operation. Spoon can run a safe cleanup and retry the update. Your local files will not be removed.")
+                }
+                self.error = PresentedError(
+                    title: String(localized: "Working Copy Needs Cleanup"),
+                    message: message,
+                    details: nil,
+                    recoveryAction: recovery
+                )
+            } else {
+                self.error = PresentedError(
+                    title: spoon.title,
+                    message: [spoon.explanation, spoon.recoverySuggestion]
+                        .compactMap { $0 }
+                        .joined(separator: "\n\n"),
+                    details: spoon.diagnosticDetails
+                )
+            }
         } else {
             self.error = PresentedError(title: "Operation failed", message: error.localizedDescription, details: nil)
         }
@@ -1285,10 +1337,17 @@ public struct PresentedError: Identifiable, Sendable {
     public var title: String
     public var message: String
     public var details: String?
+    public var recoveryAction: SpoonRecoveryAction?
 
-    public init(title: String, message: String, details: String?) {
+    public init(
+        title: String,
+        message: String,
+        details: String?,
+        recoveryAction: SpoonRecoveryAction? = nil
+    ) {
         self.title = title
         self.message = message
         self.details = details
+        self.recoveryAction = recoveryAction
     }
 }

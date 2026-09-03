@@ -105,9 +105,27 @@ final class SecurityAndStorageTests: XCTestCase {
         XCTAssertEqual(loadedDraft?.message, draft.message)
         XCTAssertEqual(loadedDraft?.selectedRelativePaths, draft.selectedRelativePaths)
 
-        let task = TaskRecord(projectID: project.id, operation: .status, targets: [project.workingCopyRoot.path], sanitizedCommand: "svn status")
+        var task = TaskRecord(projectID: project.id, operation: .status, targets: [project.workingCopyRoot.path], sanitizedCommand: "svn status")
+        task.appendOutput(kind: .command, text: "$ svn status")
+        task.appendOutput(kind: .standardOutput, text: "Checking files")
         try await store.saveTask(task)
         let tasks = try await store.loadTasks(limit: 10)
         XCTAssertEqual(tasks.first?.id, task.id)
+        XCTAssertEqual(tasks.first?.outputLines?.map(\.text), ["$ svn status", "Checking files"])
+    }
+
+    func testTaskOutputKeepsRecentBoundedLines() {
+        var task = TaskRecord(
+            projectID: nil,
+            operation: .status,
+            targets: [],
+            sanitizedCommand: "svn status"
+        )
+        task.appendOutput(kind: .standardOutput, text: "first", maximumLineCount: 2)
+        task.appendOutput(kind: .standardError, text: "second", maximumLineCount: 2)
+        task.appendOutput(kind: .system, text: "third", maximumLineCount: 2)
+
+        XCTAssertEqual(task.outputLines?.map(\.text), ["second", "third"])
+        XCTAssertEqual(task.outputLines?.map(\.kind), [.standardError, .system])
     }
 }

@@ -70,6 +70,7 @@ private struct SpoonCommands: Commands {
             Divider()
             Button("Command Palette") { NotificationCenter.default.post(name: .spoonCommandPalette, object: nil) }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
+            Button("Toggle Activity Console") { NotificationCenter.default.post(name: .spoonToggleConsole, object: nil) }
         }
         CommandGroup(replacing: .help) {
             Button("Spoon Help") { openWindow(id: "spoon-help") }

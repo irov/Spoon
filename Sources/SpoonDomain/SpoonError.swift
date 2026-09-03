@@ -1,5 +1,10 @@
 import Foundation
 
+public enum SpoonRecoveryAction: Sendable, Equatable {
+    case cleanupWorkingCopy
+    case cleanupAndRetryUpdate
+}
+
 public struct SpoonError: Error, LocalizedError, Sendable {
     public var title: String
     public var explanation: String
@@ -32,4 +37,12 @@ public struct SpoonError: Error, LocalizedError, Sendable {
 
     public var errorDescription: String? { title }
     public var failureReason: String? { explanation }
+
+    public var recoveryAction: SpoonRecoveryAction? {
+        guard operation != .cleanup,
+              svnCodes.contains(SVNErrorCode("E155004")) else {
+            return nil
+        }
+        return operation == .update ? .cleanupAndRetryUpdate : .cleanupWorkingCopy
+    }
 }

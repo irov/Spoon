@@ -28,6 +28,7 @@
 		485255AE2A25C6FA062C6304 /* SpoonDomain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12493EB9D620C29E1692A924 /* SpoonDomain.framework */; };
 		4C711C5201E7F21D281365A8 /* SVNIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8C52C09A72B21850703508 /* SVNIntegrationTests.swift */; };
 		4D2321644081B80353EA8757 /* WorkflowViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7D0CFA1B765FADEFB830C0 /* WorkflowViews.swift */; };
+		4D8CE326BEF7319EFB53C3A4 /* OperationConsoleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD0E14F68B13D7FDEF1982A /* OperationConsoleView.swift */; };
 		4F86408E62D7D911F86FC02F /* SQLiteStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A81806D0602531C8B6CFD6D4 /* SQLiteStore.swift */; };
 		4F90A297F6521FE4423805BB /* DiffInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3A96BE4010DB78CD3EBE30 /* DiffInspector.swift */; };
 		55A4F5A129A9F55AF47FEDC7 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D9CA170CFC222590E1BE75C /* RootView.swift */; };
@@ -72,6 +73,7 @@
 		D34F8C7B57DE8CB2D73068FB /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = E33BFA6CB3FC74CB32C70CE5 /* FirebaseCrashlytics */; };
 		D413825682A5033CACE19AB2 /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9DA410251B71522AA55ABB4 /* ParserTests.swift */; };
 		DB8FA98168227EB1317A43ED /* Redactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA75F1393F00D1149F20F6D8 /* Redactor.swift */; };
+		DDFF89381745372ECF074F4B /* CheckoutDestination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E8860E02C3CADB46D3EAE1 /* CheckoutDestination.swift */; };
 		DE473332B95581D78345F972 /* SpoonDiagnostics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 859906359D64ADF26CDD3B8E /* SpoonDiagnostics.framework */; };
 		DF239EB0E2E81503EEE1BDC4 /* SpoonStorage.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D5EDE80259042813CDA41140 /* SpoonStorage.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DF9E69D32E48C04D7686CE08 /* SVNService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA4614D33EFB6CE3EA153E5 /* SVNService.swift */; };
@@ -329,7 +331,9 @@
 		477C03B567AEA6F428427017 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		489C200FAC11DC3725E4B50B /* SecurityScopedBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityScopedBookmark.swift; sourceTree = "<group>"; };
 		4BA4614D33EFB6CE3EA153E5 /* SVNService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNService.swift; sourceTree = "<group>"; };
+		4BD0E14F68B13D7FDEF1982A /* OperationConsoleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationConsoleView.swift; sourceTree = "<group>"; };
 		4C38B5F1FEA118E87A5A5AF8 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		57E8860E02C3CADB46D3EAE1 /* CheckoutDestination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutDestination.swift; sourceTree = "<group>"; };
 		5D269ACA7FDBCACCDC89555D /* SVNCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVNCommand.swift; sourceTree = "<group>"; };
 		63304568328CCD5DBB649D54 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		67AE2D7556075CBF0CD7DB9D /* WorkingCopyWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkingCopyWatcher.swift; sourceTree = "<group>"; };
@@ -538,6 +542,7 @@
 				E9D4ADB3F1FB3B05AE08F318 /* ExternalToolLauncher.swift */,
 				10CD85897DF657F0D737A86B /* HistoryAndRepositoryViews.swift */,
 				67D41A32A54E5A393BD77B80 /* LocalChangesView.swift */,
+				4BD0E14F68B13D7FDEF1982A /* OperationConsoleView.swift */,
 				1D9CA170CFC222590E1BE75C /* RootView.swift */,
 				63304568328CCD5DBB649D54 /* SettingsView.swift */,
 				1E7BDDFFD0E5CA06ECB5BC08 /* SupportViews.swift */,
@@ -628,6 +633,7 @@
 		F3649457CB3F6605D5F01759 /* SpoonDomain */ = {
 			isa = PBXGroup;
 			children = (
+				57E8860E02C3CADB46D3EAE1 /* CheckoutDestination.swift */,
 				4C38B5F1FEA118E87A5A5AF8 /* Models.swift */,
 				A5A98907E55ADF470E414CED /* Operations.swift */,
 				A7130ECA0296FA7E892433FB /* SpoonError.swift */,
@@ -1076,6 +1082,7 @@
 				1AF3A1715812D0A354FF0BB3 /* ExternalToolLauncher.swift in Sources */,
 				9BAC2C497E61A8941D9E2971 /* HistoryAndRepositoryViews.swift in Sources */,
 				0788E4F38D74F36B96896A15 /* LocalChangesView.swift in Sources */,
+				4D8CE326BEF7319EFB53C3A4 /* OperationConsoleView.swift in Sources */,
 				55A4F5A129A9F55AF47FEDC7 /* RootView.swift in Sources */,
 				2FE0EBC455B03215D39E830C /* SettingsView.swift in Sources */,
 				4828F7FE9BDCA20CCDC2DA0F /* SupportViews.swift in Sources */,
@@ -1088,6 +1095,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DDFF89381745372ECF074F4B /* CheckoutDestination.swift in Sources */,
 				BC161F80F1C4A1782190C2D1 /* Models.swift in Sources */,
 				AC75F2E1FB5F0B245CF4B5A9 /* Operations.swift in Sources */,
 				15CD9209997D13AF9F7F3360 /* SpoonError.swift in Sources */,
@@ -1257,7 +1265,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Config/Spoon.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -1267,7 +1275,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				OTHER_LDFLAGS = "$(inherited) -ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon;
 				PRODUCT_MODULE_NAME = SpoonApp;
@@ -1692,7 +1700,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Config/Spoon.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 7;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
@@ -1702,7 +1710,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0.2;
+				MARKETING_VERSION = 1.0.3;
 				OTHER_LDFLAGS = "$(inherited) -ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wonderland.spoon;
 				PRODUCT_MODULE_NAME = SpoonApp;

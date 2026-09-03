@@ -5,6 +5,28 @@ import SpoonSVN
 import XCTest
 
 final class CommandBuilderTests: XCTestCase {
+    func testCheckoutDestinationUsesLastRepositoryPathComponent() throws {
+        XCTAssertEqual(
+            CheckoutDestination.suggestedFolderName(
+                for: try XCTUnwrap(URL(string: "https://example.com/svn/My%20Project/"))
+            ),
+            "My Project"
+        )
+        XCTAssertEqual(
+            CheckoutDestination.suggestedFolderName(
+                for: try XCTUnwrap(URL(string: "svn+ssh://example.com/repositories/Spoon"))
+            ),
+            "Spoon"
+        )
+        XCTAssertNil(
+            CheckoutDestination.suggestedFolderName(
+                for: try XCTUnwrap(URL(string: "https://example.com/"))
+            )
+        )
+        XCTAssertFalse(CheckoutDestination.isValidFolderName(".."))
+        XCTAssertFalse(CheckoutDestination.isValidFolderName("nested/folder"))
+    }
+
     func testPathsRemainDistinctArgumentsAndNoShellIsUsed() {
         let factory = SVNCommandFactory(
             executable: URL(fileURLWithPath: "/usr/bin/svn"),
@@ -99,6 +121,40 @@ final class CommandBuilderTests: XCTestCase {
     func testSVNErrorCodesAreStructuredAndDeduplicated() {
         let codes = SVNErrorExtractor.codes(in: "svn: E155004 locked\nsvn: E170001 auth\nsvn: E155004 again")
         XCTAssertEqual(codes.map(\.value), ["E155004", "E170001"])
+    }
+
+    func testLockedWorkingCopyErrorSuggestsCleanupAndUpdateRetry() async {
+        let descriptor = SVNCommandDescriptor<Data>(
+            executable: URL(fileURLWithPath: "/bin/sh"),
+            arguments: ["-c", "echo \"svn: E155004: Working copy is already locked\" >&2; exit 1"],
+            operation: .update,
+            operationClass: .workingCopyWrite
+        ) { stdout, _ in stdout }
+
+        do {
+            _ = try await SVNExecutor().start(descriptor).result.value
+            XCTFail("Expected a locked-working-copy error")
+        } catch let error as SpoonError {
+            XCTAssertEqual(error.svnCodes.map(\.value), ["E155004"])
+            XCTAssertEqual(error.operation, .update)
+            XCTAssertEqual(error.recoveryAction, .cleanupAndRetryUpdate)
+            XCTAssertTrue(error.recoverySuggestion?.contains("cleanup") == true)
+        } catch {
+            XCTFail("Expected SpoonError, got \(error)")
+        }
+    }
+
+    func testDefaultCleanupPreservesUnversionedAndIgnoredFiles() {
+        let factory = SVNCommandFactory(
+            executable: URL(fileURLWithPath: "/usr/bin/svn"),
+            configDirectory: URL(fileURLWithPath: "/tmp/config")
+        )
+        let descriptor = factory.cleanup(root: URL(fileURLWithPath: "/tmp/working-copy"))
+
+        XCTAssertEqual(descriptor.arguments.first, "cleanup")
+        XCTAssertEqual(descriptor.arguments.suffix(2), ["--", "/tmp/working-copy"])
+        XCTAssertFalse(descriptor.arguments.contains("--remove-unversioned"))
+        XCTAssertFalse(descriptor.arguments.contains("--remove-ignored"))
     }
 
     func testInfoForNonWorkingCopyReturnsFriendlyError() async {

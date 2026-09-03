@@ -47,6 +47,35 @@ public enum SVNTaskState: String, Codable, Sendable {
     case cancelled
 }
 
+public enum SVNTaskOutputKind: String, Codable, Sendable {
+    case command
+    case standardOutput
+    case standardError
+    case warning
+    case progress
+    case authentication
+    case system
+}
+
+public struct SVNTaskOutputLine: Codable, Hashable, Identifiable, Sendable {
+    public let id: UUID
+    public let timestamp: Date
+    public let kind: SVNTaskOutputKind
+    public let text: String
+
+    public init(
+        id: UUID = UUID(),
+        timestamp: Date = .now,
+        kind: SVNTaskOutputKind,
+        text: String
+    ) {
+        self.id = id
+        self.timestamp = timestamp
+        self.kind = kind
+        self.text = text
+    }
+}
+
 public struct SVNErrorCode: Codable, Hashable, Sendable, CustomStringConvertible {
     public var value: String
     public var description: String { value }
@@ -71,6 +100,8 @@ public struct TaskRecord: Codable, Hashable, Identifiable, Sendable {
     public var sanitizedCommand: String
     public var logReference: URL?
     public var summary: String?
+    /// Optional so task records written by older Spoon builds remain decodable.
+    public var outputLines: [SVNTaskOutputLine]?
 
     public init(
         id: UUID = UUID(),
@@ -86,7 +117,8 @@ public struct TaskRecord: Codable, Hashable, Identifiable, Sendable {
         svnErrorCodes: [SVNErrorCode] = [],
         sanitizedCommand: String,
         logReference: URL? = nil,
-        summary: String? = nil
+        summary: String? = nil,
+        outputLines: [SVNTaskOutputLine]? = nil
     ) {
         self.id = id
         self.projectID = projectID
@@ -102,6 +134,31 @@ public struct TaskRecord: Codable, Hashable, Identifiable, Sendable {
         self.sanitizedCommand = sanitizedCommand
         self.logReference = logReference
         self.summary = summary
+        self.outputLines = outputLines
+    }
+
+    public mutating func appendOutput(
+        kind: SVNTaskOutputKind,
+        text: String,
+        maximumLineCount: Int = 500
+    ) {
+        let trimmed = text.trimmingCharacters(in: .newlines)
+        guard !trimmed.isEmpty, maximumLineCount > 0 else { return }
+
+        let maximumCharacters = 8_000
+        let rendered: String
+        if trimmed.count > maximumCharacters {
+            rendered = String(trimmed.prefix(maximumCharacters)) + "…"
+        } else {
+            rendered = trimmed
+        }
+
+        var lines = outputLines ?? []
+        lines.append(SVNTaskOutputLine(kind: kind, text: rendered))
+        if lines.count > maximumLineCount {
+            lines.removeFirst(lines.count - maximumLineCount)
+        }
+        outputLines = lines
     }
 }
 
